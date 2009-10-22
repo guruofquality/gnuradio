@@ -1,0 +1,11 @@
+prefix=/home/jcorgan/.local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: gnuradio-audio-jack
+Description: GNU Radio blocks for the JACK sound system
+Requires: gnuradio-core jack
+Version: 3.3git-473-g41526cd4
+Libs: -L${libdir} -lgnuradio-audio-jack
+Cflags: -I${includedir}
