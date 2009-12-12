@@ -302,7 +302,7 @@ Package: libgnuradio-qtgui0
 Section: libs
 Architecture: any
 Depends: libgnuradio-core0 (= ${binary:Version}), ${shlibs:Depends}
-Description: GNU Radio C++ blocks fro QT-based GUI applications
+Description: GNU Radio C++ blocks for QT-based GUI applications
  This package contains the C++ library for using GNU Radio inside
  QT-based GUI applications.
 
@@ -310,7 +310,7 @@ Package: libgnuradio-qtgui-dev
 Section: libdevel
 Architecture: any
 Depends: libgnuradio-qtgui0 (= ${binary:Version}), libgnuradio-core-dev (= ${binary:Version}), libqt4-dev, libqwtplot3d-qt4-dev
-Description: GNU Radio C++ blocks fro QT-based GUI applications
+Description: GNU Radio C++ blocks for QT-based GUI applications
  This package contains the C++ library for using GNU Radio inside
  QT-based GUI applications.
  .
@@ -605,6 +605,7 @@ Description: GNU Radio Radio Astronomy Applications
 Package: gnuradio-companion
 Architecture: any
 Depends: ${python:Depends}, gnuradio, gnuradio-doc, usrp-doc, python-lxml, python-cheetah, python-gtk2
+Conflicts: grc
 Provides: ${python:Provides}
 Section: comm
 XB-Python-Version: ${python:Versions}
