@@ -23,10 +23,6 @@
 #ifndef INCLUDED_NOAA_HRPT_DEFRAMER_H
 #define INCLUDED_NOAA_HRPT_DEFRAMER_H
 
-#define HRPT_SYNC_WORDS        6
-#define HRPT_MINOR_FRAME_WORDS 11090
-#define HRPT_BITS_PER_WORD     10
-
 #include <gr_block.h>
 
 class noaa_hrpt_deframer;
@@ -41,6 +37,8 @@ class noaa_hrpt_deframer : public gr_block
   noaa_hrpt_deframer();
 
   unsigned int       d_state;
+  bool               d_mid_bit;
+  unsigned char      d_last_bit;
   unsigned int       d_bit_count;
   unsigned int       d_word_count;
   unsigned long long d_shifter;     // 60 bit sync word

@@ -31,8 +31,10 @@ lib_LTLIBRARIES = \
 libgnuradio_noaa_la_SOURCES = \
 	noaa_hrpt_decoder.cc \
 	noaa_hrpt_deframer.cc \
-	noaa_hrpt_pll_cf.cc \
-	noaa_hrpt_sync_fb.cc
+	noaa_hrpt_pll_cf.cc
+
+noinst_HEADERS = \
+	noaa_hrpt.h
 
 libgnuradio_noaa_la_LIBADD = \
 	$(GNURADIO_CORE_LA)
@@ -42,5 +44,4 @@ libgnuradio_noaa_la_LDFLAGS = $(NO_UNDEFINED) -version-info 0:0:0
 grinclude_HEADERS = \
 	noaa_hrpt_decoder.h \
 	noaa_hrpt_deframer.h \
-	noaa_hrpt_pll_cf.h \
-	noaa_hrpt_sync_fb.h
+	noaa_hrpt_pll_cf.h

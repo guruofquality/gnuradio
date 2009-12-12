@@ -124,11 +124,13 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 DIST_COMMON = README $(am__msdd_python_PYTHON_DIST) \
+	$(am__msdd_rs_python_PYTHON_DIST) \
 	$(am__msdd_swiginclude_HEADERS_DIST) $(grinclude_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/Makefile.swig.gen $(top_srcdir)/Makefile.common \
 	$(top_srcdir)/Makefile.swig
-@PYTHON_TRUE@am__append_1 = $(DEPDIR)/msdd-generate-*
+@PYTHON_TRUE@am__append_1 = $(DEPDIR)/msdd-generate-* \
+@PYTHON_TRUE@	$(DEPDIR)/msdd_rs-generate-*
 @PYTHON_TRUE@am__append_2 = $(DEPDIR)/*.S*
 subdir = gr-msdd6000/src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -188,7 +190,6 @@ am__aclocal_m4_deps = $(top_srcdir)/config/acx_cblas.m4 \
 	$(top_srcdir)/config/grc_gr_usrp2.m4 \
 	$(top_srcdir)/config/grc_gr_utils.m4 \
 	$(top_srcdir)/config/grc_gr_video_sdl.m4 \
-	$(top_srcdir)/config/grc_gr_vrt.m4 \
 	$(top_srcdir)/config/grc_gr_wxgui.m4 \
 	$(top_srcdir)/config/grc_grc.m4 \
 	$(top_srcdir)/config/grc_gruel.m4 \
@@ -218,11 +219,14 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(msdd_pylibdir)" \
-	"$(DESTDIR)$(msdd_pythondir)" "$(DESTDIR)$(grincludedir)" \
+	"$(DESTDIR)$(msdd_rs_pylibdir)" "$(DESTDIR)$(msdd_pythondir)" \
+	"$(DESTDIR)$(msdd_rs_pythondir)" "$(DESTDIR)$(grincludedir)" \
 	"$(DESTDIR)$(msdd_swigincludedir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 msdd_pylibLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(lib_LTLIBRARIES) $(msdd_pylib_LTLIBRARIES)
+msdd_rs_pylibLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(lib_LTLIBRARIES) $(msdd_pylib_LTLIBRARIES) \
+	$(msdd_rs_pylib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @PYTHON_TRUE@_msdd_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 @PYTHON_TRUE@	$(msdd_la_swig_libadd)
@@ -233,6 +237,15 @@ _msdd_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(_msdd_la_CXXFLAGS) \
 	$(CXXFLAGS) $(_msdd_la_LDFLAGS) $(LDFLAGS) -o $@
 @PYTHON_TRUE@am__msdd_la_rpath = -rpath $(msdd_pylibdir)
+@PYTHON_TRUE@_msdd_rs_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+@PYTHON_TRUE@	$(msdd_rs_la_swig_libadd)
+am___msdd_rs_la_SOURCES_DIST = msdd_rs.cc
+@PYTHON_TRUE@am__msdd_rs_la_OBJECTS = _msdd_rs_la-msdd_rs.lo
+_msdd_rs_la_OBJECTS = $(am__msdd_rs_la_OBJECTS)
+_msdd_rs_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(_msdd_rs_la_CXXFLAGS) \
+	$(CXXFLAGS) $(_msdd_rs_la_LDFLAGS) $(LDFLAGS) -o $@
+@PYTHON_TRUE@am__msdd_rs_la_rpath = -rpath $(msdd_rs_pylibdir)
 libgnuradio_msdd6000_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libgnuradio_msdd6000_la_OBJECTS = msdd_source_simple.lo msdd6000.lo
 libgnuradio_msdd6000_la_OBJECTS =  \
@@ -241,6 +254,15 @@ libgnuradio_msdd6000_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(libgnuradio_msdd6000_la_LDFLAGS) $(LDFLAGS) -o \
 	$@
+libgnuradio_msdd6000_rs_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_libgnuradio_msdd6000_rs_la_OBJECTS = msdd_rs_source_simple.lo \
+	msdd6000_rs.lo
+libgnuradio_msdd6000_rs_la_OBJECTS =  \
+	$(am_libgnuradio_msdd6000_rs_la_OBJECTS)
+libgnuradio_msdd6000_rs_la_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(libgnuradio_msdd6000_rs_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -253,14 +275,20 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(_msdd_la_SOURCES) $(libgnuradio_msdd6000_la_SOURCES)
+SOURCES = $(_msdd_la_SOURCES) $(_msdd_rs_la_SOURCES) \
+	$(libgnuradio_msdd6000_la_SOURCES) \
+	$(libgnuradio_msdd6000_rs_la_SOURCES)
 DIST_SOURCES = $(am___msdd_la_SOURCES_DIST) \
-	$(libgnuradio_msdd6000_la_SOURCES)
+	$(am___msdd_rs_la_SOURCES_DIST) \
+	$(libgnuradio_msdd6000_la_SOURCES) \
+	$(libgnuradio_msdd6000_rs_la_SOURCES)
 am__msdd_python_PYTHON_DIST = msdd.py
 msdd_pythonPYTHON_INSTALL = $(INSTALL_DATA)
+am__msdd_rs_python_PYTHON_DIST = msdd_rs.py
+msdd_rs_pythonPYTHON_INSTALL = $(INSTALL_DATA)
 py_compile = $(top_srcdir)/py-compile
 grincludeHEADERS_INSTALL = $(INSTALL_HEADER)
-am__msdd_swiginclude_HEADERS_DIST = msdd.i
+am__msdd_swiginclude_HEADERS_DIST = msdd.i msdd_rs.i
 msdd_swigincludeHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(grinclude_HEADERS) $(msdd_swiginclude_HEADERS)
 ETAGS = etags
@@ -363,6 +391,7 @@ LIBGNURADIO_CORE_EXTRA_LDFLAGS = @LIBGNURADIO_CORE_EXTRA_LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBUSB_PKG_CONFIG_NAME = @LIBUSB_PKG_CONFIG_NAME@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -637,11 +666,6 @@ gr_video_sdl_INCLUDES = @gr_video_sdl_INCLUDES@
 gr_video_sdl_LA = @gr_video_sdl_LA@
 gr_video_sdl_LDFLAG = @gr_video_sdl_LDFLAG@
 gr_video_sdl_LIBDIRPATH = @gr_video_sdl_LIBDIRPATH@
-gr_vrt_INCLUDEDIR = @gr_vrt_INCLUDEDIR@
-gr_vrt_INCLUDES = @gr_vrt_INCLUDES@
-gr_vrt_LA = @gr_vrt_LA@
-gr_vrt_LDFLAG = @gr_vrt_LDFLAG@
-gr_vrt_LIBDIRPATH = @gr_vrt_LIBDIRPATH@
 gr_wxgui_INCLUDEDIR = @gr_wxgui_INCLUDEDIR@
 gr_wxgui_INCLUDES = @gr_wxgui_INCLUDES@
 gr_wxgui_LA = @gr_wxgui_LA@
@@ -817,6 +841,9 @@ gr_docdir = $(docdir)-$(DOCVER)
 # System configuration files
 gr_prefsdir = $(GR_PREFSDIR)
 
+# Data directory for grc block wrappers
+grc_blocksdir = $(pkgdatadir)/grc/blocks
+
 # Other common defines; use "+=" to add to these
 STAMPS = $(am__append_1)
 MOSTLYCLEANFILES = $(BUILT_SOURCES) $(STAMPS) *.pyc *.pyo *~ *.tmp \
@@ -829,12 +856,20 @@ AM_CPPFLAGS = $(STD_DEFINES_AND_INCLUDES) $(PYTHON_CPPFLAGS) \
 grinclude_HEADERS = \
 	msdd_source_simple.h		\
 	msdd_buffer_copy_behaviors.h	\
-	msdd6000.h
+	msdd6000.h			\
+	msdd_rs_source_simple.h		\
+	msdd6000_rs.h
 
-lib_LTLIBRARIES = libgnuradio-msdd6000.la
+lib_LTLIBRARIES = libgnuradio-msdd6000.la \
+	libgnuradio-msdd6000_rs.la
+
 libgnuradio_msdd6000_la_SOURCES = \
 	msdd_source_simple.cc		\
 	msdd6000.cc
+
+libgnuradio_msdd6000_rs_la_SOURCES = \
+	msdd_rs_source_simple.cc		\
+	msdd6000_rs.cc
 
 libgnuradio_msdd6000_la_LIBADD = \
 	$(GNURADIO_CORE_LA)
@@ -842,11 +877,17 @@ libgnuradio_msdd6000_la_LIBADD = \
 libgnuradio_msdd6000_la_LDFLAGS = \
 	$(NO_UNDEFINED)
 
+libgnuradio_msdd6000_rs_la_LIBADD = \
+	$(GNURADIO_CORE_LA)
+
+libgnuradio_msdd6000_rs_la_LDFLAGS = \
+	$(NO_UNDEFINED)
+
 
 #################################
 # SWIG interface and library
 @PYTHON_TRUE@TOP_SWIG_IFILES = \
-@PYTHON_TRUE@	msdd.i
+@PYTHON_TRUE@	msdd.i msdd_rs.i
 
 
 # Install so that they end up available as:
@@ -856,10 +897,16 @@ libgnuradio_msdd6000_la_LDFLAGS = \
 @PYTHON_TRUE@msdd_pythondir_category = \
 @PYTHON_TRUE@	gnuradio
 
+@PYTHON_TRUE@msdd_rs_pythondir_category = \
+@PYTHON_TRUE@	gnuradio
+
 
 # additional libraries for linking with the SWIG-generated library
 @PYTHON_TRUE@msdd_la_swig_libadd = \
 @PYTHON_TRUE@	libgnuradio-msdd6000.la
+
+@PYTHON_TRUE@msdd_rs_la_swig_libadd = \
+@PYTHON_TRUE@	libgnuradio-msdd6000_rs.la
 
 @PYTHON_TRUE@SWIG_PYTHON_FLAGS = \
 @PYTHON_TRUE@	-fvirtual	\
@@ -886,24 +933,40 @@ libgnuradio_msdd6000_la_LDFLAGS = \
 
 @PYTHON_TRUE@STD_SWIG_CXX_FLAGS = @swig_CXXFLAGS@
 @PYTHON_TRUE@SUFFIXES = .i
-@PYTHON_TRUE@swig_built_sources = msdd.py msdd.cc
+@PYTHON_TRUE@swig_built_sources = msdd.py msdd_rs.py msdd.cc \
+@PYTHON_TRUE@	msdd_rs.cc
 @PYTHON_TRUE@msdd_pythondir = $(pythondir)/$(msdd_pythondir_category)
 @PYTHON_TRUE@msdd_pylibdir = $(pyexecdir)/$(msdd_pylibdir_category)
+@PYTHON_TRUE@msdd_rs_pythondir = $(pythondir)/$(msdd_rs_pythondir_category)
+@PYTHON_TRUE@msdd_rs_pylibdir = $(pyexecdir)/$(msdd_rs_pylibdir_category)
 @PYTHON_TRUE@msdd_swigincludedir = $(swigincludedir)
+@PYTHON_TRUE@msdd_rs_swigincludedir = $(swigincludedir)
 @PYTHON_TRUE@msdd_swiginclude_HEADERS = \
-@PYTHON_TRUE@	msdd.i			\
+@PYTHON_TRUE@	msdd.i				\
+@PYTHON_TRUE@	msdd_rs.i			\
 @PYTHON_TRUE@	$(msdd_swiginclude_headers)
 
 @PYTHON_TRUE@msdd_pylib_LTLIBRARIES = \
 @PYTHON_TRUE@	_msdd.la
 
+@PYTHON_TRUE@msdd_rs_pylib_LTLIBRARIES = \
+@PYTHON_TRUE@        _msdd_rs.la
+
 @PYTHON_TRUE@_msdd_la_SOURCES = \
-@PYTHON_TRUE@	msdd.cc			\
+@PYTHON_TRUE@	msdd.cc				\
 @PYTHON_TRUE@	$(msdd_la_swig_sources)
+
+@PYTHON_TRUE@_msdd_rs_la_SOURCES = \
+@PYTHON_TRUE@    msdd_rs.cc         			\
+@PYTHON_TRUE@    $(msdd_la_swig_sources)
 
 @PYTHON_TRUE@_msdd_la_LIBADD = \
 @PYTHON_TRUE@	$(STD_SWIG_LA_LIB_ADD)		\
 @PYTHON_TRUE@	$(msdd_la_swig_libadd)
+
+@PYTHON_TRUE@_msdd_rs_la_LIBADD = \
+@PYTHON_TRUE@    $(STD_SWIG_LA_LIB_ADD)      	\
+@PYTHON_TRUE@    $(msdd_rs_la_swig_libadd)
 
 @PYTHON_TRUE@_msdd_la_LDFLAGS = \
 @PYTHON_TRUE@	$(STD_SWIG_LA_LD_FLAGS)		\
@@ -913,9 +976,21 @@ libgnuradio_msdd6000_la_LDFLAGS = \
 @PYTHON_TRUE@	$(STD_SWIG_CXX_FLAGS)		\
 @PYTHON_TRUE@	$(msdd_la_swig_cxxflags)
 
+@PYTHON_TRUE@_msdd_rs_la_LDFLAGS = \
+@PYTHON_TRUE@    $(STD_SWIG_LA_LD_FLAGS)     	\
+@PYTHON_TRUE@    $(msdd_rs_la_swig_ldflags)
+
+@PYTHON_TRUE@_msdd_rs_la_CXXFLAGS = \
+@PYTHON_TRUE@    $(STD_SWIG_CXX_FLAGS)       	\
+@PYTHON_TRUE@    $(msdd_rs_la_swig_cxxflags)
+
 @PYTHON_TRUE@msdd_python_PYTHON = \
-@PYTHON_TRUE@	msdd.py			\
+@PYTHON_TRUE@	msdd.py				\
 @PYTHON_TRUE@	$(msdd_python)
+
+@PYTHON_TRUE@msdd_rs_python_PYTHON = \
+@PYTHON_TRUE@    msdd_rs.py         			\
+@PYTHON_TRUE@    $(msdd_rs_python)
 
 
 # add some of the variables generated inside the Makefile.swig.gen
@@ -1011,10 +1086,41 @@ clean-msdd_pylibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+install-msdd_rs_pylibLTLIBRARIES: $(msdd_rs_pylib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(msdd_rs_pylibdir)" || $(MKDIR_P) "$(DESTDIR)$(msdd_rs_pylibdir)"
+	@list='$(msdd_rs_pylib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(msdd_rs_pylibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(msdd_rs_pylibdir)/$$f'"; \
+	    $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(msdd_rs_pylibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(msdd_rs_pylibdir)/$$f"; \
+	  else :; fi; \
+	done
+
+uninstall-msdd_rs_pylibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(msdd_rs_pylib_LTLIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(msdd_rs_pylibdir)/$$p'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(msdd_rs_pylibdir)/$$p"; \
+	done
+
+clean-msdd_rs_pylibLTLIBRARIES:
+	-test -z "$(msdd_rs_pylib_LTLIBRARIES)" || rm -f $(msdd_rs_pylib_LTLIBRARIES)
+	@list='$(msdd_rs_pylib_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
 _msdd.la: $(_msdd_la_OBJECTS) $(_msdd_la_DEPENDENCIES) 
 	$(_msdd_la_LINK) $(am__msdd_la_rpath) $(_msdd_la_OBJECTS) $(_msdd_la_LIBADD) $(LIBS)
+_msdd_rs.la: $(_msdd_rs_la_OBJECTS) $(_msdd_rs_la_DEPENDENCIES) 
+	$(_msdd_rs_la_LINK) $(am__msdd_rs_la_rpath) $(_msdd_rs_la_OBJECTS) $(_msdd_rs_la_LIBADD) $(LIBS)
 libgnuradio-msdd6000.la: $(libgnuradio_msdd6000_la_OBJECTS) $(libgnuradio_msdd6000_la_DEPENDENCIES) 
 	$(libgnuradio_msdd6000_la_LINK) -rpath $(libdir) $(libgnuradio_msdd6000_la_OBJECTS) $(libgnuradio_msdd6000_la_LIBADD) $(LIBS)
+libgnuradio-msdd6000_rs.la: $(libgnuradio_msdd6000_rs_la_OBJECTS) $(libgnuradio_msdd6000_rs_la_DEPENDENCIES) 
+	$(libgnuradio_msdd6000_rs_la_LINK) -rpath $(libdir) $(libgnuradio_msdd6000_rs_la_OBJECTS) $(libgnuradio_msdd6000_rs_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1023,7 +1129,10 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_msdd_la-msdd.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_msdd_rs_la-msdd_rs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msdd6000.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msdd6000_rs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msdd_rs_source_simple.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msdd_source_simple.Plo@am__quote@
 
 .cc.o:
@@ -1053,6 +1162,13 @@ _msdd_la-msdd.lo: msdd.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdd.cc' object='_msdd_la-msdd.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(_msdd_la_CXXFLAGS) $(CXXFLAGS) -c -o _msdd_la-msdd.lo `test -f 'msdd.cc' || echo '$(srcdir)/'`msdd.cc
+
+_msdd_rs_la-msdd_rs.lo: msdd_rs.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(_msdd_rs_la_CXXFLAGS) $(CXXFLAGS) -MT _msdd_rs_la-msdd_rs.lo -MD -MP -MF $(DEPDIR)/_msdd_rs_la-msdd_rs.Tpo -c -o _msdd_rs_la-msdd_rs.lo `test -f 'msdd_rs.cc' || echo '$(srcdir)/'`msdd_rs.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/_msdd_rs_la-msdd_rs.Tpo $(DEPDIR)/_msdd_rs_la-msdd_rs.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdd_rs.cc' object='_msdd_rs_la-msdd_rs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(_msdd_rs_la_CXXFLAGS) $(CXXFLAGS) -c -o _msdd_rs_la-msdd_rs.lo `test -f 'msdd_rs.cc' || echo '$(srcdir)/'`msdd_rs.cc
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1086,6 +1202,34 @@ uninstall-msdd_pythonPYTHON:
 	  rm -f "$(DESTDIR)$(msdd_pythondir)/$$f"; \
 	  rm -f "$(DESTDIR)$(msdd_pythondir)/$${f}c"; \
 	  rm -f "$(DESTDIR)$(msdd_pythondir)/$${f}o"; \
+	done
+install-msdd_rs_pythonPYTHON: $(msdd_rs_python_PYTHON)
+	@$(NORMAL_INSTALL)
+	test -z "$(msdd_rs_pythondir)" || $(MKDIR_P) "$(DESTDIR)$(msdd_rs_pythondir)"
+	@list='$(msdd_rs_python_PYTHON)'; dlist=''; for p in $$list; do\
+	  if test -f "$$p"; then b=; else b="$(srcdir)/"; fi; \
+	  if test -f $$b$$p; then \
+	    f=$(am__strip_dir) \
+	    dlist="$$dlist $$f"; \
+	    echo " $(msdd_rs_pythonPYTHON_INSTALL) '$$b$$p' '$(DESTDIR)$(msdd_rs_pythondir)/$$f'"; \
+	    $(msdd_rs_pythonPYTHON_INSTALL) "$$b$$p" "$(DESTDIR)$(msdd_rs_pythondir)/$$f"; \
+	  else :; fi; \
+	done; \
+	if test -n "$$dlist"; then \
+	  if test -z "$(DESTDIR)"; then \
+	    PYTHON=$(PYTHON) $(py_compile) --basedir "$(msdd_rs_pythondir)" $$dlist; \
+	  else \
+	    PYTHON=$(PYTHON) $(py_compile) --destdir "$(DESTDIR)" --basedir "$(msdd_rs_pythondir)" $$dlist; \
+	  fi; \
+	else :; fi
+
+uninstall-msdd_rs_pythonPYTHON:
+	@$(NORMAL_UNINSTALL)
+	@list='$(msdd_rs_python_PYTHON)'; dlist=''; for p in $$list; do\
+	  f=$(am__strip_dir) \
+	  rm -f "$(DESTDIR)$(msdd_rs_pythondir)/$$f"; \
+	  rm -f "$(DESTDIR)$(msdd_rs_pythondir)/$${f}c"; \
+	  rm -f "$(DESTDIR)$(msdd_rs_pythondir)/$${f}o"; \
 	done
 install-grincludeHEADERS: $(grinclude_HEADERS)
 	@$(NORMAL_INSTALL)
@@ -1203,7 +1347,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(msdd_pylibdir)" "$(DESTDIR)$(msdd_pythondir)" "$(DESTDIR)$(grincludedir)" "$(DESTDIR)$(msdd_swigincludedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(msdd_pylibdir)" "$(DESTDIR)$(msdd_rs_pylibdir)" "$(DESTDIR)$(msdd_pythondir)" "$(DESTDIR)$(msdd_rs_pythondir)" "$(DESTDIR)$(grincludedir)" "$(DESTDIR)$(msdd_swigincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1236,7 +1380,8 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-msdd_pylibLTLIBRARIES mostlyclean-am
+	clean-msdd_pylibLTLIBRARIES clean-msdd_rs_pylibLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -1256,6 +1401,7 @@ info-am:
 
 install-data-am: install-grincludeHEADERS \
 	install-msdd_pylibLTLIBRARIES install-msdd_pythonPYTHON \
+	install-msdd_rs_pylibLTLIBRARIES install-msdd_rs_pythonPYTHON \
 	install-msdd_swigincludeHEADERS
 
 install-dvi: install-dvi-am
@@ -1294,28 +1440,34 @@ ps-am:
 
 uninstall-am: uninstall-grincludeHEADERS uninstall-libLTLIBRARIES \
 	uninstall-msdd_pylibLTLIBRARIES uninstall-msdd_pythonPYTHON \
+	uninstall-msdd_rs_pylibLTLIBRARIES \
+	uninstall-msdd_rs_pythonPYTHON \
 	uninstall-msdd_swigincludeHEADERS
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
 	clean-libLTLIBRARIES clean-libtool clean-msdd_pylibLTLIBRARIES \
-	ctags dist-hook distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-grincludeHEADERS install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man \
-	install-msdd_pylibLTLIBRARIES install-msdd_pythonPYTHON \
-	install-msdd_swigincludeHEADERS install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-grincludeHEADERS \
-	uninstall-libLTLIBRARIES uninstall-msdd_pylibLTLIBRARIES \
-	uninstall-msdd_pythonPYTHON uninstall-msdd_swigincludeHEADERS
+	clean-msdd_rs_pylibLTLIBRARIES ctags dist-hook distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am \
+	install-grincludeHEADERS install-html install-html-am \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-man install-msdd_pylibLTLIBRARIES \
+	install-msdd_pythonPYTHON install-msdd_rs_pylibLTLIBRARIES \
+	install-msdd_rs_pythonPYTHON install-msdd_swigincludeHEADERS \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+	uninstall-grincludeHEADERS uninstall-libLTLIBRARIES \
+	uninstall-msdd_pylibLTLIBRARIES uninstall-msdd_pythonPYTHON \
+	uninstall-msdd_rs_pylibLTLIBRARIES \
+	uninstall-msdd_rs_pythonPYTHON \
+	uninstall-msdd_swigincludeHEADERS
 
 
 # Base directory for documentation (docdir undefined in autoconf < 1.60)
@@ -1356,6 +1508,9 @@ dist-hook:
 @PYTHON_TRUE@msdd_pythondir_category ?= gnuradio/msdd
 @PYTHON_TRUE@msdd_pylibdir_category ?= $(msdd_pythondir_category)
 
+@PYTHON_TRUE@msdd_rs_pythondir_category ?= gnuradio/msdd_rs
+@PYTHON_TRUE@msdd_rs_pylibdir_category ?= $(msdd_rs_pythondir_category)
+
 @PYTHON_TRUE@msdd.h msdd.py msdd.cc: msdd.i
 @PYTHON_TRUE@	trap 'rm -rf $(DEPDIR)/msdd-generate-*' 1 2 13 15; \
 @PYTHON_TRUE@	if mkdir $(DEPDIR)/msdd-generate-lock 2>/dev/null; then \
@@ -1392,11 +1547,48 @@ dist-hook:
 @PYTHON_TRUE@	$(RM) $(DEPDIR)/msdd.Std
 @PYTHON_TRUE@	touch $(DEPDIR)/msdd-generate-stamp
 
+@PYTHON_TRUE@msdd_rs.h msdd_rs.py msdd_rs.cc: msdd_rs.i
+@PYTHON_TRUE@	trap 'rm -rf $(DEPDIR)/msdd_rs-generate-*' 1 2 13 15; \
+@PYTHON_TRUE@	if mkdir $(DEPDIR)/msdd_rs-generate-lock 2>/dev/null; then \
+@PYTHON_TRUE@		rm -f $(DEPDIR)/msdd_rs-generate-stamp; \
+@PYTHON_TRUE@		$(MAKE) $(AM_MAKEFLAGS) $(DEPDIR)/msdd_rs-generate-stamp WHAT=$<; \
+@PYTHON_TRUE@		rmdir $(DEPDIR)/msdd_rs-generate-lock; \
+@PYTHON_TRUE@	else \
+@PYTHON_TRUE@		while test -d $(DEPDIR)/msdd_rs-generate-lock; do \
+@PYTHON_TRUE@			sleep 1; \
+@PYTHON_TRUE@		done; \
+@PYTHON_TRUE@		test -f $(DEPDIR)/msdd_rs-generate-stamp; \
+@PYTHON_TRUE@		exit $$?; \
+@PYTHON_TRUE@	fi;
+
+@PYTHON_TRUE@$(DEPDIR)/msdd_rs-generate-stamp:
+@PYTHON_TRUE@	if $(SWIG) $(STD_SWIG_PYTHON_ARGS) $(msdd_rs_swig_args) \
+@PYTHON_TRUE@		-MD -MF $(DEPDIR)/msdd_rs.Std \
+@PYTHON_TRUE@		-module msdd_rs -o msdd_rs.cc $(WHAT); then \
+@PYTHON_TRUE@	    if test $(host_os) = mingw32; then \
+@PYTHON_TRUE@		$(RM) $(DEPDIR)/msdd_rs.Sd; \
+@PYTHON_TRUE@		$(SED) 's,\\\\,/,g' < $(DEPDIR)/msdd_rs.Std \
+@PYTHON_TRUE@			> $(DEPDIR)/msdd_rs.Sd; \
+@PYTHON_TRUE@		$(RM) $(DEPDIR)/msdd_rs.Std; \
+@PYTHON_TRUE@		$(MV) $(DEPDIR)/msdd_rs.Sd $(DEPDIR)/msdd_rs.Std; \
+@PYTHON_TRUE@	    fi; \
+@PYTHON_TRUE@	else \
+@PYTHON_TRUE@	    $(RM) $(DEPDIR)/msdd_rs.S*; exit 1; \
+@PYTHON_TRUE@	fi;
+@PYTHON_TRUE@	$(RM) $(DEPDIR)/msdd_rs.d
+@PYTHON_TRUE@	cp $(DEPDIR)/msdd_rs.Std $(DEPDIR)/msdd_rs.d
+@PYTHON_TRUE@	echo "" >> $(DEPDIR)/msdd_rs.d
+@PYTHON_TRUE@	$(SED) -e '1d;s, \\,,g;s, ,,g' < $(DEPDIR)/msdd_rs.Std | \
+@PYTHON_TRUE@		awk '{ printf "%s:\n\n", $$0 }' >> $(DEPDIR)/msdd_rs.d
+@PYTHON_TRUE@	$(RM) $(DEPDIR)/msdd_rs.Std
+@PYTHON_TRUE@	touch $(DEPDIR)/msdd_rs-generate-stamp
+
 # KLUDGE: Force runtime include of a SWIG dependency file.  This is
 # not guaranteed to be portable, but will probably work.  If it works,
 # we have accurate dependencies for our swig stuff, which is good.
 
 @PYTHON_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msdd.d@am__quote@
+@PYTHON_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msdd_rs.d@am__quote@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

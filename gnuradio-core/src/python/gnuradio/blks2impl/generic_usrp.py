@@ -121,12 +121,6 @@ class _generic_usrp_base(object):
     def set_auto_tr(self, enable):
         if self._type == USRP1_TYPE: return self._subdev.set_auto_tr(enable)
 
-    def __del__(self):
-        try: # Avoid weak reference error
-            del self._u
-            del self._subdev
-        except: pass
-
 ########################################################################
 # generic usrp source
 ########################################################################

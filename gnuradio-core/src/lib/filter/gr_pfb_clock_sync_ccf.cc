@@ -45,8 +45,8 @@ gr_pfb_clock_sync_ccf_sptr gr_make_pfb_clock_sync_ccf (double sps, float gain,
 								max_rate_deviation));
 }
 
-int ios[] = {sizeof(gr_complex), sizeof(float), sizeof(float), sizeof(float)};
-std::vector<int> iosig(ios, ios+sizeof(ios)/sizeof(int));
+static int ios[] = {sizeof(gr_complex), sizeof(float), sizeof(float), sizeof(float)};
+static std::vector<int> iosig(ios, ios+sizeof(ios)/sizeof(int));
 gr_pfb_clock_sync_ccf::gr_pfb_clock_sync_ccf (double sps, float gain,
 					      const std::vector<float> &taps,
 					      unsigned int filter_size,

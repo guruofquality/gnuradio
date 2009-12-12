@@ -188,7 +188,6 @@ am__aclocal_m4_deps = $(top_srcdir)/config/acx_cblas.m4 \
 	$(top_srcdir)/config/grc_gr_usrp2.m4 \
 	$(top_srcdir)/config/grc_gr_utils.m4 \
 	$(top_srcdir)/config/grc_gr_video_sdl.m4 \
-	$(top_srcdir)/config/grc_gr_vrt.m4 \
 	$(top_srcdir)/config/grc_gr_wxgui.m4 \
 	$(top_srcdir)/config/grc_grc.m4 \
 	$(top_srcdir)/config/grc_gruel.m4 \
@@ -369,6 +368,7 @@ LIBGNURADIO_CORE_EXTRA_LDFLAGS = @LIBGNURADIO_CORE_EXTRA_LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBUSB_PKG_CONFIG_NAME = @LIBUSB_PKG_CONFIG_NAME@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -643,11 +643,6 @@ gr_video_sdl_INCLUDES = @gr_video_sdl_INCLUDES@
 gr_video_sdl_LA = @gr_video_sdl_LA@
 gr_video_sdl_LDFLAG = @gr_video_sdl_LDFLAG@
 gr_video_sdl_LIBDIRPATH = @gr_video_sdl_LIBDIRPATH@
-gr_vrt_INCLUDEDIR = @gr_vrt_INCLUDEDIR@
-gr_vrt_INCLUDES = @gr_vrt_INCLUDES@
-gr_vrt_LA = @gr_vrt_LA@
-gr_vrt_LDFLAG = @gr_vrt_LDFLAG@
-gr_vrt_LIBDIRPATH = @gr_vrt_LIBDIRPATH@
 gr_wxgui_INCLUDEDIR = @gr_wxgui_INCLUDEDIR@
 gr_wxgui_INCLUDES = @gr_wxgui_INCLUDES@
 gr_wxgui_LA = @gr_wxgui_LA@
@@ -822,6 +817,9 @@ gr_docdir = $(docdir)-$(DOCVER)
 
 # System configuration files
 gr_prefsdir = $(GR_PREFSDIR)
+
+# Data directory for grc block wrappers
+grc_blocksdir = $(pkgdatadir)/grc/blocks
 
 # Other common defines; use "+=" to add to these
 STAMPS = $(am__append_1)

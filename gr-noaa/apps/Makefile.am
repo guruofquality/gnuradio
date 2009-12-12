@@ -24,16 +24,18 @@ include $(top_srcdir)/Makefile.common
 if PYTHON
 
 dist_bin_SCRIPTS = \
-	demod_hrpt_file.py \
+	hrpt_decode.py \
+	hrpt_demod.py \
+	file_rx_hrpt.py \
 	usrp_rx_hrpt.py \
-	usrp_rx_hrpt2.py \
 	usrp_rx_hrpt_nogui.py \
 	usrp_rx_lrit.py
 
 EXTRA_DIST = \
-	demod_hrpt_file.grc \
+	hrpt_decode.grc \
+	hrpt_demod.grc \
+	file_rx_hrpt.grc \
 	usrp_rx_hrpt.grc \
-	usrp_rx_hrpt2.grc \
 	usrp_rx_hrpt_nogui.grc \
 	usrp_rx_lrit.grc
 endif
