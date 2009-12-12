@@ -17,6 +17,7 @@
 /docs/doxygen/xml/
 /docs/doxygen/xml-swig/Makefile
 /docs/Makefile
+/extract-stamp
 /gcell/apps/.deps/
 /gcell/apps/Makefile
 /gcell/apps/spu/.deps/

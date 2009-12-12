@@ -146,15 +146,15 @@ echo usr/lib/libgnuradio-gsm-fr-vocoder.so >>$NAME
 NAME=debian/libgnuradio-pager0.install
 rm -f $NAME
 touch $NAME
-$EXTRACT gr-pager/src/Makefile lib_LTLIBRARIES >>$NAME
-$EXTRACT gr-pager/src/Makefile lib_LTLIBRARIES | \
+$EXTRACT gr-pager/lib/Makefile lib_LTLIBRARIES >>$NAME
+$EXTRACT gr-pager/lib/Makefile lib_LTLIBRARIES | \
     sed -e 's/\.la$/.so.*/' >>$NAME
 
 # libgnuradio-pager-dev
 NAME=debian/libgnuradio-pager-dev.install
 rm -f $NAME
 touch $NAME
-$EXTRACT gr-pager/src/Makefile grinclude_HEADERS >>$NAME
+$EXTRACT gr-pager/lib/Makefile grinclude_HEADERS >>$NAME
 $EXTRACT gr-pager/Makefile dist_pkgconfig_DATA >>$NAME
 echo usr/lib/libgnuradio-pager.so >>$NAME
 
@@ -444,10 +444,11 @@ $EXTRACT gnuradio-examples/grc/Makefile dist_xmlrpcdata_DATA >>$NAME
 NAME=debian/gnuradio-pager.install
 rm -f $NAME
 touch $NAME
-$EXTRACT gr-pager/src/Makefile dist_bin_SCRIPTS >>$NAME
-$EXTRACT gr-pager/src/Makefile pager_swig_python_PYTHON >>$NAME
-$EXTRACT gr-pager/src/Makefile pager_swig_pylib_LTLIBRARIES >>$NAME
-$EXTRACT gr-pager/src/Makefile pager_swig_pylib_LTLIBRARIES |
+$EXTRACT gr-pager/apps/Makefile dist_bin_SCRIPTS >>$NAME
+$EXTRACT gr-pager/python/Makefile pager_PYTHON >>$NAME
+$EXTRACT gr-pager/swig/Makefile pager_swig_python_PYTHON >>$NAME
+$EXTRACT gr-pager/swig/Makefile pager_swig_pylib_LTLIBRARIES >>$NAME
+$EXTRACT gr-pager/swig/Makefile pager_swig_pylib_LTLIBRARIES |
     sed -e 's/\.la$/.so/' >>$NAME
 
 # gnuradio-sounder
