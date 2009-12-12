@@ -160,7 +160,6 @@ am__aclocal_m4_deps = $(top_srcdir)/config/acx_cblas.m4 \
 	$(top_srcdir)/config/grc_gr_usrp2.m4 \
 	$(top_srcdir)/config/grc_gr_utils.m4 \
 	$(top_srcdir)/config/grc_gr_video_sdl.m4 \
-	$(top_srcdir)/config/grc_gr_vrt.m4 \
 	$(top_srcdir)/config/grc_gr_wxgui.m4 \
 	$(top_srcdir)/config/grc_grc.m4 \
 	$(top_srcdir)/config/grc_gruel.m4 \
@@ -200,7 +199,7 @@ am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 @FUSB_TECH_darwin_TRUE@libusrp_la_DEPENDENCIES =  \
 @FUSB_TECH_darwin_TRUE@	$(am__DEPENDENCIES_2) \
 @FUSB_TECH_darwin_TRUE@	$(am__DEPENDENCIES_1)
-am__libusrp_la_SOURCES_DIST = fusb.cc md5.c usrp_basic_common.cc \
+am__libusrp_la_SOURCES_DIST = fusb.cc md5.c usrp_basic.cc \
 	usrp_config.cc usrp_dbid.cc usrp_local_sighandler.cc \
 	usrp_prims_common.cc usrp_standard.cc db_wbxng_adf4350.cc \
 	db_wbxng_adf4350_regs.cc db_boards.cc db_base.cc db_basic.cc \
@@ -209,13 +208,12 @@ am__libusrp_la_SOURCES_DIST = fusb.cc md5.c usrp_basic_common.cc \
 	db_dtt768.cc db_util.cc fusb_darwin.cc \
 	fusb_sysconfig_darwin.cc README_OSX circular_buffer.h \
 	circular_linked_list.h darwin_libusb.h mld_threads.h \
-	usrp_prims_libusb0.cc usrp_basic_libusb0.cc fusb_generic.cc \
+	usrp_prims_libusb0.cc fusb_generic.cc \
 	fusb_sysconfig_generic.cc fusb_libusb1.cc \
-	fusb_sysconfig_libusb1.cc usrp_prims_libusb1.cc \
-	usrp_basic_libusb1.cc fusb_linux.cc fusb_sysconfig_linux.cc \
-	fusb_ra_wb.cc fusb_sysconfig_ra_wb.cc fusb_win32.cc \
-	fusb_sysconfig_win32.cc
-am__objects_1 = fusb.lo md5.lo usrp_basic_common.lo usrp_config.lo \
+	fusb_sysconfig_libusb1.cc usrp_prims_libusb1.cc fusb_linux.cc \
+	fusb_sysconfig_linux.cc fusb_ra_wb.cc fusb_sysconfig_ra_wb.cc \
+	fusb_win32.cc fusb_sysconfig_win32.cc
+am__objects_1 = fusb.lo md5.lo usrp_basic.lo usrp_config.lo \
 	usrp_dbid.lo usrp_local_sighandler.lo usrp_prims_common.lo \
 	usrp_standard.lo db_wbxng_adf4350.lo db_wbxng_adf4350_regs.lo \
 	db_boards.lo db_base.lo db_basic.lo db_tv_rx.lo \
@@ -223,17 +221,17 @@ am__objects_1 = fusb.lo md5.lo usrp_basic_common.lo usrp_config.lo \
 	db_wbxng.lo db_xcvr2450.lo db_dtt754.lo db_dtt768.lo \
 	db_util.lo
 am__objects_2 = fusb_darwin.lo fusb_sysconfig_darwin.lo \
-	usrp_prims_libusb0.lo usrp_basic_libusb0.lo
+	usrp_prims_libusb0.lo
 am__objects_3 = fusb_generic.lo fusb_sysconfig_generic.lo \
-	usrp_prims_libusb0.lo usrp_basic_libusb0.lo
+	usrp_prims_libusb0.lo
 am__objects_4 = fusb_libusb1.lo fusb_sysconfig_libusb1.lo \
-	usrp_prims_libusb1.lo usrp_basic_libusb1.lo
+	usrp_prims_libusb1.lo
 am__objects_5 = fusb_linux.lo fusb_sysconfig_linux.lo \
-	usrp_prims_libusb0.lo usrp_basic_libusb0.lo
+	usrp_prims_libusb0.lo
 am__objects_6 = fusb_ra_wb.lo fusb_sysconfig_ra_wb.lo \
-	usrp_prims_libusb0.lo usrp_basic_libusb0.lo
+	usrp_prims_libusb0.lo
 am__objects_7 = fusb_win32.lo fusb_sysconfig_win32.lo \
-	usrp_prims_libusb0.lo usrp_basic_libusb0.lo
+	usrp_prims_libusb0.lo
 @FUSB_TECH_darwin_FALSE@@FUSB_TECH_generic_FALSE@@FUSB_TECH_libusb1_FALSE@@FUSB_TECH_linux_FALSE@@FUSB_TECH_ra_wb_FALSE@@FUSB_TECH_win32_TRUE@am_libusrp_la_OBJECTS = $(am__objects_1) \
 @FUSB_TECH_darwin_FALSE@@FUSB_TECH_generic_FALSE@@FUSB_TECH_libusb1_FALSE@@FUSB_TECH_linux_FALSE@@FUSB_TECH_ra_wb_FALSE@@FUSB_TECH_win32_TRUE@	$(am__objects_7)
 @FUSB_TECH_darwin_FALSE@@FUSB_TECH_generic_FALSE@@FUSB_TECH_libusb1_FALSE@@FUSB_TECH_linux_FALSE@@FUSB_TECH_ra_wb_TRUE@am_libusrp_la_OBJECTS = $(am__objects_1) \
@@ -379,6 +377,7 @@ LIBGNURADIO_CORE_EXTRA_LDFLAGS = @LIBGNURADIO_CORE_EXTRA_LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBUSB_PKG_CONFIG_NAME = @LIBUSB_PKG_CONFIG_NAME@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -653,11 +652,6 @@ gr_video_sdl_INCLUDES = @gr_video_sdl_INCLUDES@
 gr_video_sdl_LA = @gr_video_sdl_LA@
 gr_video_sdl_LDFLAG = @gr_video_sdl_LDFLAG@
 gr_video_sdl_LIBDIRPATH = @gr_video_sdl_LIBDIRPATH@
-gr_vrt_INCLUDEDIR = @gr_vrt_INCLUDEDIR@
-gr_vrt_INCLUDES = @gr_vrt_INCLUDES@
-gr_vrt_LA = @gr_vrt_LA@
-gr_vrt_LDFLAG = @gr_vrt_LDFLAG@
-gr_vrt_LIBDIRPATH = @gr_vrt_LIBDIRPATH@
 gr_wxgui_INCLUDEDIR = @gr_wxgui_INCLUDEDIR@
 gr_wxgui_INCLUDES = @gr_wxgui_INCLUDES@
 gr_wxgui_LA = @gr_wxgui_LA@
@@ -833,6 +827,9 @@ gr_docdir = $(docdir)-$(DOCVER)
 # System configuration files
 gr_prefsdir = $(GR_PREFSDIR)
 
+# Data directory for grc block wrappers
+grc_blocksdir = $(pkgdatadir)/grc/blocks
+
 # Other common defines; use "+=" to add to these
 STAMPS = $(DEPDIR)/stamp-sources-generate*
 MOSTLYCLEANFILES = $(BUILT_SOURCES) $(STAMPS) *.pyc *.pyo *~ *.tmp \
@@ -866,8 +863,7 @@ BUILT_SOURCES =  \
 generic_CODE = \
 	fusb_generic.cc			\
 	fusb_sysconfig_generic.cc	\
-	usrp_prims_libusb0.cc		\
-	usrp_basic_libusb0.cc
+	usrp_prims_libusb0.cc		
 
 darwin_CODE = \
 	fusb_darwin.cc			\
@@ -877,32 +873,27 @@ darwin_CODE = \
 	circular_linked_list.h		\
 	darwin_libusb.h			\
 	mld_threads.h			\
-	usrp_prims_libusb0.cc		\
-	usrp_basic_libusb0.cc
+	usrp_prims_libusb0.cc		
 
 win32_CODE = \
 	fusb_win32.cc			\
 	fusb_sysconfig_win32.cc 	\
-	usrp_prims_libusb0.cc		\
-	usrp_basic_libusb0.cc
+	usrp_prims_libusb0.cc		
 
 linux_CODE = \
 	fusb_linux.cc			\
 	fusb_sysconfig_linux.cc		\
-	usrp_prims_libusb0.cc		\
-	usrp_basic_libusb0.cc
+	usrp_prims_libusb0.cc		
 
 ra_wb_CODE = \
 	fusb_ra_wb.cc			\
 	fusb_sysconfig_ra_wb.cc		\
-	usrp_prims_libusb0.cc		\
-	usrp_basic_libusb0.cc
+	usrp_prims_libusb0.cc		
 
 libusb1_CODE = \
 	fusb_libusb1.cc			\
 	fusb_sysconfig_libusb1.cc	\
-	usrp_prims_libusb1.cc		\
-	usrp_basic_libusb1.cc
+	usrp_prims_libusb1.cc		
 
 
 #
@@ -921,14 +912,14 @@ EXTRA_libusrp_la_SOURCES = \
 libusrp_la_common_SOURCES = \
 	fusb.cc				\
 	md5.c				\
-	usrp_basic_common.cc		\
+	usrp_basic.cc			\
 	usrp_config.cc			\
 	usrp_dbid.cc			\
 	usrp_local_sighandler.cc	\
 	usrp_prims_common.cc		\
 	usrp_standard.cc		\
-	db_wbxng_adf4350.cc			\
-	db_wbxng_adf4350_regs.cc			\
+	db_wbxng_adf4350.cc		\
+	db_wbxng_adf4350_regs.cc	\
 	db_boards.cc			\
 	db_base.cc			\
 	db_basic.cc			\
@@ -1083,9 +1074,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fusb_sysconfig_win32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fusb_win32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/md5.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usrp_basic_common.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usrp_basic_libusb0.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usrp_basic_libusb1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usrp_basic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usrp_config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usrp_dbid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usrp_local_sighandler.Plo@am__quote@

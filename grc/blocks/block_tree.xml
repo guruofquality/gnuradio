@@ -46,6 +46,7 @@
 		<block>wxgui_constellationsink2</block>
 		<block>wxgui_waterfallsink2</block>
 		<block>wxgui_histosink2</block>
+		<block>wxgui_termsink</block>
 	</cat>
 	<cat>
 		<name>Operators</name>
@@ -126,7 +127,7 @@
 	<cat>
 		<name>Synchronizers</name>
 		<block>gr_clock_recovery_mm_xx</block>
-		<block>gr_pfb_clock_sync_ccf</block>
+		<block>gr_pfb_clock_sync_xxx</block>
 
 		<block>gr_costas_loop_cc</block>
 		<block>gr_dd_mpsk_sync_cc</block>
@@ -223,6 +224,9 @@
 
 		<block>blks2_dxpsk_mod</block>
 		<block>blks2_dxpsk_demod</block>
+
+		<block>blks2_dxpsk2_mod</block>
+		<block>blks2_dxpsk2_demod</block>
 
 		<block>blks2_gmsk_mod</block>
 		<block>blks2_gmsk_demod</block>

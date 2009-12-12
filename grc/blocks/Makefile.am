@@ -19,7 +19,7 @@
 # Boston, MA 02110-1301, USA.
 #
 
-include $(top_srcdir)/grc/Makefile.inc
+include $(top_srcdir)/Makefile.common
 
 ourdatadir = $(grc_blocksdir)
 dist_ourdata_DATA = \
@@ -34,6 +34,8 @@ dist_ourdata_DATA = \
 	blks2_cvsd_decode.xml \
 	blks2_dxpsk_demod.xml \
 	blks2_dxpsk_mod.xml \
+	blks2_dxpsk2_demod.xml \
+	blks2_dxpsk2_mod.xml \
 	blks2_error_rate.xml \
 	blks2_fm_deemph.xml \
 	blks2_fm_demod_cf.xml \
@@ -230,6 +232,7 @@ dist_ourdata_DATA = \
 	wxgui_histosink2.xml \
 	wxgui_numbersink2.xml \
 	wxgui_scopesink2.xml \
+	wxgui_termsink.xml \
 	wxgui_waterfallsink2.xml \
 	xmlrpc_client.xml \
 	xmlrpc_server.xml

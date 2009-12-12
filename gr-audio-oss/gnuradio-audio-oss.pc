@@ -6,6 +6,6 @@ includedir=${prefix}/include
 Name: gnuradio-audio-oss
 Description: The GNU Radio block for the OSS sound system
 Requires: gnuradio-core
-Version: 3.3git-473-g41526cd4
+Version: 3.3git-569-gbdf985aa
 Libs: -L${libdir} -lgnuradio-audio-oss
 Cflags: -I${includedir}

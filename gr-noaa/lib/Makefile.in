@@ -77,8 +77,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-DIST_COMMON = $(grinclude_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/Makefile.common
+DIST_COMMON = $(grinclude_HEADERS) $(noinst_HEADERS) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(top_srcdir)/Makefile.common
 subdir = gr-noaa/lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config/acx_cblas.m4 \
@@ -137,7 +138,6 @@ am__aclocal_m4_deps = $(top_srcdir)/config/acx_cblas.m4 \
 	$(top_srcdir)/config/grc_gr_usrp2.m4 \
 	$(top_srcdir)/config/grc_gr_utils.m4 \
 	$(top_srcdir)/config/grc_gr_video_sdl.m4 \
-	$(top_srcdir)/config/grc_gr_vrt.m4 \
 	$(top_srcdir)/config/grc_gr_wxgui.m4 \
 	$(top_srcdir)/config/grc_grc.m4 \
 	$(top_srcdir)/config/grc_gruel.m4 \
@@ -172,7 +172,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnuradio_noaa_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libgnuradio_noaa_la_OBJECTS = noaa_hrpt_decoder.lo \
-	noaa_hrpt_deframer.lo noaa_hrpt_pll_cf.lo noaa_hrpt_sync_fb.lo
+	noaa_hrpt_deframer.lo noaa_hrpt_pll_cf.lo
 libgnuradio_noaa_la_OBJECTS = $(am_libgnuradio_noaa_la_OBJECTS)
 libgnuradio_noaa_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -192,7 +192,7 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 SOURCES = $(libgnuradio_noaa_la_SOURCES)
 DIST_SOURCES = $(libgnuradio_noaa_la_SOURCES)
 grincludeHEADERS_INSTALL = $(INSTALL_HEADER)
-HEADERS = $(grinclude_HEADERS)
+HEADERS = $(grinclude_HEADERS) $(noinst_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -293,6 +293,7 @@ LIBGNURADIO_CORE_EXTRA_LDFLAGS = @LIBGNURADIO_CORE_EXTRA_LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBUSB_PKG_CONFIG_NAME = @LIBUSB_PKG_CONFIG_NAME@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -567,11 +568,6 @@ gr_video_sdl_INCLUDES = @gr_video_sdl_INCLUDES@
 gr_video_sdl_LA = @gr_video_sdl_LA@
 gr_video_sdl_LDFLAG = @gr_video_sdl_LDFLAG@
 gr_video_sdl_LIBDIRPATH = @gr_video_sdl_LIBDIRPATH@
-gr_vrt_INCLUDEDIR = @gr_vrt_INCLUDEDIR@
-gr_vrt_INCLUDES = @gr_vrt_INCLUDES@
-gr_vrt_LA = @gr_vrt_LA@
-gr_vrt_LDFLAG = @gr_vrt_LDFLAG@
-gr_vrt_LIBDIRPATH = @gr_vrt_LIBDIRPATH@
 gr_wxgui_INCLUDEDIR = @gr_wxgui_INCLUDEDIR@
 gr_wxgui_INCLUDES = @gr_wxgui_INCLUDES@
 gr_wxgui_LA = @gr_wxgui_LA@
@@ -747,6 +743,9 @@ gr_docdir = $(docdir)-$(DOCVER)
 # System configuration files
 gr_prefsdir = $(GR_PREFSDIR)
 
+# Data directory for grc block wrappers
+grc_blocksdir = $(pkgdatadir)/grc/blocks
+
 # Other common defines; use "+=" to add to these
 STAMPS = 
 MOSTLYCLEANFILES = $(BUILT_SOURCES) $(STAMPS) *.pyc *.pyo *~ *.tmp *.loT
@@ -760,8 +759,10 @@ lib_LTLIBRARIES = \
 libgnuradio_noaa_la_SOURCES = \
 	noaa_hrpt_decoder.cc \
 	noaa_hrpt_deframer.cc \
-	noaa_hrpt_pll_cf.cc \
-	noaa_hrpt_sync_fb.cc
+	noaa_hrpt_pll_cf.cc
+
+noinst_HEADERS = \
+	noaa_hrpt.h
 
 libgnuradio_noaa_la_LIBADD = \
 	$(GNURADIO_CORE_LA)
@@ -770,8 +771,7 @@ libgnuradio_noaa_la_LDFLAGS = $(NO_UNDEFINED) -version-info 0:0:0
 grinclude_HEADERS = \
 	noaa_hrpt_decoder.h \
 	noaa_hrpt_deframer.h \
-	noaa_hrpt_pll_cf.h \
-	noaa_hrpt_sync_fb.h
+	noaa_hrpt_pll_cf.h
 
 all: all-am
 
@@ -845,7 +845,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/noaa_hrpt_decoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/noaa_hrpt_deframer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/noaa_hrpt_pll_cf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/noaa_hrpt_sync_fb.Plo@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
