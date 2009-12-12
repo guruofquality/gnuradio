@@ -1,6 +1,7 @@
 /autom4te.cache/
 /build-stamp
 /config.h
+/install-stamp
 /config/libtool.m4
 /config.log
 /config/lt~obsolete.m4
