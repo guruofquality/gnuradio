@@ -142,6 +142,22 @@ $EXTRACT gr-gsm-fr-vocoder/src/lib/Makefile grinclude_HEADERS >>$NAME
 $EXTRACT gr-gsm-fr-vocoder/Makefile dist_pkgconfig_DATA >>$NAME
 echo usr/lib/libgnuradio-gsm-fr-vocoder.so >>$NAME
 
+# libgnuradio-noaa0
+NAME=debian/libgnuradio-noaa0.install
+rm -f $NAME
+touch $NAME
+$EXTRACT gr-noaa/lib/Makefile lib_LTLIBRARIES >>$NAME
+$EXTRACT gr-noaa/lib/Makefile lib_LTLIBRARIES | \
+    sed -e 's/\.la$/.so.*/' >>$NAME
+
+# libgnuradio-noaa-dev
+NAME=debian/libgnuradio-noaa-dev.install
+rm -f $NAME
+touch $NAME
+$EXTRACT gr-noaa/lib/Makefile grinclude_HEADERS >>$NAME
+$EXTRACT gr-noaa/Makefile dist_pkgconfig_DATA >>$NAME
+echo usr/lib/libgnuradio-noaa.so >>$NAME
+
 # libgnuradio-pager0
 NAME=debian/libgnuradio-pager0.install
 rm -f $NAME
@@ -439,6 +455,17 @@ $EXTRACT gnuradio-examples/grc/Makefile dist_simpledata_DATA >>$NAME
 $EXTRACT gnuradio-examples/grc/Makefile dist_trellisdata_DATA >>$NAME
 $EXTRACT gnuradio-examples/grc/Makefile dist_usrpdata_DATA >>$NAME
 $EXTRACT gnuradio-examples/grc/Makefile dist_xmlrpcdata_DATA >>$NAME
+
+# gnuradio-noaa
+NAME=debian/gnuradio-noaa.install
+rm -f $NAME
+touch $NAME
+$EXTRACT gr-noaa/apps/Makefile dist_bin_SCRIPTS >>$NAME
+$EXTRACT gr-noaa/python/Makefile noaa_PYTHON >>$NAME
+$EXTRACT gr-noaa/swig/Makefile noaa_swig_python_PYTHON >>$NAME
+$EXTRACT gr-noaa/swig/Makefile noaa_swig_pylib_LTLIBRARIES >>$NAME
+$EXTRACT gr-noaa/swig/Makefile noaa_swig_pylib_LTLIBRARIES |
+    sed -e 's/\.la$/.so/' >>$NAME
 
 # gnuradio-pager
 NAME=debian/gnuradio-pager.install

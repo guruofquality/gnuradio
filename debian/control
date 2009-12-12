@@ -280,6 +280,22 @@ Description: GNU Radio C++ block implementing the GSM full rate vocoder
  .
  This package contains header files needed by developers.
 
+Package: libgnuradio-noaa0
+Section: libs
+Architecture: any
+Depends: libgnuradio-core0 (= ${binary:Version}), ${shlibs:Depends}
+Description: GNU Radio C++ blocks implementing NOAA weather satellite protocols
+ This package provides an implementation of NOAA HRPT protocol for GNU Radio.
+
+Package: libgnuradio-noaa-dev
+Section: libdevel
+Architecture: any
+Depends: libgnuradio-noaa0  (= ${binary:Version}), libgnuradio-core-dev (= ${binary:Version})
+Description: GNU Radio C++ blocks implementing NOAA weather satellite protocols
+ This package provides an implementation of NOAA HRPT protocol for GNU Radio.
+ .
+ This package contains header files needed by developers.
+
 Package: libgnuradio-pager0
 Section: libs
 Architecture: any
@@ -551,6 +567,16 @@ XB-Python-Version: ${python:Versions}
 Description: GNU Radio Utilities
  This package provides commonly used utilities for GNU Radio
 
+Package: gnuradio-noaa
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}, python-gnuradio-usrp
+Provides: ${python:Provides}
+Section: comm
+XB-Python-Version: ${python:Versions}
+Description: GNU Radio NOAA HRPT Decoder
+ This package provides a receiver/decoder for the NOAA HRPT protocol for
+ GNU Radio
+
 Package: gnuradio-pager
 Architecture: any
 Depends: ${python:Depends}, ${shlibs:Depends}, python-gnuradio-usrp
@@ -648,7 +674,7 @@ Package: libgnuradio
 Section: libs
 Architecture: all
 Depends: libgnuradio-core0
-Recommends: libgnuradio-audio-alsa0, libgnuradio-cvsd-vocoder0, libgnuradio-gsm-fr-vocoder0, libgnuradio-pager0, libgnuradio-qtqui0, libgnuradio-trellis0, libgnuradio-usrp0, libgnuradio-usrp20, libgnuradio-video-sdl0
+Recommends: libgnuradio-audio-alsa0, libgnuradio-cvsd-vocoder0, libgnuradio-gsm-fr-vocoder0, libgnuradio-noaa0, libgnuradio-pager0, libgnuradio-qtqui0, libgnuradio-trellis0, libgnuradio-usrp0, libgnuradio-usrp20, libgnuradio-video-sdl0
 Description: GNU Radio C++ API libraries
  This is a virtual package that depends, recommends, or suggests all of the
  binary packages that make up the GNU Radio C++ API.  For development headers,
@@ -658,7 +684,7 @@ Package: libgnuradio-dev
 Section: libdevel
 Architecture: all
 Depends: libgnuradio-core0 (= ${binary:Version}), libgnuradio-core-dev
-Recommends: libgnuradio-audio-alsa-dev, libgnuradio-cvsd-vocoder-dev, libgnuradio-gsm-fr-vocoder-dev, libgnuradio-pager-dev, libgnuradio-qtgui-dev, libgnuradio-trellis-dev, libgnuradio-usrp-dev, libgnuradio-usrp2-dev, libgnuradio-video-sdl-dev
+Recommends: libgnuradio-audio-alsa-dev, libgnuradio-cvsd-vocoder-dev, libgnuradio-gsm-fr-vocoder-dev, libgnuradio-noaa-dev, libgnuradio-pager-dev, libgnuradio-qtgui-dev, libgnuradio-trellis-dev, libgnuradio-usrp-dev, libgnuradio-usrp2-dev, libgnuradio-video-sdl-dev
 Suggests: gnuradio-doc, usrp-doc
 Replaces: gnuradio-dev
 Description: Development headers for GNU Radio C++ development
@@ -680,7 +706,7 @@ Description: Python Libraries for GNU Radio Components
 Package: gnuradio-apps
 Section: comm
 Architecture: all
-Depends: gnuradio-gpio, gnuradio-pager, gnuradio-sounder, gnuradio-radio-astronomy, gnuradio-radar-mono
+Depends: gnuradio-gpio, gnuradio-noaa, gnuradio-pager, gnuradio-sounder, gnuradio-radio-astronomy, gnuradio-radar-mono
 Description: The GNU Software Radio Toolkit - applications
  This is a virtual package that depends on top-level GNU Radio application
  packages.

@@ -6,6 +6,7 @@ tmp
 gnuradio-companion.install
 gnuradio-examples.install
 gnuradio-gpio.install
+gnuradio-noaa.install
 gnuradio-pager.install
 gnuradio-radar-mono.install
 gnuradio-radio-astronomy.install
@@ -24,6 +25,8 @@ libgnuradio-cvsd-vocoder-dev.install
 libgnuradio-cvsd-vocoder0.install
 libgnuradio-gsm-fr-vocoder-dev.install
 libgnuradio-gsm-fr-vocoder0.install
+libgnuradio-noaa-dev.install
+libgnuradio-noaa0.install
 libgnuradio-pager-dev.install
 libgnuradio-pager0.install
 libgnuradio-qtgui-dev.install
@@ -58,6 +61,7 @@ python-usrp.install
 /gnuradio-doc/
 /gnuradio-examples/
 /gnuradio-gpio/
+/gnuradio-noaa/
 /gnuradio-pager/
 /gnuradio-radar-mono/
 /gnuradio-radio-astronomy/
@@ -79,6 +83,8 @@ python-usrp.install
 /libgnuradio-cvsd-vocoder0/
 /libgnuradio-gsm-fr-vocoder-dev/
 /libgnuradio-gsm-fr-vocoder0/
+/libgnuradio-noaa-dev/
+/libgnuradio-noaa0/
 /libgnuradio-pager-dev/
 /libgnuradio-pager0/
 /libgnuradio-qtgui-dev/
