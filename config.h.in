@@ -247,13 +247,13 @@
 /* Define to 1 if you have the `strspn' function. */
 #undef HAVE_STRSPN
 
-/* Define to 1 if `cmcred_uid' is member of `struct cmsgcred'. */
+/* Define to 1 if `struct cmsgcred' is a member of `cmcred_uid'. */
 #undef HAVE_STRUCT_CMSGCRED_CMCRED_UID
 
-/* Define to 1 if `msg_accrights' is member of `struct msghdr'. */
+/* Define to 1 if `struct msghdr' is a member of `msg_accrights'. */
 #undef HAVE_STRUCT_MSGHDR_MSG_ACCRIGHTS
 
-/* Define to 1 if `msg_control' is member of `struct msghdr'. */
+/* Define to 1 if `struct msghdr' is a member of `msg_control'. */
 #undef HAVE_STRUCT_MSGHDR_MSG_CONTROL
 
 /* Define to 1 if the system has the type `struct timespec'. */
@@ -262,7 +262,7 @@
 /* Define to 1 if the system has the type `struct timezone'. */
 #undef HAVE_STRUCT_TIMEZONE
 
-/* Define to 1 if `uid' is member of `struct ucred'. */
+/* Define to 1 if `struct ucred' is a member of `uid'. */
 #undef HAVE_STRUCT_UCRED_UID
 
 /* Define to 1 if you have the `sysconf' function. */
@@ -361,6 +361,9 @@
 
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION

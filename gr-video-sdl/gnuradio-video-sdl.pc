@@ -6,6 +6,6 @@ includedir=${prefix}/include
 Name: gnuradio-comedi
 Description: GNU Radio blocks for the SDL library
 Requires: gnuradio-core sdl
-Version: 3.3git-569-gbdf985aa
+Version: 3.3git-594-g02616cf8
 Libs: -L${libdir} -lgnuradio-video-sdl
 Cflags: -I${includedir}

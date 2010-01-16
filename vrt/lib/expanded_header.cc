@@ -57,8 +57,6 @@ namespace vrt {
   static const int HAS_FRACTIONAL_SECS = 1 << 3;
   static const int HAS_TRAILER         = 1 << 4;
 
-#include "expanded_header_cw_tables.h"
-
   static int
   compute_codeword(const expanded_header &h)
   {
@@ -71,6 +69,22 @@ namespace vrt {
     return cw;
   }
 
+  void expanded_header::unparse(const expanded_header *h,   // in
+                        size_t n32_bit_words_payload,  // in
+                        uint32_t *header,              // out
+                        size_t *n32_bit_words_header,  // out
+                        uint32_t *trailer,             // out
+                        size_t *n32_bit_words_trailer){// out
+    int cw = compute_codeword(*h);
+    //fills in the header (except word0), header length, trailer, trailer length
+    switch (cw & 0x1f){
+#include "expanded_header_unparse_switch_body.h"
+    }
+    //fill in the header word 0 with the calculated length
+    size_t n32_bit_words_packet = *n32_bit_words_header + n32_bit_words_payload + *n32_bit_words_trailer;
+    header[0] = htonl((h->header & ~VRTH_PKT_SIZE_MASK) | (n32_bit_words_packet & VRTH_PKT_SIZE_MASK));
+  }
+
   bool 
   expanded_header::parse(const uint32_t *packet,	// in
 			size_t n32_bit_words_packet,	// in
@@ -78,6 +92,8 @@ namespace vrt {
 			const uint32_t **payload,	// out
 			size_t *n32_bit_words_payload)	// out
   {
+    size_t n32_bit_words_header = 0;
+    size_t n32_bit_words_trailer = 0;
     size_t len = n32_bit_words_packet;
     const uint32_t *p = packet;
 
@@ -99,18 +115,18 @@ namespace vrt {
     len = h->pkt_size();	// valid length of packet
 
     int cw = compute_codeword(*h);
-    if (cw_header_len(cw) + cw_trailer_len(cw) > len)
+    switch (cw & 0x1f){
+#include "expanded_header_parse_switch_body.h"
+    }
+
+    if (n32_bit_words_header + n32_bit_words_trailer > len)
       return false;		// negative payload len
 
-    *payload = p + cw_header_len(cw);
-    *n32_bit_words_payload = len - (cw_header_len(cw) + cw_trailer_len(cw));
+    *payload = p + n32_bit_words_header;
+    *n32_bit_words_payload = len - (n32_bit_words_header + n32_bit_words_trailer);
 
-    // printf("parse: hdr = 0x%08x, cw = 0x%02x, cw_header_len(cw) = %d, cw_trailer_len(cw) = %d\n",
-    //   h->header, cw, cw_header_len(cw), cw_trailer_len(cw));
-
-    switch (cw & 0x1f){
-#include "expanded_header_switch_body.h"
-    }
+    // printf("parse: hdr = 0x%08x, cw = 0x%02x, n32_bit_words_header = %d, n32_bit_words_trailer = %d\n",
+    //   h->header, cw, n32_bit_words_header, n32_bit_words_trailer);
 
     return true;
   }

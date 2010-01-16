@@ -6,6 +6,6 @@ includedir=${prefix}/include
 Name: gnuradio-audio-jack
 Description: GNU Radio blocks for the JACK sound system
 Requires: gnuradio-core jack
-Version: 3.3git-569-gbdf985aa
+Version: 3.3git-594-g02616cf8
 Libs: -L${libdir} -lgnuradio-audio-jack
 Cflags: -I${includedir}
