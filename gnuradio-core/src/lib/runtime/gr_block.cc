@@ -38,6 +38,7 @@ gr_block::gr_block (const std::string &name,
     d_unaligned(0),
     d_is_unaligned(false),
     d_relative_rate (1.0),
+    d_inplace(false),
     d_history(1),
     d_fixed_rate(false),
     d_tag_propagation_policy(TPP_ALL_TO_ALL)
