@@ -38,7 +38,6 @@ gr_block::gr_block (const std::string &name,
     d_unaligned(0),
     d_is_unaligned(false),
     d_relative_rate (1.0),
-    d_inplace(false),
     d_history(1),
     d_fixed_rate(false),
     d_tag_propagation_policy(TPP_ALL_TO_ALL)
@@ -47,6 +46,16 @@ gr_block::gr_block (const std::string &name,
   
 gr_block::~gr_block ()
 {
+}
+
+bool gr_block::can_inplace(const size_t port) const{
+    if (d_inplace.size() <= port) return false;
+    return d_inplace.at(port) && this->fixed_rate();
+}
+
+void gr_block::set_inplace(const bool enb, const size_t port){
+    d_inplace.resize(std::max<size_t>(port+1, d_inplace.size()));
+    d_inplace.at(port) = enb;
 }
 
 // stub implementation:  1:1
