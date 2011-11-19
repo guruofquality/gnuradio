@@ -87,6 +87,7 @@ private:
   {
     gruel::scoped_lock guard(mutex);
     input_changed = true;
+    guard.unlock();
     input_cond.notify_one();
   }
 
@@ -95,6 +96,7 @@ private:
   {
     gruel::scoped_lock guard(mutex);
     output_changed = true;
+    guard.unlock();
     output_cond.notify_one();
   }
 

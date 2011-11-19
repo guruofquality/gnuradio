@@ -56,6 +56,7 @@ namespace gruel {
       d_not_full.wait(guard);
 
     d_msgs.push_back(msg);
+    guard.unlock();
     d_not_empty.notify_one();
   }
 
@@ -70,6 +71,7 @@ namespace gruel {
     pmt_t m(d_msgs.front());
     d_msgs.pop_front();
 
+    guard.unlock();
     if (d_limit > 0)		// Unlimited length queues never block on write
       d_not_full.notify_one();
 
@@ -87,6 +89,7 @@ namespace gruel {
     pmt_t m(d_msgs.front());
     d_msgs.pop_front();
 
+    guard.unlock();
     if (d_limit > 0)		// Unlimited length queues never block on write
       d_not_full.notify_one();
 

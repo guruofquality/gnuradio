@@ -76,6 +76,7 @@ gr_tpb_detail::insert_tail(pmt::pmt_t msg)
   msg_queue.push_back(msg);
 
   // wake up thread if BLKD_IN or BLKD_OUT
+  guard.unlock();
   input_cond.notify_one();
   output_cond.notify_one();
 }

@@ -66,6 +66,7 @@ gr_msg_queue::insert_tail(gr_message_sptr msg)
     msg->d_next.reset();
   }
   d_count++;
+  guard.unlock();
   d_not_empty.notify_one();
 }
 
@@ -87,6 +88,7 @@ gr_msg_queue::delete_head()
   d_count--;
   // m->d_next = 0;
   m->d_next.reset();
+  guard.unlock();
   d_not_full.notify_one();
   return m;
 }
@@ -111,6 +113,7 @@ gr_msg_queue::delete_head_nowait()
   d_count--;
   //m->d_next = 0;
   m->d_next.reset();
+  guard.unlock();
   d_not_full.notify_one();
   return m;
 }

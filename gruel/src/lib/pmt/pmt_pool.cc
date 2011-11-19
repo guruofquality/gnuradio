@@ -105,6 +105,7 @@ pmt_pool::free(void *foo)
   p->d_next = d_freelist;
   d_freelist = p;
   d_n_items--;
+  guard.unlock();
   if (d_max_items != 0)
     d_cond.notify_one();
 }
