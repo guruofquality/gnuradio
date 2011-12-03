@@ -34,36 +34,12 @@
  */
 class GR_CORE_API gr_sync_interpolator : public gr_sync_block
 {
- private:
-  unsigned	d_interpolation;
-
  protected:
   gr_sync_interpolator (void){} //allows pure virtual interface sub-classes
   gr_sync_interpolator (const std::string &name,
 			gr_io_signature_sptr input_signature,
 			gr_io_signature_sptr output_signature,
 			unsigned interpolation);
- public:
-
-  unsigned interpolation () const { return d_interpolation; }
-  void set_interpolation (unsigned interpolation)
-  {
-    d_interpolation = interpolation;
-    set_relative_rate (1.0 * interpolation);
-    set_output_multiple (interpolation);
-  }
-
-  // gr_sync_interpolator overrides these to assist work
-  void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-  int  general_work (int noutput_items,
-		     gr_vector_int &ninput_items,
-		     gr_vector_const_void_star &input_items,
-		     gr_vector_void_star &output_items);
-
-  // derived classes should override work
-
-  int fixed_rate_ninput_to_noutput(int ninput);
-  int fixed_rate_noutput_to_ninput(int noutput);
 };
 
 

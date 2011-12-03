@@ -31,6 +31,8 @@ gr_sync_block::gr_sync_block (const std::string &name,
 			      gr_io_signature_sptr output_signature)
   : gr_block(name, input_signature, output_signature)
 {
+  set_decimation(1);
+  set_interpolation(1);
   set_fixed_rate(true);
 }
 
@@ -46,13 +48,13 @@ gr_sync_block::forecast (int noutput_items, gr_vector_int &ninput_items_required
 int
 gr_sync_block::fixed_rate_noutput_to_ninput(int noutput_items)
 {
-  return noutput_items + history() - 1;
+  return (noutput_items * decimation()) / interpolation() + history() - 1;
 }
 
 int
 gr_sync_block::fixed_rate_ninput_to_noutput(int ninput_items)
 {
-  return std::max(0, ninput_items - (int)history() + 1);
+  return (std::max(0, ninput_items - (int)history() + 1) * interpolation()) / decimation();
 }
 
 int
@@ -63,6 +65,6 @@ gr_sync_block::general_work (int noutput_items,
 {
   int	r = work (noutput_items, input_items, output_items);
   if (r > 0)
-    consume_each (r);
+    consume_each ((r * decimation()) / interpolation());
   return r;
 }

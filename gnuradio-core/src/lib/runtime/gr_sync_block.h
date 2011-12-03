@@ -42,6 +42,21 @@ class GR_CORE_API gr_sync_block : public gr_block
 
  public:
 
+  unsigned decimation () const { return d_decimation; }
+  void set_decimation (unsigned decimation)
+  {
+    d_decimation = decimation;
+    set_relative_rate ((1.0 * interpolation()) / decimation);
+  }
+
+  unsigned interpolation () const { return d_interpolation; }
+  void set_interpolation (unsigned interpolation)
+  {
+    d_interpolation = interpolation;
+    set_relative_rate ((1.0 * interpolation) / decimation());
+    set_output_multiple (interpolation);
+  }
+
   /*!
    * \brief just like gr_block::general_work, only this arranges to call consume_each for you
    *
@@ -61,6 +76,9 @@ class GR_CORE_API gr_sync_block : public gr_block
 
   int fixed_rate_ninput_to_noutput(int ninput);
   int fixed_rate_noutput_to_ninput(int noutput);
+
+  private:
+  unsigned	d_decimation, d_interpolation;
 };
  
 #endif /* INCLUDED_GR_SYNC_BLOCK_H */
