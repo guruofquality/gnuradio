@@ -157,25 +157,37 @@ gr_flat_flowgraph::connect_block_inputs(gr_basic_block_sptr block)
   }
 }
 
+static size_t input_rate(gr_endpoint ep){
+    const double rate = cast_to_block_sptr(ep.block())->relative_rate();
+    const size_t size = ep.block()->input_signature()->sizeof_stream_item(ep.port());
+    return (rate > 1)? (size * rate) : size;
+}
+
+static size_t output_rate(gr_endpoint ep){
+    const double rate = cast_to_block_sptr(ep.block())->relative_rate();
+    const size_t size = ep.block()->output_signature()->sizeof_stream_item(ep.port());
+    return (rate < 1)? (size / rate) : size;
+}
+
 void gr_flat_flowgraph::simplify_inplace(gr_basic_block_sptr block){
 
     typedef std::multimap<int, gr_endpoint> mastermap_type;
     mastermap_type upstream_masters;
 
-    //get a map of io sizes to upstream masters
+    //get a map of io rates to upstream masters
     for (size_t i = 0; i < calc_used_ports(block, true).size(); i++){
         if (!cast_to_block_sptr(block)->can_inplace(i)) continue;
-        const int in_size = block->input_signature()->sizeof_stream_item(i);
+        const int in_rate = input_rate(gr_endpoint(block, i));
         const gr_endpoint master_ep = get_inplace_master(calc_upstream_edge(block, i).src());
-        if (master_ep.block().get() != NULL) upstream_masters.insert(std::make_pair(in_size, master_ep));
+        if (master_ep.block().get() != NULL) upstream_masters.insert(std::make_pair(in_rate, master_ep));
     }
 
     //replace downstream buffers with upstream buffers
     for (size_t i = 0; i < calc_used_ports(block, false).size(); i++){
 
-        //search for a itemsize match in the map
-        const int out_size = block->output_signature()->sizeof_stream_item(i);
-        mastermap_type::iterator it = upstream_masters.find(out_size);
+        //search for a rate match in the map
+        const int out_rate = output_rate(gr_endpoint(block, i));
+        mastermap_type::iterator it = upstream_masters.find(out_rate);
         if (it == upstream_masters.end()) continue;
 
         //extract the endpoint and erase it from map
@@ -200,9 +212,9 @@ gr_endpoint gr_flat_flowgraph::get_inplace_master(gr_endpoint src){
     //if this block is not in-place, end here, otherwise search upstream
     if (!cast_to_block_sptr(src.block())->can_inplace(src.port())) return src;
 
-    const size_t out_size = src.block()->output_signature()->sizeof_stream_item(src.port());
+    const size_t out_rate = output_rate(src);
     for (size_t i = 0; i < calc_used_ports(src.block(), true).size(); i++){
-        if (out_size != size_t(src.block()->input_signature()->sizeof_stream_item(i))) continue;
+        if (out_rate != input_rate(gr_endpoint(src.block(), i))) continue;
 
         //when io size matches, look upstream for an inplace master
         gr_endpoint master_ep = get_inplace_master(calc_upstream_edge(src.block(), i).src());

@@ -82,8 +82,7 @@ class GR_CORE_API gr_block : public gr_basic_block {
    * with an output buffer when certain conditions are met:
    *
    * - The upstream buffer only writes to this port
-   * - This block is a fixed, 1:1 rate sync block
-   * - An output port exists that matches in IO size
+   * - An output port exists that has matching input rate (in bytes)
    *
    * \param enb true to enable in-place buffering
    * \param port the index of an input port

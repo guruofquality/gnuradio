@@ -43,6 +43,7 @@ gr_single_pole_iir_filter_ff::gr_single_pole_iir_filter_ff (
     d_vlen(vlen), d_iir(vlen)
 {
   set_taps(alpha);
+  this->set_inplace(true);
 }
 
 gr_single_pole_iir_filter_ff::~gr_single_pole_iir_filter_ff ()
