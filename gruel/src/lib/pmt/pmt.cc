@@ -58,7 +58,7 @@ pmt_base::operator delete(void *p, size_t size)
 #endif
 
 void intrusive_ptr_add_ref(pmt_base* p) { ++(p->count_); }
-void intrusive_ptr_release(pmt_base* p) { if (--(p->count_) == 0 ) delete p; }
+void intrusive_ptr_release(pmt_base* p) { if (--(p->count_) == 0 ) p->deleter_(p); }
 
 pmt_base::~pmt_base()
 {
@@ -151,6 +151,18 @@ static pmt_any *
 _any(pmt_t x)
 {
   return dynamic_cast<pmt_any*>(x.get());
+}
+
+static pmt_blob *
+_blob(pmt_t x)
+{
+  return dynamic_cast<pmt_blob*>(x.get());
+}
+
+static pmt_mgr *
+_mgr(pmt_t x)
+{
+  return dynamic_cast<pmt_mgr*>(x.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -918,37 +930,166 @@ pmt_msg_accepter_ref(const pmt_t &obj)
 
 
 ////////////////////////////////////////////////////////////////////////////
-//             Binary Large Object -- currently a u8vector
+//             Binary Large Object
 ////////////////////////////////////////////////////////////////////////////
+#define PMT_BLOB_ALIGN_MASK size_t(0x1f) //byte alignment mask of self-allocated blobs
+
+pmt_blob::pmt_blob(const void *rom, void *rwm, size_t l, shart s = shart()):
+    romem(rom), rwmem(rwm), len(l), shar(s){}
 
 bool
 pmt_is_blob(pmt_t x)
 {
-  // return pmt_is_u8vector(x);
-  return pmt_is_uniform_vector(x);
+  return x->is_blob();
+}
+
+pmt_t
+pmt_make_blob(size_t len)
+{
+  pmt_blob::shart shar(new char[len + PMT_BLOB_ALIGN_MASK]);
+  const size_t addr = (size_t(shar.get()) + PMT_BLOB_ALIGN_MASK) & ~PMT_BLOB_ALIGN_MASK;
+  char *mem = reinterpret_cast<char *>(addr);
+  return pmt_t(new pmt_blob(mem, mem, len, shar));
+}
+
+pmt_t
+pmt_make_blob(void *buf, size_t len_in_bytes)
+{
+  return pmt_t(new pmt_blob(buf, buf, len_in_bytes));
 }
 
 pmt_t
 pmt_make_blob(const void *buf, size_t len_in_bytes)
 {
-  return pmt_init_u8vector(len_in_bytes, (const uint8_t *) buf);
+  return pmt_t(new pmt_blob(buf, NULL, len_in_bytes));
+}
+
+void *
+pmt_blob_rw_data(pmt_t blob)
+{
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_rw_data", blob);
+  return _blob(blob)->rwmem;
 }
 
 const void *
-pmt_blob_data(pmt_t blob)
+pmt_blob_ro_data(pmt_t blob)
 {
-  size_t len;
-  return pmt_uniform_vector_elements(blob, len);
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_data", blob);
+  return _blob(blob)->romem;
 }
 
 size_t
 pmt_blob_length(pmt_t blob)
 {
-  size_t len;
-  pmt_uniform_vector_elements(blob, len);
-  return len;
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_length", blob);
+  return _blob(blob)->len;
 }
 
+
+void
+pmt_blob_set_length(pmt_t blob, size_t len_in_bytes)
+{
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_set_length", blob);
+  _blob(blob)->len = len_in_bytes;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//             Manager of PMTs
+////////////////////////////////////////////////////////////////////////////
+class pmt_mgr::mgr_guts{
+public:
+  mgr_guts(void): should_delete(false){}
+
+  bool should_delete;
+
+  std::queue<pmt_t> available;
+
+  //sync mechanisms
+  gruel::mutex mutex;
+  gruel::condition_variable cond;
+};
+
+pmt_mgr::pmt_mgr(void){
+    this->guts = pmt_mgr::guts_sptr(new pmt_mgr::mgr_guts());
+}
+
+pmt_mgr::~pmt_mgr(void){
+    //tells the guts to delete all returning pmts
+    //frees any already returned pmts in guts
+    //guts will deconstruct after it frees all bound pmts
+    gruel::scoped_lock lock(guts->mutex);
+    this->guts->should_delete = true;
+    while(!guts->available.empty()){
+        lock.unlock();
+        guts->available.pop();
+        lock.lock();
+    }
+}
+
+static void mgr_deleter(pmt_mgr::guts_sptr guts, pmt_base *p){
+    gruel::scoped_lock lock(guts->mutex);
+    if (guts->should_delete){
+        pmt::pmt_base::default_deleter(p);
+        return;
+    }
+
+    guts->available.push(pmt_t(p));
+    lock.unlock();
+    guts->cond.notify_one();
+}
+
+bool
+pmt_is_mgr(pmt_t x)
+{
+  return x->is_mgr();
+}
+
+pmt_t
+pmt_make_mgr(void)
+{
+  return pmt_t(new pmt_mgr());
+}
+
+void
+pmt_mgr_set(pmt_t mgr, pmt_t x)
+{
+  if (!mgr->is_mgr())
+    throw pmt_wrong_type("pmt_mgr_set", mgr);
+  x->deleter_ = boost::bind(&mgr_deleter, _mgr(mgr)->guts, _1);
+}
+
+void
+pmt_mgr_reset(pmt_t mgr, pmt_t x)
+{
+  if (!mgr->is_mgr())
+    throw pmt_wrong_type("pmt_mgr_reset", mgr);
+  x->deleter_ = &pmt::pmt_base::default_deleter;
+}
+
+pmt_t
+pmt_mgr_acquire(pmt_t mgr, bool block)
+{
+  if (!mgr->is_mgr())
+    throw pmt_wrong_type("pmt_mgr_acquire", mgr);
+
+    pmt_mgr::guts_sptr guts = _mgr(mgr)->guts;
+
+    gruel::scoped_lock lock(guts->mutex);
+    std::queue<pmt_t> &available = guts->available;
+
+    while (available.empty()){
+        if (block) guts->cond.wait(lock);
+        else return PMT_NIL;
+    }
+
+    pmt_t p = available.front();
+    available.pop();
+    return p;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 //                          General Functions

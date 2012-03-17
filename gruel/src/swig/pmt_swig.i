@@ -38,11 +38,23 @@
 //load generated python docstrings
 %include "pmt_swig_doc.i"
 
-////////////////////////////////////////////////////////////////////////
-// Language independent exception handler
-////////////////////////////////////////////////////////////////////////
+%{
 
+namespace pmt{
+    pmt_t pmt_mgr_acquire_safe(pmt_t mgr, bool block){
+        pmt_t p;
+        GR_PYTHON_BLOCKING_CODE(
+            p = pmt_mgr_acquire(mgr, block);
+        )
+        return p;
+    }
+}
+
+%}
+
+////////////////////////////////////////////////////////////////////////
 // Template intrusive_ptr for Swig to avoid dereferencing issues
+////////////////////////////////////////////////////////////////////////
 namespace pmt{
     class pmt_base;
 }
@@ -50,6 +62,9 @@ namespace pmt{
 %import <gr_intrusive_ptr.i>
 %template(swig_int_ptr) boost::intrusive_ptr<pmt::pmt_base>;
 
+////////////////////////////////////////////////////////////////////////
+// Copy of stuff from pmt.h
+////////////////////////////////////////////////////////////////////////
 namespace pmt{
 
 typedef boost::intrusive_ptr<pmt_base> pmt_t;
@@ -307,20 +322,87 @@ void pmt_vector_fill(pmt_t vector, pmt_t fill);
 bool pmt_is_blob(pmt_t x);
 
 /*!
+ * \brief Allocate a blob given the length in bytes
+ *
+ * \param len is the size of the data in bytes.
+ */
+pmt_t pmt_make_blob(size_t len);
+
+/*!
  * \brief Make a blob given a pointer and length in bytes
  *
- * \param buf is the pointer to data to use to create blob
+ * \param buf a pointer to read/write memory.
  * \param len is the size of the data in bytes.
- *
- * The data is copied into the blob.
  */
-pmt_t pmt_make_blob(const void *buf, size_t len);
+pmt_t pmt_make_blob(void *buf, size_t len);
 
-//! Return a pointer to the blob's data
-const void *pmt_blob_data(pmt_t blob);
+/*!
+ * \brief Make a blob given a pointer and length in bytes
+ *
+ * \param buf a pointer to read-only memory.
+ * \param len is the size of the data in bytes.
+ */
+//pmt_t pmt_make_blob(const void *buf, size_t len);
+
+//! Return a non-const pointer to the blob's data
+void *pmt_blob_rw_data(pmt_t blob);
+
+//! Return a const pointer to the blob's data
+const void *pmt_blob_ro_data(pmt_t blob);
 
 //! Return the blob's length in bytes
 size_t pmt_blob_length(pmt_t blob);
+
+//! Set the blob's length in bytes
+void pmt_blob_set_length(pmt_t blob, size_t len_in_bytes);
+
+/* ------------------------------------------------------------------------
+ *		      Manage a collection of PMTs -> memory wise
+ *
+ * When a PMT reference count becomes zero, the pmt and contents is deleted.
+ * With a manager, the PMT will not be deleted, but released to the manager.
+ * Then, the PMT can be acquired again for re-use by the user.
+ *
+ * This offers 2 benefits:
+ *  - Avoids expensive memory allocation overhead (re-use is key)
+ *  - An upstream producer can block until resources become released
+ * ------------------------------------------------------------------------
+ */
+
+//! Return true if \p x is a manager, othewise false.
+bool pmt_is_mgr(pmt_t x);
+
+//! Make a new pmt manager object
+pmt_t pmt_make_mgr(void);
+
+/*!
+ * \brief Set a pmt to the specified manager.
+ *
+ * \param mgr the pmt manager object
+ * \param x any other object of type pmt
+ */
+void pmt_mgr_set(pmt_t mgr, pmt_t x);
+
+/*!
+ * \brief Unset a pmt from the specified manager.
+ *
+ * \param mgr the pmt manager object
+ * \param x any other object of type pmt
+ */
+void pmt_mgr_reset(pmt_t mgr, pmt_t x);
+
+/*!
+ * \brief Acquire a pmt from the manager.
+ *
+ * The order of managed pmts retrieved by this function is not guaranteed.
+ * For this reason, the user may want to keep a manager homogeneous.
+ * Ex: This manager only manages blobs of size 1500 bytes.
+ *
+ * \param mgr the pmt manager object
+ * \param block when true, block until pmt available
+ * \return a managed pmt or empty sptr if not available
+ */
+pmt_t pmt_mgr_acquire_safe(pmt_t mgr, bool block);
 
 /*!
  * <pre>

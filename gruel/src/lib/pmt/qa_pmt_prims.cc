@@ -583,7 +583,7 @@ qa_pmt_prims::test_sugar()
 
   int buf[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   pmt_t blob = mp(buf, sizeof(buf));
-  const void *data = pmt_blob_data(blob);
+  const void *data = pmt_blob_ro_data(blob);
   size_t nbytes = pmt_blob_length(blob);
   CPPUNIT_ASSERT_EQUAL(sizeof(buf), nbytes);
   CPPUNIT_ASSERT(memcmp(buf, data, nbytes) == 0);

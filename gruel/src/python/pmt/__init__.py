@@ -25,5 +25,31 @@
 The GNU Radio Utility Etcetera Library's Polymorphic Types for Python.
 '''
 
+import numpy
 from pmt_swig import *
+import pmt_swig as __pmt
 
+#this function knows how to convert an address to a numpy array
+def __pointer_to_ndarray(addr, nitems):
+    dtype = numpy.dtype(numpy.uint8)
+    class array_like:
+        __array_interface__ = {
+            'data' : (int(addr), False),
+            'typestr' : dtype.base.str,
+            'descr' : dtype.base.descr,
+            'shape' : (nitems,) + dtype.shape,
+            'strides' : None,
+            'version' : 3
+        }
+    return numpy.asarray(array_like()).view(dtype.base)
+
+#re-create the blob data functions, but yield a numpy array instead
+def pmt_blob_rw_data(blob):
+    return __pointer_to_ndarray(__pmt.pmt_blob_rw_data(blob), pmt_blob_length(blob))
+
+def pmt_blob_ro_data(blob):
+    return __pointer_to_ndarray(__pmt.pmt_blob_ro_data(blob), pmt_blob_length(blob))
+
+#re-create mgr acquire by calling into python GIL-safe version
+def pmt_mgr_acquire(mgr, block = True):
+    return __pmt.pmt_mgr_acquire_safe(mgr, block)
