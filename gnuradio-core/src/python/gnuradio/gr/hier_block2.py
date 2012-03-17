@@ -111,3 +111,8 @@ class hier_block2(object):
         self._hb.primitive_disconnect(src_block.to_basic_block(), src_port,
                                       dst_block.to_basic_block(), dst_port)
 
+    def msg_connect(self, provider, name, subscriber):
+        self._hb.msg_connect(provider.to_basic_block(), name, subscriber.to_basic_block())
+
+    def msg_disconnect(self, provider, name, subscriber):
+        self._hb.msg_disconnect(provider.to_basic_block(), name, subscriber.to_basic_block())

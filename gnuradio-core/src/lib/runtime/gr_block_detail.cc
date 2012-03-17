@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2004,2009,2010 Free Software Foundation, Inc.
+ * Copyright 2004,2009,2010,2011 Free Software Foundation, Inc.
  * 
  * This file is part of GNU Radio
  * 
@@ -194,4 +194,26 @@ gr_block_detail::get_tags_in_range(std::vector<gr_tag_t> &v,
       v.push_back(*itr);
     }
   }
+}
+
+void gr_block_detail::push_msg_queue(const gr_tag_t &msg){
+    gruel::scoped_lock lock(d_msg_queue_mutex);
+    d_msg_queue.push(msg);
+    lock.unlock();
+    d_msg_queue_condition_variable.notify_one();
+}
+
+bool gr_block_detail::check_msg_queue(void){
+    gruel::scoped_lock lock(d_msg_queue_mutex);
+    return !d_msg_queue.empty();
+}
+
+gr_tag_t gr_block_detail::pop_msg_queue(void){
+    gruel::scoped_lock lock(d_msg_queue_mutex);
+    while (d_msg_queue.empty()){
+        d_msg_queue_condition_variable.wait(lock);
+    }
+    gr_tag_t msg = d_msg_queue.front();
+    d_msg_queue.pop();
+    return msg;
 }

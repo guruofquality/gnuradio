@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2004,2009,2010 Free Software Foundation, Inc.
+ * Copyright 2004,2009,2010,2011 Free Software Foundation, Inc.
  * 
  * This file is part of GNU Radio
  * 
@@ -28,6 +28,7 @@
 #include <gr_block_detail.h>
 #include <stdexcept>
 #include <iostream>
+#include <boost/foreach.hpp>
 
 gr_block::gr_block (const std::string &name,
 		    gr_io_signature_sptr input_signature,
@@ -215,3 +216,23 @@ operator << (std::ostream& os, const gr_block *m)
   return os;
 }
 
+//-------- message handling code --------//
+
+void gr_block::push_msg_queue(const gr_tag_t &msg){
+    this->detail()->push_msg_queue(msg);
+}
+
+bool gr_block::check_msg_queue(void){
+    return detail()->check_msg_queue();
+}
+
+gr_tag_t gr_block::pop_msg_queue(void){
+    return detail()->pop_msg_queue();
+}
+
+void gr_block::post_msg(const std::string &group, const gr_tag_t &msg){
+    std::vector<gr_block_sptr> &subscribers = detail()->d_msg_subscribers[group];
+    BOOST_FOREACH(gr_block_sptr &subscriber, subscribers){
+        subscriber->push_msg_queue(msg);
+    }
+}

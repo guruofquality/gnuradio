@@ -46,6 +46,12 @@ public:
   bool operator==(const gr_endpoint &other) const;
 };    
 
+struct GR_CORE_API gr_msg_connection{
+    gr_basic_block_sptr pro; //provider
+    gr_basic_block_sptr sub; //subscriber
+    std::string name;
+};
+
 inline bool gr_endpoint::operator==(const gr_endpoint &other) const
 {
   return (d_basic_block == other.d_basic_block && 
@@ -131,6 +137,7 @@ public:
 
 protected:
   gr_basic_block_vector_t d_blocks;
+  gr_basic_block_vector_t d_blocks_from_msg_connect;
   gr_edge_vector_t d_edges;
 
   gr_flowgraph();

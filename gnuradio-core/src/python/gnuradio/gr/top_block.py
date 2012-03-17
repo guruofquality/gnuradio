@@ -157,3 +157,8 @@ class top_block(object):
         self._tb.primitive_disconnect(src_block.to_basic_block(), src_port,
                                       dst_block.to_basic_block(), dst_port)
 
+    def msg_connect(self, provider, name, subscriber):
+        self._tb.msg_connect(provider.to_basic_block(), name, subscriber.to_basic_block())
+
+    def msg_disconnect(self, provider, name, subscriber):
+        self._tb.msg_disconnect(provider.to_basic_block(), name, subscriber.to_basic_block())

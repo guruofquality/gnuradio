@@ -55,6 +55,7 @@ private:
   gr_hier_block2_detail *d_detail;
     
 protected: 
+  gr_hier_block2 (void){} //allows pure virtual interface sub-classes
   gr_hier_block2(const std::string &name,
 		 gr_io_signature_sptr input_signature,
 		 gr_io_signature_sptr output_signature);
@@ -97,6 +98,19 @@ public:
 	       gr_basic_block_sptr dst, int dst_port);
 
   /*!
+   * \brief Connects a message provider to a message subscriber.
+   *
+   * \param provider the gr block that posts messages
+   * \param name the name of the subscriber group
+   * \param subscriber the message recipient block
+   */
+  void msg_connect(
+    gr_basic_block_sptr provider,
+    const std::string &name,
+    gr_basic_block_sptr subscriber
+  );
+
+  /*!
    * \brief Remove a gr-block or hierarchical block from the internal flowgraph.
    *
    * This removes a gr-block or hierarchical block from the internal flowgraph,
@@ -114,6 +128,19 @@ public:
    */
   void disconnect(gr_basic_block_sptr src, int src_port,
 		  gr_basic_block_sptr dst, int dst_port);
+
+  /*!
+   * \brief Disconnect a message provider to a message subscriber.
+   *
+   * \param provider the gr block that posts messages
+   * \param name the name of the subscriber group
+   * \param subscriber the message recipient block
+   */
+  void msg_disconnect(
+    gr_basic_block_sptr provider,
+    const std::string &name,
+    gr_basic_block_sptr subscriber
+  );
 
   /*!
    * \brief Disconnect all connections in the internal flowgraph.

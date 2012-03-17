@@ -186,6 +186,10 @@ gr_flowgraph::calc_used_blocks()
     tmp.push_back(p->dst().block());
   }
 
+  for (size_t i = 0; i < d_blocks_from_msg_connect.size(); i++){
+      tmp.push_back(d_blocks_from_msg_connect[i]);
+  }
+
   return unique_vector<gr_basic_block_sptr>(tmp);
 }
 

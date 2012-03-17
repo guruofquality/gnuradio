@@ -60,7 +60,15 @@ class Port(_Port, _GUIPort):
 		@param dir the direction
 		"""
 		self._n = n
-		if n['type'] == 'msg': n['key'] = 'msg'
+
+		#this logic determines the key for messages
+		if n['type'] == 'msg' and dir == 'sink':
+			self._old_msgq = not n.has_key('key')
+			n['key'] = 'msg'
+		if n['type'] == 'msg' and dir == 'source':
+			self._old_msgq = not n.has_key('key')
+			if self._old_msgq: n['key'] = 'msg'
+
 		if dir == 'source' and not n.find('key'):
 			n['key'] = str(block._source_count)
 			block._source_count += 1
@@ -79,20 +87,33 @@ class Port(_Port, _GUIPort):
 		self._vlen = n.find('vlen') or ''
 		self._optional = bool(n.find('optional'))
 
+	def is_msgq(self):
+		"""
+		Is this a message port for the old style message queue?
+		"""
+		if self.get_type == 'msg': return self._old_msgq
+		return False
+
 	def get_types(self): return Constants.TYPE_TO_SIZEOF.keys()
 
 	def validate(self):
 		_Port.validate(self)
-		if not self.get_enabled_connections() and not self.get_optional():
-			self.add_error_message('Port is not connected.')
-		if not self.is_source() and len(self.get_enabled_connections()) > 1:
-			self.add_error_message('Port has too many connections.')
+
 		#message port logic
 		if self.get_type() == 'msg':
+			if self.is_sink() and self.get_key() != 'msg':
+				self.add_error_message('A sink of type "msg" cannot have a key set to "%s".'%self.get_key())
 			if self.get_nports():
 				self.add_error_message('A port of type "msg" cannot have "nports" set.')
 			if self.get_vlen() != 1:
 				self.add_error_message('A port of type "msg" must have a "vlen" of 1.')
+
+		#check regular connections
+		else:
+			if not self.get_enabled_connections() and not self.get_optional():
+				self.add_error_message('Port is not connected.')
+			if not self.is_source() and len(self.get_enabled_connections()) > 1:
+				self.add_error_message('Port has too many connections.')
 
 	def rewrite(self):
 		"""

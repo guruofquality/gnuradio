@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2004,2009,2010 Free Software Foundation, Inc.
+ * Copyright 2004,2009,2010,2011 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
  *
@@ -28,6 +28,9 @@
 #include <gr_tpb_detail.h>
 #include <gr_tags.h>
 #include <stdexcept>
+#include <gruel/thread.h>
+#include <map>
+#include <queue>
 
 /*!
  * \brief Implementation details to support the signal processing abstraction
@@ -153,6 +156,23 @@ class GR_CORE_API gr_block_detail {
 
   gr_tpb_detail			     d_tpb;	// used by thread-per-block scheduler
   int				     d_produce_or;
+
+  //! Enqueue a message into the block
+  void push_msg_queue(const gr_tag_t &msg);
+
+  //! Is a message available
+  bool check_msg_queue(void);
+
+  //! Pop a message from the queue
+  gr_tag_t pop_msg_queue(void);
+
+  //! Map of group names to list of message subscribers
+  std::map<std::string, std::vector<gr_block_sptr> > d_msg_subscribers;
+
+  //! The queue of incoming messages
+  std::queue<gr_tag_t> d_msg_queue;
+  gruel::mutex d_msg_queue_mutex;
+  gruel::condition_variable d_msg_queue_condition_variable;
 
   // ----------------------------------------------------------------------------
 

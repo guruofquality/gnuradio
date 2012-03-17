@@ -8,6 +8,7 @@
 ##@param parameters the paramater blocks
 ##@param blocks the signal blocks
 ##@param connections the connections
+##@param msgqs the old msgq type connections
 ##@param messages the msg type connections
 ##@param generate_options the type of flow graph
 ##@param var_id2cbs variable id map to callback strings
@@ -132,13 +133,13 @@ gr.io_signaturev($(len($io_sigs)), $(len($io_sigs)), [$(', '.join($size_strs))])
 ########################################################
 ##Create Message Queues
 ########################################################
-#if $messages
+#if $msgqs
 
 		$DIVIDER
 		# Message Queues
 		$DIVIDER
 #end if
-#for $msg in $messages
+#for $msg in $msgqs
 		$(msg.get_source().get_parent().get_id())_msgq_out = $(msg.get_sink().get_parent().get_id())_msgq_in = gr.msg_queue(2)
 #end for
 ########################################################
@@ -171,7 +172,7 @@ gr.io_signaturev($(len($io_sigs)), $(len($io_sigs)), [$(', '.join($size_strs))])
 (self.$port.get_parent().get_id(), $port.get_key())#slurp
 	#end if
 #end def
-#if $connections
+#if $connections or $messages
 
 		$DIVIDER
 		# Connections
@@ -188,6 +189,11 @@ gr.io_signaturev($(len($io_sigs)), $(len($io_sigs)), [$(', '.join($size_strs))])
 	#if not $sink.get_parent().is_virtual_sink()
 		self.connect($make_port_sig($source), $make_port_sig($sink))
 	#end if
+#end for
+#for $msg in $messages
+	#set $source = $msg.get_source()
+	#set $sink = $msg.get_sink()
+		self.msg_connect(self.$source.get_parent().get_id(), "$source.get_key()", self.$sink.get_parent().get_id())
 #end for
 
 ########################################################

@@ -54,11 +54,21 @@ public:
   void connect(gr_basic_block_sptr src, int src_port,
 	       gr_basic_block_sptr dst, int dst_port)
     throw (std::invalid_argument);
+  void msg_connect(
+    gr_basic_block_sptr provider,
+    const std::string &name,
+    gr_basic_block_sptr subscriber
+  );
   void disconnect(gr_basic_block_sptr block)
     throw (std::invalid_argument);
   void disconnect(gr_basic_block_sptr src, int src_port,
 		  gr_basic_block_sptr dst, int dst_port)
     throw (std::invalid_argument);
+  void msg_disconnect(
+    gr_basic_block_sptr provider,
+    const std::string &name,
+    gr_basic_block_sptr subscriber
+  );
   void disconnect_all();
   void lock();
   void unlock();

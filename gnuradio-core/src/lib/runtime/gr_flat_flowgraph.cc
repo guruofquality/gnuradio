@@ -28,6 +28,7 @@
 #include <gr_block_detail.h>
 #include <gr_io_signature.h>
 #include <gr_buffer.h>
+#include <boost/foreach.hpp>
 #include <iostream>
 #include <map>
 
@@ -55,6 +56,12 @@ gr_flat_flowgraph::~gr_flat_flowgraph()
 void
 gr_flat_flowgraph::setup_connections()
 {
+  BOOST_FOREACH(const gr_msg_connection &msgcon, msg_connections){
+        //so calc used blocks knows about it:
+        d_blocks_from_msg_connect.push_back(msgcon.pro);
+        d_blocks_from_msg_connect.push_back(msgcon.sub);
+  }
+
   gr_basic_block_vector_t blocks = calc_used_blocks();
 
   // Assign block details to blocks
@@ -64,6 +71,15 @@ gr_flat_flowgraph::setup_connections()
   // Connect inputs to outputs for each block
   for(gr_basic_block_viter_t p = blocks.begin(); p != blocks.end(); p++)
     connect_block_inputs(*p);
+
+    BOOST_FOREACH(const gr_msg_connection &msgcon, msg_connections){
+        gr_block_sptr pro = cast_to_block_sptr(msgcon.pro);
+        gr_block_sptr sub = cast_to_block_sptr(msgcon.sub);
+
+        //registers the subscriber to the provider
+        pro->detail()->d_msg_subscribers[msgcon.name].push_back(sub);
+    }
+
 }
 
 gr_block_detail_sptr

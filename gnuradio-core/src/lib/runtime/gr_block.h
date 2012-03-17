@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2004,2007,2009,2010 Free Software Foundation, Inc.
+ * Copyright 2004,2007,2009,2010,2011 Free Software Foundation, Inc.
  * 
  * This file is part of GNU Radio
  * 
@@ -344,6 +344,65 @@ class GR_CORE_API gr_block : public gr_basic_block {
 			 uint64_t abs_start,
 			 uint64_t abs_end,
 			 const pmt::pmt_t &key);
+
+  // ----------------------------------------------------------------
+  // message passing api below:
+  // ----------------------------------------------------------------
+ protected:
+  friend class gr_tpb_thread_body; //so it can call handle msg queue
+
+  /*!
+   * \brief Enqueue a message into this block.
+   * Usually this is called internally. However, it may be useful for
+   * the block itself or an outside entity to post messages to the block.
+   * Ex: Push can be used to wake up a thread blocking on pop_msg_queue.
+   * \param msg the message to enqueue
+   */
+  void push_msg_queue(const gr_tag_t &msg);
+
+  /*!
+   * \brief Check if a message is available to pop.
+   * \return true is a message is in the queue
+   */
+  bool check_msg_queue(void);
+
+  /*!
+   * \brief Pop a message from the front of the queue.
+   * This function will block until a message is available.
+   * \return the message as a tag type
+   */
+  gr_tag_t pop_msg_queue(void);
+
+  /*!
+   * \brief Post a message to a subscriber group.
+   * All message subscribers in the group will get this message.
+   * \param group the name of the subscriber group
+   * \param msg the message to post to all subscribers
+   */
+  void post_msg(const std::string &group, const gr_tag_t &msg);
+
+  /*!
+   * \brief Post a message to a subscriber group.
+   *
+   * \param group        the name of the subscriber group
+   * \param key          the tag key as a PMT symbol
+   * \param value        any PMT holding any value for the given key
+   * \param srcid        optional source ID specifier; defaults to PMT_F
+   */
+  inline void post_msg(
+    const std::string &group,
+    const pmt::pmt_t &key,
+    const pmt::pmt_t &value,
+    const pmt::pmt_t &srcid=pmt::PMT_F
+  )
+    {
+        gr_tag_t tag;
+        tag.offset = 0; //not used
+        tag.key = key;
+        tag.value = value;
+        tag.srcid = srcid;
+        this->post_msg(group, tag);
+    }
 
   // These are really only for internal use, but leaving them public avoids
   // having to work up an ever-varying list of friend GR_CORE_APIs

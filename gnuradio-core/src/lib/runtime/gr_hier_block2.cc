@@ -80,6 +80,14 @@ gr_hier_block2::connect(gr_basic_block_sptr src, int src_port,
   d_detail->connect(src, src_port, dst, dst_port);
 }
 
+void gr_hier_block2::msg_connect(
+    gr_basic_block_sptr provider,
+    const std::string &name,
+    gr_basic_block_sptr subscriber
+){
+    d_detail->msg_connect(provider, name, subscriber);
+}
+
 void 
 gr_hier_block2::disconnect(gr_basic_block_sptr block)
 {
@@ -91,6 +99,14 @@ gr_hier_block2::disconnect(gr_basic_block_sptr src, int src_port,
                            gr_basic_block_sptr dst, int dst_port)
 {
   d_detail->disconnect(src, src_port, dst, dst_port);
+}
+
+void gr_hier_block2::msg_disconnect(
+    gr_basic_block_sptr provider,
+    const std::string &name,
+    gr_basic_block_sptr subscriber
+){
+    d_detail->msg_disconnect(provider, name, subscriber);
 }
 
 void

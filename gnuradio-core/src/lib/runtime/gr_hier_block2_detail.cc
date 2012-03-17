@@ -27,6 +27,7 @@
 #include <gr_io_signature.h>
 #include <stdexcept>
 #include <sstream>
+#include <boost/foreach.hpp>
 
 #define GR_HIER_BLOCK2_DETAIL_DEBUG 0
 
@@ -143,6 +144,16 @@ gr_hier_block2_detail::connect(gr_basic_block_sptr src, int src_port,
   // TODO: connects to NC
 }
 
+void gr_hier_block2_detail::msg_connect(
+    gr_basic_block_sptr pro, const std::string &name, gr_basic_block_sptr sub
+){
+    gr_msg_connection msgcon;
+    msgcon.pro = pro;
+    msgcon.sub = sub;
+    msgcon.name = name;
+    d_msg_connections.push_back(msgcon);
+}
+
 void
 gr_hier_block2_detail::disconnect(gr_basic_block_sptr block)
 {
@@ -220,6 +231,22 @@ gr_hier_block2_detail::disconnect(gr_basic_block_sptr src, int src_port,
 
   // Internal connections
   d_fg->disconnect(src, src_port, dst, dst_port);
+}
+
+void gr_hier_block2_detail::msg_disconnect(
+    gr_basic_block_sptr pro, const std::string &name, gr_basic_block_sptr sub
+){
+    for (size_t i = 0; i < d_msg_connections.size(); i++){
+        if (
+            d_msg_connections[i].pro.get() == pro.get() &&
+            d_msg_connections[i].sub.get() == sub.get() &&
+            d_msg_connections[i].name == name
+        ){
+            d_msg_connections.erase(d_msg_connections.begin() + i);
+            return;
+        }
+    }
+    throw std::invalid_argument("could not disconnect message with subscriber name: " + name);
 }
 
 void
@@ -370,6 +397,7 @@ gr_hier_block2_detail::disconnect_all()
   d_blocks.clear();
   d_inputs.clear();
   d_outputs.clear();
+  d_msg_connections.clear();
 }
 
 gr_endpoint_vector_t
@@ -401,9 +429,71 @@ gr_hier_block2_detail::resolve_endpoint(const gr_endpoint &endp, bool is_input) 
   throw std::runtime_error(msg.str());
 }
 
+std::vector<gr_basic_block_sptr> gr_hier_block2_detail::resolve_providers(const gr_msg_connection &msgcon) const{
+    gr_hier_block2_sptr block(cast_to_hier_block2_sptr(msgcon.pro));
+    if (!block) return std::vector<gr_basic_block_sptr>(1, msgcon.pro); //this is a real block, not hier
+
+    std::vector<gr_basic_block_sptr> providers;
+
+    //since we know this is a hier block, traverse its connections
+    BOOST_FOREACH(gr_msg_connection mc_i, block->d_detail->d_msg_connections){
+        if (mc_i.sub.get() == block.get() && mc_i.name == msgcon.name){
+            BOOST_FOREACH(gr_basic_block_sptr p, this->resolve_providers(mc_i)){
+                providers.push_back(p);
+            }
+        }
+    }
+
+    return providers;
+}
+
+std::vector<gr_basic_block_sptr> gr_hier_block2_detail::resolve_subscribers(const gr_msg_connection &msgcon) const{
+    gr_hier_block2_sptr block(cast_to_hier_block2_sptr(msgcon.sub));
+    if (!block) return std::vector<gr_basic_block_sptr>(1, msgcon.sub); //this is a real block, not hier
+
+    std::vector<gr_basic_block_sptr> subscribers;
+
+    //since we know this is a hier block, traverse its connections
+    BOOST_FOREACH(gr_msg_connection mc_i, block->d_detail->d_msg_connections){
+        if (mc_i.pro.get() == block.get()){
+            BOOST_FOREACH(gr_basic_block_sptr s, this->resolve_subscribers(mc_i)){
+                subscribers.push_back(s);
+            }
+        }
+    }
+
+    return subscribers;
+}
+
+void gr_hier_block2_detail::flatten_msg_subscriptions(gr_flat_flowgraph_sptr sfg) const{
+    BOOST_FOREACH(const gr_msg_connection &msgcon, d_msg_connections){
+        //totally ignore connections into internal hier block IO,
+        //that is taken care of by the caller, one level up
+        gr_hier_block2_sptr src_block(cast_to_hier_block2_sptr(msgcon.pro));
+        gr_hier_block2_sptr dst_block(cast_to_hier_block2_sptr(msgcon.sub));
+        if (
+            (src_block && src_block.get() == d_owner) ||
+            (dst_block &&  dst_block.get() == d_owner)
+        ) continue;
+
+        //resolve all of the providers and subscribers and set references
+        BOOST_FOREACH(gr_basic_block_sptr pro, this->resolve_providers(msgcon)){
+            BOOST_FOREACH(gr_basic_block_sptr sub, this->resolve_subscribers(msgcon)){
+                gr_msg_connection flat_msg_con;
+                flat_msg_con.pro = pro;
+                flat_msg_con.sub = sub;
+                flat_msg_con.name = msgcon.name;
+                sfg->msg_connections.push_back(flat_msg_con);
+            }
+        }
+    }
+}
+
 void
 gr_hier_block2_detail::flatten_aux(gr_flat_flowgraph_sptr sfg) const
 {
+  this->flatten_msg_subscriptions(sfg);
+
   if (GR_HIER_BLOCK2_DETAIL_DEBUG)
     std::cout << "Flattening " << d_owner->name() << std::endl;
 

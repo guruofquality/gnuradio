@@ -57,6 +57,9 @@ public:
    */
   static gr_block_vector_t make_block_vector(gr_basic_block_vector_t &blocks);
 
+  //store all the resolved message connections
+  std::vector<gr_msg_connection> msg_connections;
+
 private:
   gr_flat_flowgraph();
 

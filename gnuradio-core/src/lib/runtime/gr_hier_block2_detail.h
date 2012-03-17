@@ -39,9 +39,11 @@ public:
   void connect(gr_basic_block_sptr block);
   void connect(gr_basic_block_sptr src, int src_port, 
 	       gr_basic_block_sptr dst, int dst_port);
+  void msg_connect(gr_basic_block_sptr pro, const std::string &name, gr_basic_block_sptr sub);
   void disconnect(gr_basic_block_sptr block);
   void disconnect(gr_basic_block_sptr, int src_port, 
 		  gr_basic_block_sptr, int dst_port);
+  void msg_disconnect(gr_basic_block_sptr pro, const std::string &name, gr_basic_block_sptr sub);
   void disconnect_all();
   void lock();
   void unlock();
@@ -64,6 +66,12 @@ private:
 
   gr_endpoint_vector_t resolve_port(int port, bool is_input);
   gr_endpoint_vector_t resolve_endpoint(const gr_endpoint &endp, bool is_input) const;
+
+  std::vector<gr_msg_connection> d_msg_connections;
+
+  void flatten_msg_subscriptions(gr_flat_flowgraph_sptr sfg) const;
+  std::vector<gr_basic_block_sptr> resolve_providers(const gr_msg_connection &) const;
+  std::vector<gr_basic_block_sptr> resolve_subscribers(const gr_msg_connection &) const;
 };
 
 #endif /* INCLUDED_GR_HIER_BLOCK2_DETAIL_H */
