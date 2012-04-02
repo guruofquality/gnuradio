@@ -338,20 +338,47 @@ GRUEL_API void pmt_vector_fill(pmt_t vector, pmt_t fill);
 GRUEL_API bool pmt_is_blob(pmt_t x);
 
 /*!
+ * \brief Allocate a blob given the length in bytes
+ *
+ * \param len is the size of the data in bytes.
+ */
+GRUEL_API pmt_t pmt_make_blob(size_t len);
+
+/*!
  * \brief Make a blob given a pointer and length in bytes
  *
- * \param buf is the pointer to data to use to create blob
+ * \param buf a pointer to read/write memory.
  * \param len is the size of the data in bytes.
+ */
+GRUEL_API pmt_t pmt_make_blob(void *buf, size_t len);
+
+/*!
+ * \brief Make a blob given a pointer and length in bytes
  *
- * The data is copied into the blob.
+ * \param buf a pointer to read-only memory.
+ * \param len is the size of the data in bytes.
  */
 GRUEL_API pmt_t pmt_make_blob(const void *buf, size_t len);
 
-//! Return a pointer to the blob's data
-GRUEL_API const void *pmt_blob_data(pmt_t blob);
+/*!
+ * Return a pointer to the blob's data,
+ * or NULL if the blob was constructed with read-only memory.
+ */
+GRUEL_API void *pmt_blob_rw_data(pmt_t blob);
+
+//! Return a const pointer to the blob's data
+GRUEL_API const void *pmt_blob_ro_data(pmt_t blob);
+
+//! Inline shortcut previous API call
+inline const void *pmt_blob_data(pmt_t blob){
+    return pmt_blob_ro_data(blob);
+}
 
 //! Return the blob's length in bytes
 GRUEL_API size_t pmt_blob_length(pmt_t blob);
+
+//! Set the blob's length in bytes
+GRUEL_API void pmt_blob_set_length(pmt_t blob, size_t len_in_bytes);
 
 /*!
  * <pre>

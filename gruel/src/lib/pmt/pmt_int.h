@@ -24,6 +24,7 @@
 
 #include <gruel/pmt.h>
 #include <boost/utility.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/detail/atomic_count.hpp>
 
 /*
@@ -56,6 +57,7 @@ public:
   virtual bool is_vector()  const { return false; }
   virtual bool is_dict()    const { return false; }
   virtual bool is_any()     const { return false; }
+  virtual bool is_blob()    const { return false; }
 
   virtual bool is_uniform_vector() const { return false; }
   virtual bool is_u8vector()  const { return false; }
@@ -230,6 +232,21 @@ public:
   void  set(const boost::any &any) { d_any = any; }
 };
 
+class pmt_blob : public pmt_base
+{
+
+public:
+  typedef boost::shared_array<char> shart;
+  pmt_blob(const void *, void *, size_t, shart);
+  //~pmt_blob();
+
+  const void *romem;
+  void *rwmem;
+  size_t len;
+  shart shar;
+
+  bool is_blob() const { return true; }
+};
 
 class pmt_uniform_vector : public pmt_base
 {

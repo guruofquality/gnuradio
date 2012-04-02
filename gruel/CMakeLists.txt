@@ -24,6 +24,12 @@ include(GrBoost)
 
 include(GrPython) #used for code generation
 
+GR_PYTHON_CHECK_MODULE("numpy" numpy True NUMPY_FOUND)
+
+if(ENABLE_PYTHON)
+    set(gruel_python_deps NUMPY_FOUND)
+endif(ENABLE_PYTHON)
+
 ########################################################################
 # Register component
 ########################################################################
@@ -31,6 +37,7 @@ include(GrComponent)
 GR_REGISTER_COMPONENT("gruel" ENABLE_GRUEL
     Boost_FOUND
     PYTHONINTERP_FOUND
+    ${gruel_python_deps}
 )
 
 include(GrMiscUtils)

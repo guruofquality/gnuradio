@@ -153,6 +153,12 @@ _any(pmt_t x)
   return dynamic_cast<pmt_any*>(x.get());
 }
 
+static pmt_blob *
+_blob(pmt_t x)
+{
+  return dynamic_cast<pmt_blob*>(x.get());
+}
+
 ////////////////////////////////////////////////////////////////////////////
 //                           Globals
 ////////////////////////////////////////////////////////////////////////////
@@ -918,37 +924,72 @@ pmt_msg_accepter_ref(const pmt_t &obj)
 
 
 ////////////////////////////////////////////////////////////////////////////
-//             Binary Large Object -- currently a u8vector
+//             Binary Large Object
 ////////////////////////////////////////////////////////////////////////////
+#define PMT_BLOB_ALIGN_MASK size_t(0x1f) //byte alignment mask of self-allocated blobs
+
+pmt_blob::pmt_blob(const void *rom, void *rwm, size_t l, shart s = shart()):
+    romem(rom), rwmem(rwm), len(l), shar(s){}
 
 bool
 pmt_is_blob(pmt_t x)
 {
-  // return pmt_is_u8vector(x);
-  return pmt_is_uniform_vector(x);
+  return x->is_blob();
+}
+
+pmt_t
+pmt_make_blob(size_t len)
+{
+  pmt_blob::shart shar(new char[len + PMT_BLOB_ALIGN_MASK]);
+  const size_t addr = (size_t(shar.get()) + PMT_BLOB_ALIGN_MASK) & ~PMT_BLOB_ALIGN_MASK;
+  char *mem = reinterpret_cast<char *>(addr);
+  return pmt_t(new pmt_blob(mem, mem, len, shar));
+}
+
+pmt_t
+pmt_make_blob(void *buf, size_t len_in_bytes)
+{
+  return pmt_t(new pmt_blob(buf, buf, len_in_bytes));
 }
 
 pmt_t
 pmt_make_blob(const void *buf, size_t len_in_bytes)
 {
-  return pmt_init_u8vector(len_in_bytes, (const uint8_t *) buf);
+  return pmt_t(new pmt_blob(buf, NULL, len_in_bytes));
+}
+
+void *
+pmt_blob_rw_data(pmt_t blob)
+{
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_rw_data", blob);
+  return _blob(blob)->rwmem;
 }
 
 const void *
-pmt_blob_data(pmt_t blob)
+pmt_blob_ro_data(pmt_t blob)
 {
-  size_t len;
-  return pmt_uniform_vector_elements(blob, len);
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_data", blob);
+  return _blob(blob)->romem;
 }
 
 size_t
 pmt_blob_length(pmt_t blob)
 {
-  size_t len;
-  pmt_uniform_vector_elements(blob, len);
-  return len;
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_length", blob);
+  return _blob(blob)->len;
 }
 
+
+void
+pmt_blob_set_length(pmt_t blob, size_t len_in_bytes)
+{
+  if (!blob->is_blob())
+    throw pmt_wrong_type("pmt_blob_set_length", blob);
+  _blob(blob)->len = len_in_bytes;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 //                          General Functions

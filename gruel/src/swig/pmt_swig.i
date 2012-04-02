@@ -39,10 +39,8 @@
 %include "pmt_swig_doc.i"
 
 ////////////////////////////////////////////////////////////////////////
-// Language independent exception handler
-////////////////////////////////////////////////////////////////////////
-
 // Template intrusive_ptr for Swig to avoid dereferencing issues
+////////////////////////////////////////////////////////////////////////
 namespace pmt{
     class pmt_base;
 }
@@ -50,6 +48,9 @@ namespace pmt{
 %import <gr_intrusive_ptr.i>
 %template(swig_int_ptr) boost::intrusive_ptr<pmt::pmt_base>;
 
+////////////////////////////////////////////////////////////////////////
+// Copy of stuff from pmt.h
+////////////////////////////////////////////////////////////////////////
 namespace pmt{
 
 typedef boost::intrusive_ptr<pmt_base> pmt_t;
@@ -307,20 +308,39 @@ void pmt_vector_fill(pmt_t vector, pmt_t fill);
 bool pmt_is_blob(pmt_t x);
 
 /*!
+ * \brief Allocate a blob given the length in bytes
+ *
+ * \param len is the size of the data in bytes.
+ */
+pmt_t pmt_make_blob(size_t len);
+
+/*!
  * \brief Make a blob given a pointer and length in bytes
  *
- * \param buf is the pointer to data to use to create blob
+ * \param buf a pointer to read/write memory.
  * \param len is the size of the data in bytes.
- *
- * The data is copied into the blob.
  */
-pmt_t pmt_make_blob(const void *buf, size_t len);
+pmt_t pmt_make_blob(void *buf, size_t len);
 
-//! Return a pointer to the blob's data
-const void *pmt_blob_data(pmt_t blob);
+/*!
+ * \brief Make a blob given a pointer and length in bytes
+ *
+ * \param buf a pointer to read-only memory.
+ * \param len is the size of the data in bytes.
+ */
+//pmt_t pmt_make_blob(const void *buf, size_t len);
+
+//! Return a non-const pointer to the blob's data
+void *pmt_blob_rw_data(pmt_t blob);
+
+//! Return a const pointer to the blob's data
+const void *pmt_blob_ro_data(pmt_t blob);
 
 //! Return the blob's length in bytes
 size_t pmt_blob_length(pmt_t blob);
+
+//! Set the blob's length in bytes
+void pmt_blob_set_length(pmt_t blob, size_t len_in_bytes);
 
 /*!
  * <pre>
