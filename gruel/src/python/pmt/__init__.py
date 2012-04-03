@@ -26,4 +26,8 @@ The GNU Radio Utility Etcetera Library's Polymorphic Types for Python.
 '''
 
 from pmt_swig import *
+import pmt_swig as __pmt
 
+#re-create mgr acquire by calling into python GIL-safe version
+def pmt_mgr_acquire(mgr, block = True):
+    return __pmt.pmt_mgr_acquire_safe(mgr, block)

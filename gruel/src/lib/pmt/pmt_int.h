@@ -23,8 +23,11 @@
 #define INCLUDED_PMT_INT_H
 
 #include <gruel/pmt.h>
+#include <gruel/thread.h>
 #include <boost/utility.hpp>
 #include <boost/detail/atomic_count.hpp>
+#include <boost/function.hpp>
+#include <queue>
 
 /*
  * EVERYTHING IN THIS FILE IS PRIVATE TO THE IMPLEMENTATION!
@@ -36,10 +39,17 @@
 namespace pmt {
 
 class GRUEL_API pmt_base : boost::noncopyable {
+public:
   mutable boost::detail::atomic_count count_;
 
+  static void default_deleter(pmt_base *p){
+    delete p;
+  }
+
+  boost::function<void(pmt_base *)> deleter_;
+
 protected:
-  pmt_base() : count_(0) {};
+  pmt_base() : count_(0), deleter_(&pmt::pmt_base::default_deleter) {};
   virtual ~pmt_base();
 
 public:
@@ -56,6 +66,7 @@ public:
   virtual bool is_vector()  const { return false; }
   virtual bool is_dict()    const { return false; }
   virtual bool is_any()     const { return false; }
+  virtual bool is_mgr()     const { return false; }
 
   virtual bool is_uniform_vector() const { return false; }
   virtual bool is_u8vector()  const { return false; }
@@ -230,6 +241,19 @@ public:
   void  set(const boost::any &any) { d_any = any; }
 };
 
+class pmt_mgr : public pmt_base
+{
+
+public:
+  pmt_mgr(void);
+  ~pmt_mgr();
+
+  class mgr_guts;
+  typedef boost::shared_ptr<mgr_guts> guts_sptr;
+  guts_sptr guts;
+
+  bool is_mgr() const { return true; }
+};
 
 class pmt_uniform_vector : public pmt_base
 {
