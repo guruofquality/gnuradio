@@ -52,7 +52,7 @@ public:
         //print all tags
         BOOST_FOREACH(const gr_tag_t &rx_time_tag, rx_time_tags){
             const uint64_t offset = rx_time_tag.offset;
-            const pmt::pmt_t &value = rx_time_tag.value;
+            const pmt::pmt_const_t &value = rx_time_tag.value;
 
             std::cout << boost::format("Full seconds %u, Frac seconds %f, abs sample offset %u")
                 % pmt::pmt_to_uint64(pmt_tuple_ref(value, 0))

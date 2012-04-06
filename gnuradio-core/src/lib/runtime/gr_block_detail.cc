@@ -186,7 +186,7 @@ gr_block_detail::get_tags_in_range(std::vector<gr_tag_t> &v,
   d_input[which_input]->get_tags_in_range(found_items, abs_start, abs_end);
 
   // Filter further by key name
-  pmt_t itemkey;
+  pmt_const_t itemkey;
   std::vector<gr_tag_t>::iterator itr;
   for(itr = found_items.begin(); itr != found_items.end(); itr++) {
     itemkey = (*itr).key;

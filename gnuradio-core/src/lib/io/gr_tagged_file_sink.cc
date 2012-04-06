@@ -116,7 +116,7 @@ gr_tagged_file_sink::work (int noutput_items,
 	    uint64_t time_nitems = tag.offset;
 
 	    // Get time based on last time tag from USRP
-	    pmt::pmt_t time = tag.value;
+	    pmt::pmt_const_t time = tag.value;
 	    int tsecs = pmt::pmt_to_long(pmt::pmt_tuple_ref(time, 0));
 	    double tfrac = pmt::pmt_to_double(pmt::pmt_tuple_ref(time, 1));
 

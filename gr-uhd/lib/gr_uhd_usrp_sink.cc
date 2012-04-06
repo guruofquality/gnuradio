@@ -351,8 +351,8 @@ public:
         //process all of the tags found with the same count as tag0
         BOOST_FOREACH(const gr_tag_t &my_tag, _tags){
             const uint64_t my_tag_count = my_tag.offset;
-            const pmt::pmt_t &key = my_tag.key;
-            const pmt::pmt_t &value = my_tag.value;
+            const pmt::pmt_const_t &key = my_tag.key;
+            const pmt::pmt_const_t &value = my_tag.value;
 
             //determine how many samples to send...
             //from zero until the next tag or end of work
