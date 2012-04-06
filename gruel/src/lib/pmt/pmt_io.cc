@@ -31,7 +31,7 @@
 namespace pmt {
 
 static void
-pmt_write_list_tail(pmt_t obj, std::ostream &port)
+pmt_write_list_tail(pmt_const_t obj, std::ostream &port)
 {
   pmt_write(pmt_car(obj), port); // write the car
   obj = pmt_cdr(obj);		 // step to cdr

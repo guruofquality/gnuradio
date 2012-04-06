@@ -170,40 +170,40 @@ public:
 class pmt_pair : public pmt_base
 {
 public:
-  pmt_t		d_car;
-  pmt_t		d_cdr;
+  pmt_const_t		d_car;
+  pmt_const_t		d_cdr;
 
-  pmt_pair(const pmt_t& car, const pmt_t& cdr);
+  pmt_pair(const pmt_const_t& car, const pmt_const_t& cdr);
   //~pmt_pair(){};
 
   bool is_pair() const { return true; }
-  pmt_t car() const { return d_car; }
-  pmt_t cdr() const { return d_cdr; }
+  pmt_const_t car() const { return d_car; }
+  pmt_const_t cdr() const { return d_cdr; }
 
-  void set_car(pmt_t car) { d_car = car; }
-  void set_cdr(pmt_t cdr) { d_cdr = cdr; }
+  void set_car(pmt_const_t car) { d_car = car; }
+  void set_cdr(pmt_const_t cdr) { d_cdr = cdr; }
 };
 
 class pmt_vector : public pmt_base
 {
-  std::vector<pmt_t>	d_v;
+  std::vector<pmt_const_t>	d_v;
 
 public:
   pmt_vector(size_t len, pmt_const_t fill);
   //~pmt_vector();
 
   bool is_vector() const { return true; }
-  pmt_t ref(size_t k) const;
+  pmt_const_t ref(size_t k) const;
   void  set(size_t k, pmt_const_t obj);
   void  fill(pmt_const_t fill);
   size_t length() const { return d_v.size(); }
 
-  pmt_t _ref(size_t k) const { return d_v[k]; }
+  pmt_const_t _ref(size_t k) const { return d_v[k]; }
 };
 
 class pmt_tuple : public pmt_base
 {
-  std::vector<pmt_t>	d_v;
+  std::vector<pmt_const_t>	d_v;
 
 public:
   pmt_tuple(size_t len);
@@ -213,8 +213,8 @@ public:
   pmt_const_t ref(size_t k) const;
   size_t length() const { return d_v.size(); }
 
-  pmt_t _ref(size_t k) const { return d_v[k]; }
-  void _set(size_t k, pmt_t v) { d_v[k] = v; }
+  pmt_const_t _ref(size_t k) const { return d_v[k]; }
+  void _set(size_t k, pmt_const_t v) { d_v[k] = v; }
 };
 
 class pmt_any : public pmt_base

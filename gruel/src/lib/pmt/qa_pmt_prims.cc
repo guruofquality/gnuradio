@@ -278,7 +278,7 @@ qa_pmt_prims::test_tuples()
   CPPUNIT_ASSERT_THROW(pmt_tuple_ref(v, 0), pmt_wrong_type);
 
   t = pmt_make_tuple(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9]);
-  pmt_t t2 = pmt_to_tuple(v);
+  pmt_const_t t2 = pmt_to_tuple(v);
   CPPUNIT_ASSERT_EQUAL(size_t(10), pmt_length(v));
   CPPUNIT_ASSERT(pmt_equal(t, t2));
   //std::cout << v << std::endl;
@@ -415,7 +415,7 @@ qa_pmt_prims::test_lists()
 
   pmt_t l1 = pmt_list4(s0, s1, s2, s3);
   pmt_t l2 = pmt_list3(s0, s1, s2);
-  pmt_t l3 = pmt_list_add(l2, s3);
+  pmt_const_t l3 = pmt_list_add(l2, s3);
   CPPUNIT_ASSERT(pmt_equal(l1, l3));
 }
 

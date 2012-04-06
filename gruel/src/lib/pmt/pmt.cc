@@ -409,7 +409,7 @@ pmt_to_complex(pmt_const_t x)
 ////////////////////////////////////////////////////////////////////////////
 
 pmt_null::pmt_null() {}
-pmt_pair::pmt_pair(const pmt_t& car, const pmt_t& cdr) : d_car(car), d_cdr(cdr) {}
+pmt_pair::pmt_pair(const pmt_const_t& car, const pmt_const_t& cdr) : d_car(car), d_cdr(cdr) {}
 
 bool
 pmt_is_null(const pmt_const_t& x)
@@ -478,7 +478,7 @@ pmt_vector::pmt_vector(size_t len, pmt_const_t fill)
     d_v[i] = fill;
 }
 
-pmt_t
+pmt_const_t
 pmt_vector::ref(size_t k) const
 {
   if (k >= length())
@@ -702,7 +702,7 @@ pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &
   return pmt_t(t);
 }
 
-pmt_t
+pmt_const_t
 pmt_to_tuple(const pmt_const_t &x)
 {
   if (x->is_tuple())		// already one
@@ -719,7 +719,7 @@ pmt_to_tuple(const pmt_const_t &x)
   }
 
   if (x->is_pair()){
-    pmt_t y = x;
+    pmt_const_t y = x;
     for (size_t i = 0; i < len; i++){
       t->_set(i, pmt_car(y));
       y = pmt_cdr(y);
@@ -794,7 +794,7 @@ pmt_dict_add(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t 
   return pmt_acons(key, value, dict);
 }
 
-pmt_t
+pmt_const_t
 pmt_dict_delete(const pmt_const_t &dict, const pmt_const_t &key)
 {
   if (pmt_is_null(dict))
@@ -809,7 +809,7 @@ pmt_dict_delete(const pmt_const_t &dict, const pmt_const_t &key)
 pmt_const_t
 pmt_dict_ref(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t &not_found)
 {
-  pmt_t	p = pmt_assv(key, dict);	// look for (key . value) pair
+  pmt_const_t	p = pmt_assv(key, dict);	// look for (key . value) pair
   if (pmt_is_pair(p))
     return pmt_cdr(p);
   else
@@ -822,7 +822,7 @@ pmt_dict_has_key(const pmt_const_t &dict, const pmt_const_t &key)
   return pmt_is_pair(pmt_assv(key, dict));
 }
 
-pmt_t
+pmt_const_t
 pmt_dict_items(pmt_const_t dict)
 {
   if (!pmt_is_dict(dict))
@@ -831,7 +831,7 @@ pmt_dict_items(pmt_const_t dict)
   return dict;		// equivalent to dict in the a-list case
 }
 
-pmt_t
+pmt_const_t
 pmt_dict_keys(pmt_const_t dict)
 {
   if (!pmt_is_dict(dict))
@@ -840,7 +840,7 @@ pmt_dict_keys(pmt_const_t dict)
   return pmt_map(pmt_car, dict);
 }
 
-pmt_t
+pmt_const_t
 pmt_dict_values(pmt_const_t dict)
 {
   if (!pmt_is_dict(dict))
@@ -1074,7 +1074,7 @@ pmt_length(const pmt_const_t& x)
 
   if (x->is_pair()) {
     size_t length=1;
-    pmt_t it = pmt_cdr(x);
+    pmt_const_t it = pmt_cdr(x);
     while (pmt_is_pair(it)){
       length++;
       it = pmt_cdr(it);
@@ -1091,11 +1091,11 @@ pmt_length(const pmt_const_t& x)
   throw pmt_wrong_type("pmt_length", x);
 }
 
-pmt_t
+pmt_const_t
 pmt_assq(pmt_const_t obj, pmt_const_t alist)
 {
   while (pmt_is_pair(alist)){
-    pmt_t p = pmt_car(alist);
+    pmt_const_t p = pmt_car(alist);
     if (!pmt_is_pair(p))	// malformed alist
       return PMT_F;
 
@@ -1110,7 +1110,7 @@ pmt_assq(pmt_const_t obj, pmt_const_t alist)
 /*
  * This avoids a bunch of shared_pointer reference count manipulation.
  */
-pmt_t
+pmt_const_t
 pmt_assv_raw(pmt_base *obj, pmt_base *alist)
 {
   while (alist->is_pair()){
@@ -1128,7 +1128,7 @@ pmt_assv_raw(pmt_base *obj, pmt_base *alist)
 
 #if 1
 
-pmt_t
+pmt_const_t
 pmt_assv(pmt_const_t obj, pmt_const_t alist)
 {
   return pmt_assv_raw(obj.get(), alist.get());
@@ -1136,7 +1136,7 @@ pmt_assv(pmt_const_t obj, pmt_const_t alist)
 
 #else
 
-pmt_t
+pmt_const_t
 pmt_assv(pmt_const_t obj, pmt_const_t alist)
 {
   while (pmt_is_pair(alist)){
@@ -1155,11 +1155,11 @@ pmt_assv(pmt_const_t obj, pmt_const_t alist)
 #endif
 
 
-pmt_t
+pmt_const_t
 pmt_assoc(pmt_const_t obj, pmt_const_t alist)
 {
   while (pmt_is_pair(alist)){
-    pmt_t p = pmt_car(alist);
+    pmt_const_t p = pmt_car(alist);
     if (!pmt_is_pair(p))	// malformed alist
       return PMT_F;
 
@@ -1171,7 +1171,7 @@ pmt_assoc(pmt_const_t obj, pmt_const_t alist)
   return PMT_F;
 }
 
-pmt_t
+pmt_const_t
 pmt_map(pmt_const_t proc(const pmt_const_t&), pmt_const_t list)
 {
   pmt_t r = PMT_NIL;
@@ -1184,10 +1184,10 @@ pmt_map(pmt_const_t proc(const pmt_const_t&), pmt_const_t list)
   return pmt_reverse_x(r);
 }
 
-pmt_t
+pmt_const_t
 pmt_reverse(pmt_const_t listx)
 {
-  pmt_t list = listx;
+  pmt_const_t list = listx;
   pmt_t r = PMT_NIL;
 
   while(pmt_is_pair(list)){
@@ -1200,7 +1200,7 @@ pmt_reverse(pmt_const_t listx)
     throw pmt_wrong_type("pmt_reverse", listx);
 }
 
-pmt_t
+pmt_const_t
 pmt_reverse_x(pmt_t list)
 {
   // FIXME do it destructively
@@ -1210,7 +1210,7 @@ pmt_reverse_x(pmt_t list)
 pmt_const_t
 pmt_nth(size_t n, pmt_const_t list)
 {
-  pmt_t t = pmt_nthcdr(n, list);
+  pmt_const_t t = pmt_nthcdr(n, list);
   if (pmt_is_pair(t))
     return pmt_car(t);
   else
@@ -1237,7 +1237,7 @@ pmt_nthcdr(size_t n, pmt_const_t list)
   return list;
 }
 
-pmt_t
+pmt_const_t
 pmt_memq(pmt_const_t obj, pmt_const_t list)
 {
   while (pmt_is_pair(list)){
@@ -1248,7 +1248,7 @@ pmt_memq(pmt_const_t obj, pmt_const_t list)
   return PMT_F;
 }
 
-pmt_t
+pmt_const_t
 pmt_memv(pmt_const_t obj, pmt_const_t list)
 {
   while (pmt_is_pair(list)){
@@ -1259,7 +1259,7 @@ pmt_memv(pmt_const_t obj, pmt_const_t list)
   return PMT_F;
 }
 
-pmt_t
+pmt_const_t
 pmt_member(pmt_const_t obj, pmt_const_t list)
 {
   while (pmt_is_pair(list)){
@@ -1274,7 +1274,7 @@ bool
 pmt_subsetp(pmt_const_t list1, pmt_const_t list2)
 {
   while (pmt_is_pair(list1)){
-    pmt_t p = pmt_car(list1);
+    pmt_const_t p = pmt_car(list1);
     if (pmt_is_false(pmt_memv(p, list2)))
       return false;
     list1 = pmt_cdr(list1);
@@ -1318,7 +1318,7 @@ pmt_list6(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3, c
   return pmt_cons(x1, pmt_cons(x2, pmt_cons(x3, pmt_cons(x4, pmt_cons(x5, pmt_cons(x6, PMT_NIL))))));
 }
 
-pmt_t
+pmt_const_t
 pmt_list_add(pmt_const_t list, const pmt_const_t& item)
 {
   return pmt_reverse(pmt_cons(item, pmt_reverse(list)));

@@ -51,30 +51,40 @@ namespace pmt {
  * \brief base class of all pmt types
  */
 class pmt_base;
- 
+
 /*!
  * \brief typedef for shared pointer (transparent reference counting).
  * See http://www.boost.org/libs/smart_ptr/smart_ptr.htm
  */
-typedef boost::intrusive_ptr<pmt_base> pmt_t;
+struct pmt_t : boost::intrusive_ptr<pmt_base>
+{
+    //! Create an empty pmt type
+    pmt_t(void){}
+
+    //! Create a pmt type from a pmt ref
+    pmt_t(const pmt_t &p) : boost::intrusive_ptr<pmt_base>(p.get()){}
+
+    //! Create a pmt type from a pmt base ptr
+    pmt_t(pmt_base *p) : boost::intrusive_ptr<pmt_base>(p){}
+};
 
 /*!
- * The PMT cont type for immutable function calls.
+ * The PMT const type for immutable function calls.
  * The pmt_t can be casted to pmt_const_t.
  * However, pmt_const_t cannot be casted to pmt_t.
  * This allows us to pass mutable PMTs into functions
  * that are not supposed to change the PMT's value.
  */
-struct pmt_const_t : pmt_t
+struct pmt_const_t : boost::intrusive_ptr<pmt_base>
 {
     //! Create an empty pmt const type
     pmt_const_t(void){}
 
     //! Create a pmt const type from a pmt
-    pmt_const_t(const pmt_t &p) : pmt_t(p){}
+    pmt_const_t(const pmt_t &p) : boost::intrusive_ptr<pmt_base>(p.get()){}
 
     //! Create a pmt const type from a pmt base ptr
-    pmt_const_t(pmt_base *p) : pmt_t(p){}
+    pmt_const_t(pmt_base *p) : boost::intrusive_ptr<pmt_base>(p){}
 };
 
 extern GRUEL_API void intrusive_ptr_add_ref(pmt_base*);
@@ -311,7 +321,7 @@ GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, con
 /*!
  * If \p x is a vector or proper list, return a tuple containing the elements of x
  */
-GRUEL_API pmt_t pmt_to_tuple(const pmt_const_t &x);
+GRUEL_API pmt_const_t pmt_to_tuple(const pmt_const_t &x);
 
 /*!
  * Return the contents of position \p k of \p tuple.
@@ -523,7 +533,7 @@ GRUEL_API pmt_t pmt_make_dict();
 GRUEL_API pmt_t pmt_dict_add(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t &value);
 
 //! Return a new dictionary with \p key removed.
-GRUEL_API pmt_t pmt_dict_delete(const pmt_const_t &dict, const pmt_const_t &key);
+GRUEL_API pmt_const_t pmt_dict_delete(const pmt_const_t &dict, const pmt_const_t &key);
 
 //! Return true if \p key exists in \p dict
 GRUEL_API bool  pmt_dict_has_key(const pmt_const_t &dict, const pmt_const_t &key);
@@ -532,13 +542,13 @@ GRUEL_API bool  pmt_dict_has_key(const pmt_const_t &dict, const pmt_const_t &key
 GRUEL_API pmt_const_t pmt_dict_ref(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t &not_found);
 
 //! Return list of (key . value) pairs
-GRUEL_API pmt_t pmt_dict_items(pmt_const_t dict);
+GRUEL_API pmt_const_t pmt_dict_items(pmt_const_t dict);
 
 //! Return list of keys
-GRUEL_API pmt_t pmt_dict_keys(pmt_const_t dict);
+GRUEL_API pmt_const_t pmt_dict_keys(pmt_const_t dict);
 
 //! Return list of values
-GRUEL_API pmt_t pmt_dict_values(pmt_const_t dict);
+GRUEL_API pmt_const_t pmt_dict_values(pmt_const_t dict);
 
 /*
  * ------------------------------------------------------------------------
@@ -620,7 +630,7 @@ GRUEL_API size_t pmt_length(const pmt_const_t& v);
  * in \p alist has \p obj as its car then \#f is returned.
  * Uses pmt_eq to compare \p obj with car fields of the pairs in \p alist.
  */
-GRUEL_API pmt_t pmt_assq(pmt_const_t obj, pmt_const_t alist);
+GRUEL_API pmt_const_t pmt_assq(pmt_const_t obj, pmt_const_t alist);
 
 /*!
  * \brief Find the first pair in \p alist whose car field is \p obj
@@ -630,7 +640,7 @@ GRUEL_API pmt_t pmt_assq(pmt_const_t obj, pmt_const_t alist);
  * in \p alist has \p obj as its car then \#f is returned.
  * Uses pmt_eqv to compare \p obj with car fields of the pairs in \p alist.
  */
-GRUEL_API pmt_t pmt_assv(pmt_const_t obj, pmt_const_t alist);
+GRUEL_API pmt_const_t pmt_assv(pmt_const_t obj, pmt_const_t alist);
 
 /*!
  * \brief Find the first pair in \p alist whose car field is \p obj
@@ -640,7 +650,7 @@ GRUEL_API pmt_t pmt_assv(pmt_const_t obj, pmt_const_t alist);
  * in \p alist has \p obj as its car then \#f is returned.
  * Uses pmt_equal to compare \p obj with car fields of the pairs in \p alist.
  */
-GRUEL_API pmt_t pmt_assoc(pmt_const_t obj, pmt_const_t alist);
+GRUEL_API pmt_const_t pmt_assoc(pmt_const_t obj, pmt_const_t alist);
 
 /*!
  * \brief Apply \p proc element-wise to the elements of list and returns
@@ -649,21 +659,21 @@ GRUEL_API pmt_t pmt_assoc(pmt_const_t obj, pmt_const_t alist);
  * \p list must be a list.  The dynamic order in which \p proc is
  * applied to the elements of \p list is unspecified.
  */
-GRUEL_API pmt_t pmt_map(pmt_const_t proc(const pmt_const_t&), pmt_const_t list);
+GRUEL_API pmt_const_t pmt_map(pmt_const_t proc(const pmt_const_t&), pmt_const_t list);
 
 /*!
  * \brief reverse \p list.
  *
  * \p list must be a proper list.
  */
-GRUEL_API pmt_t pmt_reverse(pmt_const_t list);
+GRUEL_API pmt_const_t pmt_reverse(pmt_const_t list);
 
 /*!
  * \brief destructively reverse \p list.
  *
  * \p list must be a proper list.
  */
-GRUEL_API pmt_t pmt_reverse_x(pmt_t list);
+GRUEL_API pmt_const_t pmt_reverse_x(pmt_t list);
 
 /*!
  * \brief (acons x y a) == (cons (cons x y) a)
@@ -690,21 +700,21 @@ GRUEL_API pmt_const_t pmt_nthcdr(size_t n, pmt_const_t list);
  * If \p obj does not occur in \p list, then \#f is returned.
  * pmt_memq use pmt_eq to compare \p obj with the elements of \p list.
  */
-GRUEL_API pmt_t pmt_memq(pmt_const_t obj, pmt_const_t list);
+GRUEL_API pmt_const_t pmt_memq(pmt_const_t obj, pmt_const_t list);
 
 /*!
  * \brief Return the first sublist of \p list whose car is \p obj.
  * If \p obj does not occur in \p list, then \#f is returned.
  * pmt_memv use pmt_eqv to compare \p obj with the elements of \p list.
  */
-GRUEL_API pmt_t pmt_memv(pmt_const_t obj, pmt_const_t list);
+GRUEL_API pmt_const_t pmt_memv(pmt_const_t obj, pmt_const_t list);
 
 /*!
  * \brief Return the first sublist of \p list whose car is \p obj.
  * If \p obj does not occur in \p list, then \#f is returned.
  * pmt_member use pmt_equal to compare \p obj with the elements of \p list.
  */
-GRUEL_API pmt_t pmt_member(pmt_const_t obj, pmt_const_t list);
+GRUEL_API pmt_const_t pmt_member(pmt_const_t obj, pmt_const_t list);
 
 /*!
  * \brief Return true if every element of \p list1 appears in \p list2, and false otherwise.
@@ -746,7 +756,7 @@ GRUEL_API pmt_t pmt_list6(const pmt_const_t& x1, const pmt_const_t& x2, const pm
 /*!
  * \brief Return \p list with \p item added to it.
  */
-GRUEL_API pmt_t pmt_list_add(pmt_const_t list, const pmt_const_t& item);
+GRUEL_API pmt_const_t pmt_list_add(pmt_const_t list, const pmt_const_t& item);
 
 
 /*

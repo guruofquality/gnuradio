@@ -5,7 +5,7 @@
 namespace pmt {
 
 static pmt_@TAG@vector *
-_@TAG@vector(pmt_t x)
+_@TAG@vector(pmt_const_t x)
 {
   return dynamic_cast<pmt_@TAG@vector*>(x.get());
 }
