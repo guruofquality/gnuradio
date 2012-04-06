@@ -51,7 +51,7 @@ pmt_write_list_tail(pmt_t obj, std::ostream &port)
 }
 
 void
-pmt_write(pmt_t obj, std::ostream &port)
+pmt_write(pmt_const_t obj, std::ostream &port)
 {
   if (pmt_is_bool(obj)){
     if (pmt_is_true(obj))
@@ -121,14 +121,14 @@ pmt_write(pmt_t obj, std::ostream &port)
   }
 }
 
-std::ostream& operator<<(std::ostream &os, pmt_t obj)
+std::ostream& operator<<(std::ostream &os, pmt_const_t obj)
 {
   pmt_write(obj, os);
   return os;
 }
 
 std::string 
-pmt_write_string(pmt_t obj)
+pmt_write_string(pmt_const_t obj)
 {
   std::ostringstream s;
   s << obj;
@@ -142,7 +142,7 @@ pmt_read(std::istream &port)
 }
 
 void
-pmt_serialize(pmt_t obj, std::ostream &sink)
+pmt_serialize(pmt_const_t obj, std::ostream &sink)
 {
   throw pmt_notimplemented("notimplemented: pmt_serialize", obj);
 }
@@ -160,7 +160,7 @@ pmt_deserialize(std::istream &source)
 
 
 void 
-pmt::pmt_print(pmt_t v)
+pmt::pmt_print(pmt_const_t v)
 {
   std::cout << pmt_write_string(v) << std::endl;
 }

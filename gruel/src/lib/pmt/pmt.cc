@@ -69,22 +69,22 @@ pmt_base::~pmt_base()
 //                         Exceptions
 ////////////////////////////////////////////////////////////////////////////
 
-pmt_exception::pmt_exception(const std::string &msg, pmt_t obj)
+pmt_exception::pmt_exception(const std::string &msg, pmt_const_t obj)
   : logic_error(msg + ": " + pmt_write_string(obj))
 {
 }
 
-pmt_wrong_type::pmt_wrong_type(const std::string &msg, pmt_t obj)
+pmt_wrong_type::pmt_wrong_type(const std::string &msg, pmt_const_t obj)
   : pmt_exception(msg + ": wrong_type ", obj)
 {
 }
 
-pmt_out_of_range::pmt_out_of_range(const std::string &msg, pmt_t obj)
+pmt_out_of_range::pmt_out_of_range(const std::string &msg, pmt_const_t obj)
   : pmt_exception(msg + ": out of range ", obj)
 {
 }
 
-pmt_notimplemented::pmt_notimplemented(const std::string &msg, pmt_t obj)
+pmt_notimplemented::pmt_notimplemented(const std::string &msg, pmt_const_t obj)
   : pmt_exception(msg + ": notimplemented ", obj)
 {
 }
@@ -94,61 +94,61 @@ pmt_notimplemented::pmt_notimplemented(const std::string &msg, pmt_t obj)
 ////////////////////////////////////////////////////////////////////////////
 
 static pmt_symbol *
-_symbol(pmt_t x)
+_symbol(pmt_const_t x)
 {
   return dynamic_cast<pmt_symbol*>(x.get());
 }
 
 static pmt_integer *
-_integer(pmt_t x)
+_integer(pmt_const_t x)
 {
   return dynamic_cast<pmt_integer*>(x.get());
 }
 
 static pmt_uint64 *
-_uint64(pmt_t x)
+_uint64(pmt_const_t x)
 {
   return dynamic_cast<pmt_uint64*>(x.get());
 }
 
 static pmt_real *
-_real(pmt_t x)
+_real(pmt_const_t x)
 {
   return dynamic_cast<pmt_real*>(x.get());
 }
 
 static pmt_complex *
-_complex(pmt_t x)
+_complex(pmt_const_t x)
 {
   return dynamic_cast<pmt_complex*>(x.get());
 }
 
 static pmt_pair *
-_pair(pmt_t x)
+_pair(pmt_const_t x)
 {
   return dynamic_cast<pmt_pair*>(x.get());
 }
 
 static pmt_vector *
-_vector(pmt_t x)
+_vector(pmt_const_t x)
 {
   return dynamic_cast<pmt_vector*>(x.get());
 }
 
 static pmt_tuple *
-_tuple(pmt_t x)
+_tuple(pmt_const_t x)
 {
   return dynamic_cast<pmt_tuple*>(x.get());
 }
 
 static pmt_uniform_vector *
-_uniform_vector(pmt_t x)
+_uniform_vector(pmt_const_t x)
 {
   return dynamic_cast<pmt_uniform_vector*>(x.get());
 }
 
 static pmt_any *
-_any(pmt_t x)
+_any(pmt_const_t x)
 {
   return dynamic_cast<pmt_any*>(x.get());
 }
@@ -169,19 +169,19 @@ const pmt_t PMT_EOF = pmt_cons(PMT_NIL, PMT_NIL);	// singleton
 pmt_bool::pmt_bool(){}
 
 bool
-pmt_is_true(pmt_t obj)
+pmt_is_true(pmt_const_t obj)
 {
   return obj != PMT_F;
 }
 
 bool
-pmt_is_false(pmt_t obj)
+pmt_is_false(pmt_const_t obj)
 {
   return obj == PMT_F;
 }
 
 bool
-pmt_is_bool(pmt_t obj)
+pmt_is_bool(pmt_const_t obj)
 {
   return obj->is_bool();
 }
@@ -193,7 +193,7 @@ pmt_from_bool(bool val)
 }
 
 bool
-pmt_to_bool(pmt_t val)
+pmt_to_bool(pmt_const_t val)
 {
   if (val == PMT_T)
     return true;
@@ -230,7 +230,7 @@ hash_string(const std::string &s)
 }
 
 bool 
-pmt_is_symbol(const pmt_t& obj)
+pmt_is_symbol(const pmt_const_t& obj)
 {
   return obj->is_symbol();
 }
@@ -261,7 +261,7 @@ pmt_intern(const std::string &name)
 }
 
 const std::string
-pmt_symbol_to_string(const pmt_t& sym)
+pmt_symbol_to_string(const pmt_const_t& sym)
 {
   if (!sym->is_symbol())
     throw pmt_wrong_type("pmt_symbol_to_string", sym);
@@ -276,7 +276,7 @@ pmt_symbol_to_string(const pmt_t& sym)
 ////////////////////////////////////////////////////////////////////////////
 
 bool
-pmt_is_number(pmt_t x)
+pmt_is_number(pmt_const_t x)
 {
   return x->is_number();
 }
@@ -288,7 +288,7 @@ pmt_is_number(pmt_t x)
 pmt_integer::pmt_integer(long value) : d_value(value) {}
 
 bool
-pmt_is_integer(pmt_t x)
+pmt_is_integer(pmt_const_t x)
 {
   return x->is_integer();
 }
@@ -301,7 +301,7 @@ pmt_from_long(long x)
 }
 
 long
-pmt_to_long(pmt_t x)
+pmt_to_long(pmt_const_t x)
 {
   pmt_integer* i = dynamic_cast<pmt_integer*>(x.get());
   if ( i )
@@ -317,7 +317,7 @@ pmt_to_long(pmt_t x)
 pmt_uint64::pmt_uint64(uint64_t value) : d_value(value) {}
 
 bool
-pmt_is_uint64(pmt_t x)
+pmt_is_uint64(pmt_const_t x)
 {
   return x->is_uint64();
 }
@@ -330,7 +330,7 @@ pmt_from_uint64(uint64_t x)
 }
 
 uint64_t
-pmt_to_uint64(pmt_t x)
+pmt_to_uint64(pmt_const_t x)
 {
   if(x->is_uint64())
     return _uint64(x)->value();
@@ -351,7 +351,7 @@ pmt_to_uint64(pmt_t x)
 pmt_real::pmt_real(double value) : d_value(value) {}
 
 bool 
-pmt_is_real(pmt_t x)
+pmt_is_real(pmt_const_t x)
 {
   return x->is_real();
 }
@@ -363,7 +363,7 @@ pmt_from_double(double x)
 }
 
 double
-pmt_to_double(pmt_t x)
+pmt_to_double(pmt_const_t x)
 {
   if (x->is_real())
     return _real(x)->value();
@@ -380,7 +380,7 @@ pmt_to_double(pmt_t x)
 pmt_complex::pmt_complex(std::complex<double> value) : d_value(value) {}
 
 bool 
-pmt_is_complex(pmt_t x)
+pmt_is_complex(pmt_const_t x)
 {
   return x->is_complex();
 }
@@ -392,7 +392,7 @@ pmt_make_rectangular(double re, double im)
 }
 
 std::complex<double>
-pmt_to_complex(pmt_t x)
+pmt_to_complex(pmt_const_t x)
 {
   if (x->is_complex())
     return _complex(x)->value();
@@ -412,25 +412,25 @@ pmt_null::pmt_null() {}
 pmt_pair::pmt_pair(const pmt_t& car, const pmt_t& cdr) : d_car(car), d_cdr(cdr) {}
 
 bool
-pmt_is_null(const pmt_t& x)
+pmt_is_null(const pmt_const_t& x)
 {
   return x == PMT_NIL;
 }
 
 bool
-pmt_is_pair(const pmt_t& obj)
+pmt_is_pair(const pmt_const_t& obj)
 {
   return obj->is_pair();
 }
 
 pmt_t
-pmt_cons(const pmt_t& x, const pmt_t& y)
+pmt_cons(const pmt_const_t& x, const pmt_const_t& y)
 {
   return pmt_t(new pmt_pair(x, y));
 }
 
-pmt_t
-pmt_car(const pmt_t& pair)
+pmt_const_t
+pmt_car(const pmt_const_t& pair)
 {
   pmt_pair* p = dynamic_cast<pmt_pair*>(pair.get());
   if ( p )
@@ -439,8 +439,8 @@ pmt_car(const pmt_t& pair)
   throw pmt_wrong_type("pmt_car", pair);
 }
 
-pmt_t
-pmt_cdr(const pmt_t& pair)
+pmt_const_t
+pmt_cdr(const pmt_const_t& pair)
 {
   pmt_pair* p = dynamic_cast<pmt_pair*>(pair.get());
   if ( p )
@@ -450,7 +450,7 @@ pmt_cdr(const pmt_t& pair)
 }
 
 void
-pmt_set_car(pmt_t pair, pmt_t obj)
+pmt_set_car(pmt_t pair, pmt_const_t obj)
 {
   if (pair->is_pair())
     _pair(pair)->set_car(obj);
@@ -459,7 +459,7 @@ pmt_set_car(pmt_t pair, pmt_t obj)
 }
 
 void
-pmt_set_cdr(pmt_t pair, pmt_t obj)
+pmt_set_cdr(pmt_t pair, pmt_const_t obj)
 {
   if (pair->is_pair())
     _pair(pair)->set_cdr(obj);
@@ -471,7 +471,7 @@ pmt_set_cdr(pmt_t pair, pmt_t obj)
 //                             Vectors
 ////////////////////////////////////////////////////////////////////////////
 
-pmt_vector::pmt_vector(size_t len, pmt_t fill)
+pmt_vector::pmt_vector(size_t len, pmt_const_t fill)
   : d_v(len)
 {
   for (size_t i = 0; i < len; i++)
@@ -487,7 +487,7 @@ pmt_vector::ref(size_t k) const
 }
 
 void
-pmt_vector::set(size_t k, pmt_t obj)
+pmt_vector::set(size_t k, pmt_const_t obj)
 {
   if (k >= length())
     throw pmt_out_of_range("pmt_vector_set", pmt_from_long(k));
@@ -495,26 +495,26 @@ pmt_vector::set(size_t k, pmt_t obj)
 }
 
 void
-pmt_vector::fill(pmt_t obj)
+pmt_vector::fill(pmt_const_t obj)
 {
   for (size_t i = 0; i < length(); i++)
     d_v[i] = obj;
 }
 
 bool
-pmt_is_vector(pmt_t obj)
+pmt_is_vector(pmt_const_t obj)
 {
   return obj->is_vector();
 }
 
 pmt_t
-pmt_make_vector(size_t k, pmt_t fill)
+pmt_make_vector(size_t k, pmt_const_t fill)
 {
   return pmt_t(new pmt_vector(k, fill));
 }
 
-pmt_t
-pmt_vector_ref(pmt_t vector, size_t k)
+pmt_const_t
+pmt_vector_ref(pmt_const_t vector, size_t k)
 {
   if (!vector->is_vector())
     throw pmt_wrong_type("pmt_vector_ref", vector);
@@ -522,7 +522,7 @@ pmt_vector_ref(pmt_t vector, size_t k)
 }
 
 void
-pmt_vector_set(pmt_t vector, size_t k, pmt_t obj)
+pmt_vector_set(pmt_t vector, size_t k, pmt_const_t obj)
 {
   if (!vector->is_vector())
     throw pmt_wrong_type("pmt_vector_set", vector);
@@ -530,7 +530,7 @@ pmt_vector_set(pmt_t vector, size_t k, pmt_t obj)
 }
 
 void
-pmt_vector_fill(pmt_t vector, pmt_t obj)
+pmt_vector_fill(pmt_t vector, pmt_const_t obj)
 {
   if (!vector->is_vector())
     throw pmt_wrong_type("pmt_vector_set", vector);
@@ -546,7 +546,7 @@ pmt_tuple::pmt_tuple(size_t len)
 {
 }
 
-pmt_t
+pmt_const_t
 pmt_tuple::ref(size_t k) const
 {
   if (k >= length())
@@ -555,13 +555,13 @@ pmt_tuple::ref(size_t k) const
 }
 
 bool
-pmt_is_tuple(pmt_t obj)
+pmt_is_tuple(pmt_const_t obj)
 {
   return obj->is_tuple();
 }
 
-pmt_t
-pmt_tuple_ref(const pmt_t &tuple, size_t k)
+pmt_const_t
+pmt_tuple_ref(const pmt_const_t &tuple, size_t k)
 {
   if (!tuple->is_tuple())
     throw pmt_wrong_type("pmt_tuple_ref", tuple);
@@ -578,7 +578,7 @@ pmt_make_tuple()
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0)
+pmt_make_tuple(const pmt_const_t &e0)
 {
   pmt_tuple *t = new pmt_tuple(1);
   t->_set(0, e0);
@@ -586,7 +586,7 @@ pmt_make_tuple(const pmt_t &e0)
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1)
 {
   pmt_tuple *t = new pmt_tuple(2);
   t->_set(0, e0);
@@ -595,7 +595,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1)
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2)
 {
   pmt_tuple *t = new pmt_tuple(3);
   t->_set(0, e0);
@@ -605,7 +605,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2)
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3)
 {
   pmt_tuple *t = new pmt_tuple(4);
   t->_set(0, e0);
@@ -616,7 +616,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4)
 {
   pmt_tuple *t = new pmt_tuple(5);
   t->_set(0, e0);
@@ -628,7 +628,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5)
 {
   pmt_tuple *t = new pmt_tuple(6);
   t->_set(0, e0);
@@ -641,7 +641,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6)
 {
   pmt_tuple *t = new pmt_tuple(7);
   t->_set(0, e0);
@@ -655,7 +655,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6, const pmt_t &e7)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6, const pmt_const_t &e7)
 {
   pmt_tuple *t = new pmt_tuple(8);
   t->_set(0, e0);
@@ -670,7 +670,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6, const pmt_t &e7, const pmt_t &e8)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6, const pmt_const_t &e7, const pmt_const_t &e8)
 {
   pmt_tuple *t = new pmt_tuple(9);
   t->_set(0, e0);
@@ -686,7 +686,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e
 }
 
 pmt_t
-pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6, const pmt_t &e7, const pmt_t &e8, const pmt_t &e9)
+pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6, const pmt_const_t &e7, const pmt_const_t &e8, const pmt_const_t &e9)
 {
   pmt_tuple *t = new pmt_tuple(10);
   t->_set(0, e0);
@@ -703,7 +703,7 @@ pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e
 }
 
 pmt_t
-pmt_to_tuple(const pmt_t &x)
+pmt_to_tuple(const pmt_const_t &x)
 {
   if (x->is_tuple())		// already one
     return x;
@@ -737,13 +737,13 @@ pmt_to_tuple(const pmt_t &x)
 ////////////////////////////////////////////////////////////////////////////
 
 bool
-pmt_is_uniform_vector(pmt_t x)
+pmt_is_uniform_vector(pmt_const_t x)
 {
   return x->is_uniform_vector();
 }
 
 const void *
-pmt_uniform_vector_elements(pmt_t vector, size_t &len)
+pmt_uniform_vector_elements(pmt_const_t vector, size_t &len)
 {
   if (!vector->is_uniform_vector())
     throw pmt_wrong_type("pmt_uniform_vector_elements", vector);
@@ -751,7 +751,7 @@ pmt_uniform_vector_elements(pmt_t vector, size_t &len)
 }
 
 void *
-pmt_uniform_vector_writable_elements(pmt_t vector, size_t &len)
+pmt_uniform_vector_writable_elements(pmt_const_t vector, size_t &len)
 {
   if (!vector->is_uniform_vector())
     throw pmt_wrong_type("pmt_uniform_vector_writable_elements", vector);
@@ -771,7 +771,7 @@ pmt_uniform_vector_writable_elements(pmt_t vector, size_t &len)
  */
 
 bool
-pmt_is_dict(const pmt_t &obj)
+pmt_is_dict(const pmt_const_t &obj)
 {
   return pmt_is_null(obj) || pmt_is_pair(obj);
 }
@@ -783,7 +783,7 @@ pmt_make_dict()
 }
 
 pmt_t
-pmt_dict_add(const pmt_t &dict, const pmt_t &key, const pmt_t &value)
+pmt_dict_add(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t &value)
 {
   if (pmt_is_null(dict))
     return pmt_acons(key, value, PMT_NIL);
@@ -795,7 +795,7 @@ pmt_dict_add(const pmt_t &dict, const pmt_t &key, const pmt_t &value)
 }
 
 pmt_t
-pmt_dict_delete(const pmt_t &dict, const pmt_t &key)
+pmt_dict_delete(const pmt_const_t &dict, const pmt_const_t &key)
 {
   if (pmt_is_null(dict))
     return dict;
@@ -806,8 +806,8 @@ pmt_dict_delete(const pmt_t &dict, const pmt_t &key)
   return pmt_cons(pmt_car(dict), pmt_dict_delete(pmt_cdr(dict), key));
 }
 
-pmt_t
-pmt_dict_ref(const pmt_t &dict, const pmt_t &key, const pmt_t &not_found)
+pmt_const_t
+pmt_dict_ref(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t &not_found)
 {
   pmt_t	p = pmt_assv(key, dict);	// look for (key . value) pair
   if (pmt_is_pair(p))
@@ -817,13 +817,13 @@ pmt_dict_ref(const pmt_t &dict, const pmt_t &key, const pmt_t &not_found)
 }
 
 bool
-pmt_dict_has_key(const pmt_t &dict, const pmt_t &key)
+pmt_dict_has_key(const pmt_const_t &dict, const pmt_const_t &key)
 {
   return pmt_is_pair(pmt_assv(key, dict));
 }
 
 pmt_t
-pmt_dict_items(pmt_t dict)
+pmt_dict_items(pmt_const_t dict)
 {
   if (!pmt_is_dict(dict))
     throw pmt_wrong_type("pmt_dict_values", dict);
@@ -832,7 +832,7 @@ pmt_dict_items(pmt_t dict)
 }
 
 pmt_t
-pmt_dict_keys(pmt_t dict)
+pmt_dict_keys(pmt_const_t dict)
 {
   if (!pmt_is_dict(dict))
     throw pmt_wrong_type("pmt_dict_keys", dict);
@@ -841,7 +841,7 @@ pmt_dict_keys(pmt_t dict)
 }
 
 pmt_t
-pmt_dict_values(pmt_t dict)
+pmt_dict_values(pmt_const_t dict)
 {
   if (!pmt_is_dict(dict))
     throw pmt_wrong_type("pmt_dict_keys", dict);
@@ -856,7 +856,7 @@ pmt_dict_values(pmt_t dict)
 pmt_any::pmt_any(const boost::any &any) : d_any(any) {}
 
 bool
-pmt_is_any(pmt_t obj)
+pmt_is_any(pmt_const_t obj)
 {
   return obj->is_any();
 }
@@ -868,7 +868,7 @@ pmt_make_any(const boost::any &any)
 }
 
 boost::any
-pmt_any_ref(pmt_t obj)
+pmt_any_ref(pmt_const_t obj)
 {
   if (!obj->is_any())
     throw pmt_wrong_type("pmt_any_ref", obj);
@@ -888,7 +888,7 @@ pmt_any_set(pmt_t obj, const boost::any &any)
 ////////////////////////////////////////////////////////////////////////////
 
 bool 
-pmt_is_msg_accepter(const pmt_t &obj)
+pmt_is_msg_accepter(const pmt_const_t &obj)
 {
   if (!pmt_is_any(obj))
     return false;
@@ -906,7 +906,7 @@ pmt_make_msg_accepter(gruel::msg_accepter_sptr ma)
 
 //! Return underlying msg_accepter
 gruel::msg_accepter_sptr
-pmt_msg_accepter_ref(const pmt_t &obj)
+pmt_msg_accepter_ref(const pmt_const_t &obj)
 {
   try {
     return boost::any_cast<gruel::msg_accepter_sptr>(pmt_any_ref(obj));
@@ -922,7 +922,7 @@ pmt_msg_accepter_ref(const pmt_t &obj)
 ////////////////////////////////////////////////////////////////////////////
 
 bool
-pmt_is_blob(pmt_t x)
+pmt_is_blob(pmt_const_t x)
 {
   // return pmt_is_u8vector(x);
   return pmt_is_uniform_vector(x);
@@ -935,14 +935,14 @@ pmt_make_blob(const void *buf, size_t len_in_bytes)
 }
 
 const void *
-pmt_blob_data(pmt_t blob)
+pmt_blob_data(pmt_const_t blob)
 {
   size_t len;
   return pmt_uniform_vector_elements(blob, len);
 }
 
 size_t
-pmt_blob_length(pmt_t blob)
+pmt_blob_length(pmt_const_t blob)
 {
   size_t len;
   pmt_uniform_vector_elements(blob, len);
@@ -955,13 +955,13 @@ pmt_blob_length(pmt_t blob)
 ////////////////////////////////////////////////////////////////////////////
 
 bool
-pmt_eq(const pmt_t& x, const pmt_t& y)
+pmt_eq(const pmt_const_t& x, const pmt_const_t& y)
 {
   return x == y;
 }
 
 bool
-pmt_eqv(const pmt_t& x, const pmt_t& y)
+pmt_eqv(const pmt_const_t& x, const pmt_const_t& y)
 {
   if (x == y)
     return true;
@@ -1003,7 +1003,7 @@ pmt_eqv_raw(pmt_base *x, pmt_base *y)
 }
 
 bool
-pmt_equal(const pmt_t& x, const pmt_t& y)
+pmt_equal(const pmt_const_t& x, const pmt_const_t& y)
 {
   if (pmt_eqv(x, y))
     return true;
@@ -1058,7 +1058,7 @@ pmt_equal(const pmt_t& x, const pmt_t& y)
 }
 
 size_t
-pmt_length(const pmt_t& x)
+pmt_length(const pmt_const_t& x)
 {
   if (x->is_vector())
     return _vector(x)->length();
@@ -1092,7 +1092,7 @@ pmt_length(const pmt_t& x)
 }
 
 pmt_t
-pmt_assq(pmt_t obj, pmt_t alist)
+pmt_assq(pmt_const_t obj, pmt_const_t alist)
 {
   while (pmt_is_pair(alist)){
     pmt_t p = pmt_car(alist);
@@ -1129,7 +1129,7 @@ pmt_assv_raw(pmt_base *obj, pmt_base *alist)
 #if 1
 
 pmt_t
-pmt_assv(pmt_t obj, pmt_t alist)
+pmt_assv(pmt_const_t obj, pmt_const_t alist)
 {
   return pmt_assv_raw(obj.get(), alist.get());
 }
@@ -1137,7 +1137,7 @@ pmt_assv(pmt_t obj, pmt_t alist)
 #else
 
 pmt_t
-pmt_assv(pmt_t obj, pmt_t alist)
+pmt_assv(pmt_const_t obj, pmt_const_t alist)
 {
   while (pmt_is_pair(alist)){
     pmt_t p = pmt_car(alist);
@@ -1156,7 +1156,7 @@ pmt_assv(pmt_t obj, pmt_t alist)
 
 
 pmt_t
-pmt_assoc(pmt_t obj, pmt_t alist)
+pmt_assoc(pmt_const_t obj, pmt_const_t alist)
 {
   while (pmt_is_pair(alist)){
     pmt_t p = pmt_car(alist);
@@ -1172,7 +1172,7 @@ pmt_assoc(pmt_t obj, pmt_t alist)
 }
 
 pmt_t
-pmt_map(pmt_t proc(const pmt_t&), pmt_t list)
+pmt_map(pmt_const_t proc(const pmt_const_t&), pmt_const_t list)
 {
   pmt_t r = PMT_NIL;
 
@@ -1185,7 +1185,7 @@ pmt_map(pmt_t proc(const pmt_t&), pmt_t list)
 }
 
 pmt_t
-pmt_reverse(pmt_t listx)
+pmt_reverse(pmt_const_t listx)
 {
   pmt_t list = listx;
   pmt_t r = PMT_NIL;
@@ -1207,8 +1207,8 @@ pmt_reverse_x(pmt_t list)
   return pmt_reverse(list);
 }
 
-pmt_t
-pmt_nth(size_t n, pmt_t list)
+pmt_const_t
+pmt_nth(size_t n, pmt_const_t list)
 {
   pmt_t t = pmt_nthcdr(n, list);
   if (pmt_is_pair(t))
@@ -1217,8 +1217,8 @@ pmt_nth(size_t n, pmt_t list)
     return PMT_NIL;
 }
 
-pmt_t
-pmt_nthcdr(size_t n, pmt_t list)
+pmt_const_t
+pmt_nthcdr(size_t n, pmt_const_t list)
 {
   if (!(pmt_is_pair(list) || pmt_is_null(list)))
     throw pmt_wrong_type("pmt_nthcdr", list);
@@ -1238,7 +1238,7 @@ pmt_nthcdr(size_t n, pmt_t list)
 }
 
 pmt_t
-pmt_memq(pmt_t obj, pmt_t list)
+pmt_memq(pmt_const_t obj, pmt_const_t list)
 {
   while (pmt_is_pair(list)){
     if (pmt_eq(obj, pmt_car(list)))
@@ -1249,7 +1249,7 @@ pmt_memq(pmt_t obj, pmt_t list)
 }
 
 pmt_t
-pmt_memv(pmt_t obj, pmt_t list)
+pmt_memv(pmt_const_t obj, pmt_const_t list)
 {
   while (pmt_is_pair(list)){
     if (pmt_eqv(obj, pmt_car(list)))
@@ -1260,7 +1260,7 @@ pmt_memv(pmt_t obj, pmt_t list)
 }
 
 pmt_t
-pmt_member(pmt_t obj, pmt_t list)
+pmt_member(pmt_const_t obj, pmt_const_t list)
 {
   while (pmt_is_pair(list)){
     if (pmt_equal(obj, pmt_car(list)))
@@ -1271,7 +1271,7 @@ pmt_member(pmt_t obj, pmt_t list)
 }
 
 bool
-pmt_subsetp(pmt_t list1, pmt_t list2)
+pmt_subsetp(pmt_const_t list1, pmt_const_t list2)
 {
   while (pmt_is_pair(list1)){
     pmt_t p = pmt_car(list1);
@@ -1283,85 +1283,85 @@ pmt_subsetp(pmt_t list1, pmt_t list2)
 }
 
 pmt_t
-pmt_list1(const pmt_t& x1)
+pmt_list1(const pmt_const_t& x1)
 {
   return pmt_cons(x1, PMT_NIL);
 }
 
 pmt_t
-pmt_list2(const pmt_t& x1, const pmt_t& x2)
+pmt_list2(const pmt_const_t& x1, const pmt_const_t& x2)
 {
   return pmt_cons(x1, pmt_cons(x2, PMT_NIL));
 }
 
 pmt_t
-pmt_list3(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3)
+pmt_list3(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3)
 {
   return pmt_cons(x1, pmt_cons(x2, pmt_cons(x3, PMT_NIL)));
 }
 
 pmt_t
-pmt_list4(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3, const pmt_t& x4)
+pmt_list4(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3, const pmt_const_t& x4)
 {
   return pmt_cons(x1, pmt_cons(x2, pmt_cons(x3, pmt_cons(x4, PMT_NIL))));
 }
 
 pmt_t
-pmt_list5(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3, const pmt_t& x4, const pmt_t& x5)
+pmt_list5(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3, const pmt_const_t& x4, const pmt_const_t& x5)
 {
   return pmt_cons(x1, pmt_cons(x2, pmt_cons(x3, pmt_cons(x4, pmt_cons(x5, PMT_NIL)))));
 }
 
 pmt_t
-pmt_list6(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3, const pmt_t& x4, const pmt_t& x5, const pmt_t& x6)
+pmt_list6(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3, const pmt_const_t& x4, const pmt_const_t& x5, const pmt_const_t& x6)
 {
   return pmt_cons(x1, pmt_cons(x2, pmt_cons(x3, pmt_cons(x4, pmt_cons(x5, pmt_cons(x6, PMT_NIL))))));
 }
 
 pmt_t
-pmt_list_add(pmt_t list, const pmt_t& item)
+pmt_list_add(pmt_const_t list, const pmt_const_t& item)
 {
   return pmt_reverse(pmt_cons(item, pmt_reverse(list)));
 }
 
-pmt_t
-pmt_caar(pmt_t pair)
+pmt_const_t
+pmt_caar(pmt_const_t pair)
 {
   return (pmt_car(pmt_car(pair)));
 }
 
-pmt_t
-pmt_cadr(pmt_t pair)
+pmt_const_t
+pmt_cadr(pmt_const_t pair)
 {
   return pmt_car(pmt_cdr(pair));
 }
 
-pmt_t
-pmt_cdar(pmt_t pair)
+pmt_const_t
+pmt_cdar(pmt_const_t pair)
 {
   return pmt_cdr(pmt_car(pair));
 }
 
-pmt_t
-pmt_cddr(pmt_t pair)
+pmt_const_t
+pmt_cddr(pmt_const_t pair)
 {
   return pmt_cdr(pmt_cdr(pair));
 }
 
-pmt_t
-pmt_caddr(pmt_t pair)
+pmt_const_t
+pmt_caddr(pmt_const_t pair)
 {
   return pmt_car(pmt_cdr(pmt_cdr(pair)));
 }
 
-pmt_t
-pmt_cadddr(pmt_t pair)
+pmt_const_t
+pmt_cadddr(pmt_const_t pair)
 {
   return pmt_car(pmt_cdr(pmt_cdr(pmt_cdr(pair))));
 }
   
 bool
-pmt_is_eof_object(pmt_t obj)
+pmt_is_eof_object(pmt_const_t obj)
 {
   return pmt_eq(obj, PMT_EOF);
 }

@@ -189,13 +189,13 @@ class pmt_vector : public pmt_base
   std::vector<pmt_t>	d_v;
 
 public:
-  pmt_vector(size_t len, pmt_t fill);
+  pmt_vector(size_t len, pmt_const_t fill);
   //~pmt_vector();
 
   bool is_vector() const { return true; }
   pmt_t ref(size_t k) const;
-  void  set(size_t k, pmt_t obj);
-  void  fill(pmt_t fill);
+  void  set(size_t k, pmt_const_t obj);
+  void  fill(pmt_const_t fill);
   size_t length() const { return d_v.size(); }
 
   pmt_t _ref(size_t k) const { return d_v[k]; }
@@ -210,7 +210,7 @@ public:
   //~pmt_tuple();
 
   bool is_tuple() const { return true; }
-  pmt_t ref(size_t k) const;
+  pmt_const_t ref(size_t k) const;
   size_t length() const { return d_v.size(); }
 
   pmt_t _ref(size_t k) const { return d_v[k]; }

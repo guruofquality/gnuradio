@@ -58,31 +58,50 @@ class pmt_base;
  */
 typedef boost::intrusive_ptr<pmt_base> pmt_t;
 
+/*!
+ * The PMT cont type for immutable function calls.
+ * The pmt_t can be casted to pmt_const_t.
+ * However, pmt_const_t cannot be casted to pmt_t.
+ * This allows us to pass mutable PMTs into functions
+ * that are not supposed to change the PMT's value.
+ */
+struct pmt_const_t : pmt_t
+{
+    //! Create an empty pmt const type
+    pmt_const_t(void){}
+
+    //! Create a pmt const type from a pmt
+    pmt_const_t(const pmt_t &p) : pmt_t(p){}
+
+    //! Create a pmt const type from a pmt base ptr
+    pmt_const_t(pmt_base *p) : pmt_t(p){}
+};
+
 extern GRUEL_API void intrusive_ptr_add_ref(pmt_base*);
 extern GRUEL_API void intrusive_ptr_release(pmt_base*);
 
 class GRUEL_API pmt_exception : public std::logic_error
 {
 public:
-  pmt_exception(const std::string &msg, pmt_t obj);
+  pmt_exception(const std::string &msg, pmt_const_t obj);
 };
 
 class GRUEL_API pmt_wrong_type : public pmt_exception
 {
 public:
-  pmt_wrong_type(const std::string &msg, pmt_t obj);
+  pmt_wrong_type(const std::string &msg, pmt_const_t obj);
 };
 
 class GRUEL_API pmt_out_of_range : public pmt_exception
 {
 public:
-  pmt_out_of_range(const std::string &msg, pmt_t obj);
+  pmt_out_of_range(const std::string &msg, pmt_const_t obj);
 };
 
 class GRUEL_API pmt_notimplemented : public pmt_exception
 {
 public:
-  pmt_notimplemented(const std::string &msg, pmt_t obj);
+  pmt_notimplemented(const std::string &msg, pmt_const_t obj);
 };
 
 /*
@@ -97,20 +116,20 @@ extern GRUEL_API const pmt_t PMT_T;	//< \#t : boolean true constant
 extern GRUEL_API const pmt_t PMT_F;	//< \#f : boolean false constant
 
 //! Return true if obj is \#t or \#f, else return false.
-GRUEL_API bool pmt_is_bool(pmt_t obj);
+GRUEL_API bool pmt_is_bool(pmt_const_t obj);
 
 //! Return false if obj is \#f, else return true.
-GRUEL_API bool pmt_is_true(pmt_t obj);
+GRUEL_API bool pmt_is_true(pmt_const_t obj);
 
 //! Return true if obj is \#f, else return true.
-GRUEL_API bool pmt_is_false(pmt_t obj);
+GRUEL_API bool pmt_is_false(pmt_const_t obj);
 
 //! Return \#f is val is false, else return \#t.
 GRUEL_API pmt_t pmt_from_bool(bool val);
 
 //! Return true if val is PMT_T, return false when val is PMT_F, 
 // else raise wrong_type exception.
-GRUEL_API bool pmt_to_bool(pmt_t val);
+GRUEL_API bool pmt_to_bool(pmt_const_t val);
 
 /*
  * ------------------------------------------------------------------------
@@ -119,7 +138,7 @@ GRUEL_API bool pmt_to_bool(pmt_t val);
  */
 
 //! Return true if obj is a symbol, else false.
-GRUEL_API bool pmt_is_symbol(const pmt_t& obj);
+GRUEL_API bool pmt_is_symbol(const pmt_const_t& obj);
 
 //! Return the symbol whose name is \p s.
 GRUEL_API pmt_t pmt_string_to_symbol(const std::string &s);
@@ -132,7 +151,7 @@ GRUEL_API pmt_t pmt_intern(const std::string &s);
  * If \p is a symbol, return the name of the symbol as a string.
  * Otherwise, raise the wrong_type exception.
  */
-GRUEL_API const std::string pmt_symbol_to_string(const pmt_t& sym);
+GRUEL_API const std::string pmt_symbol_to_string(const pmt_const_t& sym);
 
 /*
  * ------------------------------------------------------------------------
@@ -141,7 +160,7 @@ GRUEL_API const std::string pmt_symbol_to_string(const pmt_t& sym);
  */
 
 //! Return true if obj is any kind of number, else false.
-GRUEL_API bool pmt_is_number(pmt_t obj);
+GRUEL_API bool pmt_is_number(pmt_const_t obj);
 
 /*
  * ------------------------------------------------------------------------
@@ -150,7 +169,7 @@ GRUEL_API bool pmt_is_number(pmt_t obj);
  */
 
 //! Return true if \p x is an integer number, else false
-GRUEL_API bool pmt_is_integer(pmt_t x);
+GRUEL_API bool pmt_is_integer(pmt_const_t x);
 
 //! Return the pmt value that represents the integer \p x.
 GRUEL_API pmt_t pmt_from_long(long x);
@@ -162,7 +181,7 @@ GRUEL_API pmt_t pmt_from_long(long x);
  * return that integer.  Else raise an exception, either wrong_type
  * when x is not an exact integer, or out_of_range when it doesn't fit.
  */
-GRUEL_API long pmt_to_long(pmt_t x);
+GRUEL_API long pmt_to_long(pmt_const_t x);
 
 /*
  * ------------------------------------------------------------------------
@@ -171,7 +190,7 @@ GRUEL_API long pmt_to_long(pmt_t x);
  */
 
 //! Return true if \p x is an uint64 number, else false
-GRUEL_API bool pmt_is_uint64(pmt_t x);
+GRUEL_API bool pmt_is_uint64(pmt_const_t x);
 
 //! Return the pmt value that represents the uint64 \p x.
 GRUEL_API pmt_t pmt_from_uint64(uint64_t x);
@@ -183,7 +202,7 @@ GRUEL_API pmt_t pmt_from_uint64(uint64_t x);
  * return that uint64.  Else raise an exception, either wrong_type
  * when x is not an exact uint64, or out_of_range when it doesn't fit.
  */
-GRUEL_API uint64_t pmt_to_uint64(pmt_t x);
+GRUEL_API uint64_t pmt_to_uint64(pmt_const_t x);
 
 /*
  * ------------------------------------------------------------------------
@@ -194,7 +213,7 @@ GRUEL_API uint64_t pmt_to_uint64(pmt_t x);
 /*
  * \brief Return true if \p obj is a real number, else false.
  */
-GRUEL_API bool pmt_is_real(pmt_t obj);
+GRUEL_API bool pmt_is_real(pmt_const_t obj);
 
 //! Return the pmt value that represents double \p x.
 GRUEL_API pmt_t pmt_from_double(double x);
@@ -206,7 +225,7 @@ GRUEL_API pmt_t pmt_from_double(double x);
  * as a double.  The argument \p val must be a real or integer, otherwise
  * a wrong_type exception is raised.
  */
-GRUEL_API double pmt_to_double(pmt_t x);
+GRUEL_API double pmt_to_double(pmt_const_t x);
 
 /*
  * ------------------------------------------------------------------------
@@ -217,7 +236,7 @@ GRUEL_API double pmt_to_double(pmt_t x);
 /*!
  * \brief return true if \p obj is a complex number, false otherwise.
  */
-GRUEL_API bool pmt_is_complex(pmt_t obj);
+GRUEL_API bool pmt_is_complex(pmt_const_t obj);
 
 //! Return a complex number constructed of the given real and imaginary parts.
 GRUEL_API pmt_t pmt_make_rectangular(double re, double im);
@@ -226,7 +245,7 @@ GRUEL_API pmt_t pmt_make_rectangular(double re, double im);
  * If \p z is complex, real or integer, return the closest complex<double>.
  * Otherwise, raise the wrong_type exception.
  */
-GRUEL_API std::complex<double> pmt_to_complex(pmt_t z);
+GRUEL_API std::complex<double> pmt_to_complex(pmt_const_t z);
 
 /*
  * ------------------------------------------------------------------------
@@ -237,32 +256,32 @@ GRUEL_API std::complex<double> pmt_to_complex(pmt_t z);
 extern GRUEL_API const pmt_t PMT_NIL;	//< the empty list
 
 //! Return true if \p x is the empty list, otherwise return false.
-GRUEL_API bool pmt_is_null(const pmt_t& x);
+GRUEL_API bool pmt_is_null(const pmt_const_t& x);
 
 //! Return true if \p obj is a pair, else false.
-GRUEL_API bool pmt_is_pair(const pmt_t& obj);
+GRUEL_API bool pmt_is_pair(const pmt_const_t& obj);
 
 //! Return a newly allocated pair whose car is \p x and whose cdr is \p y.
-GRUEL_API pmt_t pmt_cons(const pmt_t& x, const pmt_t& y);
+GRUEL_API pmt_t pmt_cons(const pmt_const_t& x, const pmt_const_t& y);
 
 //! If \p pair is a pair, return the car of the \p pair, otherwise raise wrong_type.
-GRUEL_API pmt_t pmt_car(const pmt_t& pair);
+GRUEL_API pmt_const_t pmt_car(const pmt_const_t& pair);
 
 //! If \p pair is a pair, return the cdr of the \p pair, otherwise raise wrong_type.
-GRUEL_API pmt_t pmt_cdr(const pmt_t& pair);
+GRUEL_API pmt_const_t pmt_cdr(const pmt_const_t& pair);
 
 //! Stores \p value in the car field of \p pair.
-GRUEL_API void pmt_set_car(pmt_t pair, pmt_t value);
+GRUEL_API void pmt_set_car(pmt_t pair, pmt_const_t value);
 
 //! Stores \p value in the cdr field of \p pair.
-GRUEL_API void pmt_set_cdr(pmt_t pair, pmt_t value);
+GRUEL_API void pmt_set_cdr(pmt_t pair, pmt_const_t value);
 
-GRUEL_API pmt_t pmt_caar(pmt_t pair);
-GRUEL_API pmt_t pmt_cadr(pmt_t pair);
-GRUEL_API pmt_t pmt_cdar(pmt_t pair);
-GRUEL_API pmt_t pmt_cddr(pmt_t pair);
-GRUEL_API pmt_t pmt_caddr(pmt_t pair);
-GRUEL_API pmt_t pmt_cadddr(pmt_t pair);
+GRUEL_API pmt_const_t pmt_caar(pmt_const_t pair);
+GRUEL_API pmt_const_t pmt_cadr(pmt_const_t pair);
+GRUEL_API pmt_const_t pmt_cdar(pmt_const_t pair);
+GRUEL_API pmt_const_t pmt_cddr(pmt_const_t pair);
+GRUEL_API pmt_const_t pmt_caddr(pmt_const_t pair);
+GRUEL_API pmt_const_t pmt_cadddr(pmt_const_t pair);
 
 /*
  * ------------------------------------------------------------------------
@@ -275,30 +294,30 @@ GRUEL_API pmt_t pmt_cadddr(pmt_t pair);
  */
 
 //! Return true if \p x is a tuple, othewise false.
-GRUEL_API bool pmt_is_tuple(pmt_t x);
+GRUEL_API bool pmt_is_tuple(pmt_const_t x);
 
 GRUEL_API pmt_t pmt_make_tuple();
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6, const pmt_t &e7);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6, const pmt_t &e7, const pmt_t &e8);
-GRUEL_API pmt_t pmt_make_tuple(const pmt_t &e0, const pmt_t &e1, const pmt_t &e2, const pmt_t &e3, const pmt_t &e4, const pmt_t &e5, const pmt_t &e6, const pmt_t &e7, const pmt_t &e8, const pmt_t &e9);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6, const pmt_const_t &e7);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6, const pmt_const_t &e7, const pmt_const_t &e8);
+GRUEL_API pmt_t pmt_make_tuple(const pmt_const_t &e0, const pmt_const_t &e1, const pmt_const_t &e2, const pmt_const_t &e3, const pmt_const_t &e4, const pmt_const_t &e5, const pmt_const_t &e6, const pmt_const_t &e7, const pmt_const_t &e8, const pmt_const_t &e9);
 
 /*!
  * If \p x is a vector or proper list, return a tuple containing the elements of x
  */
-GRUEL_API pmt_t pmt_to_tuple(const pmt_t &x);
+GRUEL_API pmt_t pmt_to_tuple(const pmt_const_t &x);
 
 /*!
  * Return the contents of position \p k of \p tuple.
  * \p k must be a valid index of \p tuple.
  */
-GRUEL_API pmt_t pmt_tuple_ref(const pmt_t &tuple, size_t k);
+GRUEL_API pmt_const_t pmt_tuple_ref(const pmt_const_t &tuple, size_t k);
 
 /*
  * ------------------------------------------------------------------------
@@ -309,22 +328,22 @@ GRUEL_API pmt_t pmt_tuple_ref(const pmt_t &tuple, size_t k);
  */
 
 //! Return true if \p x is a vector, othewise false.
-GRUEL_API bool pmt_is_vector(pmt_t x);
+GRUEL_API bool pmt_is_vector(pmt_const_t x);
 
 //! Make a vector of length \p k, with initial values set to \p fill
-GRUEL_API pmt_t pmt_make_vector(size_t k, pmt_t fill);
+GRUEL_API pmt_t pmt_make_vector(size_t k, pmt_const_t fill);
 
 /*!
  * Return the contents of position \p k of \p vector.
  * \p k must be a valid index of \p vector.
  */
-GRUEL_API pmt_t pmt_vector_ref(pmt_t vector, size_t k);
+GRUEL_API pmt_const_t pmt_vector_ref(pmt_const_t vector, size_t k);
 
 //! Store \p obj in position \p k.
-GRUEL_API void pmt_vector_set(pmt_t vector, size_t k, pmt_t obj);
+GRUEL_API void pmt_vector_set(pmt_t vector, size_t k, pmt_const_t obj);
 
 //! Store \p fill in every position of \p vector
-GRUEL_API void pmt_vector_fill(pmt_t vector, pmt_t fill);
+GRUEL_API void pmt_vector_fill(pmt_t vector, pmt_const_t fill);
 
 /*
  * ------------------------------------------------------------------------
@@ -335,7 +354,7 @@ GRUEL_API void pmt_vector_fill(pmt_t vector, pmt_t fill);
  */
 
 //! Return true if \p x is a blob, othewise false.
-GRUEL_API bool pmt_is_blob(pmt_t x);
+GRUEL_API bool pmt_is_blob(pmt_const_t x);
 
 /*!
  * \brief Make a blob given a pointer and length in bytes
@@ -348,10 +367,10 @@ GRUEL_API bool pmt_is_blob(pmt_t x);
 GRUEL_API pmt_t pmt_make_blob(const void *buf, size_t len);
 
 //! Return a pointer to the blob's data
-GRUEL_API const void *pmt_blob_data(pmt_t blob);
+GRUEL_API const void *pmt_blob_data(pmt_const_t blob);
 
 //! Return the blob's length in bytes
-GRUEL_API size_t pmt_blob_length(pmt_t blob);
+GRUEL_API size_t pmt_blob_length(pmt_const_t blob);
 
 /*!
  * <pre>
@@ -383,20 +402,20 @@ GRUEL_API size_t pmt_blob_length(pmt_t blob);
  */
 
 //! true if \p x is any kind of uniform numeric vector
-GRUEL_API bool pmt_is_uniform_vector(pmt_t x);  
+GRUEL_API bool pmt_is_uniform_vector(pmt_const_t x);  
 
-GRUEL_API bool pmt_is_u8vector(pmt_t x);
-GRUEL_API bool pmt_is_s8vector(pmt_t x);
-GRUEL_API bool pmt_is_u16vector(pmt_t x);
-GRUEL_API bool pmt_is_s16vector(pmt_t x);
-GRUEL_API bool pmt_is_u32vector(pmt_t x);
-GRUEL_API bool pmt_is_s32vector(pmt_t x);
-GRUEL_API bool pmt_is_u64vector(pmt_t x);
-GRUEL_API bool pmt_is_s64vector(pmt_t x);
-GRUEL_API bool pmt_is_f32vector(pmt_t x);
-GRUEL_API bool pmt_is_f64vector(pmt_t x);
-GRUEL_API bool pmt_is_c32vector(pmt_t x);
-GRUEL_API bool pmt_is_c64vector(pmt_t x);
+GRUEL_API bool pmt_is_u8vector(pmt_const_t x);
+GRUEL_API bool pmt_is_s8vector(pmt_const_t x);
+GRUEL_API bool pmt_is_u16vector(pmt_const_t x);
+GRUEL_API bool pmt_is_s16vector(pmt_const_t x);
+GRUEL_API bool pmt_is_u32vector(pmt_const_t x);
+GRUEL_API bool pmt_is_s32vector(pmt_const_t x);
+GRUEL_API bool pmt_is_u64vector(pmt_const_t x);
+GRUEL_API bool pmt_is_s64vector(pmt_const_t x);
+GRUEL_API bool pmt_is_f32vector(pmt_const_t x);
+GRUEL_API bool pmt_is_f64vector(pmt_const_t x);
+GRUEL_API bool pmt_is_c32vector(pmt_const_t x);
+GRUEL_API bool pmt_is_c64vector(pmt_const_t x);
 
 GRUEL_API pmt_t pmt_make_u8vector(size_t k, uint8_t fill);
 GRUEL_API pmt_t pmt_make_s8vector(size_t k, int8_t fill);
@@ -424,18 +443,18 @@ GRUEL_API pmt_t pmt_init_f64vector(size_t k, const double *data);
 GRUEL_API pmt_t pmt_init_c32vector(size_t k, const std::complex<float> *data);
 GRUEL_API pmt_t pmt_init_c64vector(size_t k, const std::complex<double> *data);
 
-GRUEL_API uint8_t  pmt_u8vector_ref(pmt_t v, size_t k);
-GRUEL_API int8_t   pmt_s8vector_ref(pmt_t v, size_t k);
-GRUEL_API uint16_t pmt_u16vector_ref(pmt_t v, size_t k);
-GRUEL_API int16_t  pmt_s16vector_ref(pmt_t v, size_t k);
-GRUEL_API uint32_t pmt_u32vector_ref(pmt_t v, size_t k);
-GRUEL_API int32_t  pmt_s32vector_ref(pmt_t v, size_t k);
-GRUEL_API uint64_t pmt_u64vector_ref(pmt_t v, size_t k);
-GRUEL_API int64_t  pmt_s64vector_ref(pmt_t v, size_t k);
-GRUEL_API float    pmt_f32vector_ref(pmt_t v, size_t k);
-GRUEL_API double   pmt_f64vector_ref(pmt_t v, size_t k);
-GRUEL_API std::complex<float>  pmt_c32vector_ref(pmt_t v, size_t k);
-GRUEL_API std::complex<double> pmt_c64vector_ref(pmt_t v, size_t k);
+GRUEL_API uint8_t  pmt_u8vector_ref(pmt_const_t v, size_t k);
+GRUEL_API int8_t   pmt_s8vector_ref(pmt_const_t v, size_t k);
+GRUEL_API uint16_t pmt_u16vector_ref(pmt_const_t v, size_t k);
+GRUEL_API int16_t  pmt_s16vector_ref(pmt_const_t v, size_t k);
+GRUEL_API uint32_t pmt_u32vector_ref(pmt_const_t v, size_t k);
+GRUEL_API int32_t  pmt_s32vector_ref(pmt_const_t v, size_t k);
+GRUEL_API uint64_t pmt_u64vector_ref(pmt_const_t v, size_t k);
+GRUEL_API int64_t  pmt_s64vector_ref(pmt_const_t v, size_t k);
+GRUEL_API float    pmt_f32vector_ref(pmt_const_t v, size_t k);
+GRUEL_API double   pmt_f64vector_ref(pmt_const_t v, size_t k);
+GRUEL_API std::complex<float>  pmt_c32vector_ref(pmt_const_t v, size_t k);
+GRUEL_API std::complex<double> pmt_c64vector_ref(pmt_const_t v, size_t k);
 
 GRUEL_API void pmt_u8vector_set(pmt_t v, size_t k, uint8_t x);  //< v[k] = x
 GRUEL_API void pmt_s8vector_set(pmt_t v, size_t k, int8_t x);
@@ -452,37 +471,37 @@ GRUEL_API void pmt_c64vector_set(pmt_t v, size_t k, std::complex<double> x);
 
 // Return const pointers to the elements
 
-GRUEL_API const void *pmt_uniform_vector_elements(pmt_t v, size_t &len);  //< works with any; len is in bytes
+GRUEL_API const void *pmt_uniform_vector_elements(pmt_const_t v, size_t &len);  //< works with any; len is in bytes
 
-GRUEL_API const uint8_t  *pmt_u8vector_elements(pmt_t v, size_t &len);  //< len is in elements
-GRUEL_API const int8_t   *pmt_s8vector_elements(pmt_t v, size_t &len);  //< len is in elements
-GRUEL_API const uint16_t *pmt_u16vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const int16_t  *pmt_s16vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const uint32_t *pmt_u32vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const int32_t  *pmt_s32vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const uint64_t *pmt_u64vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const int64_t  *pmt_s64vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const float    *pmt_f32vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const double   *pmt_f64vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const std::complex<float>  *pmt_c32vector_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API const std::complex<double> *pmt_c64vector_elements(pmt_t v, size_t &len); //< len is in elements
+GRUEL_API const uint8_t  *pmt_u8vector_elements(pmt_const_t v, size_t &len);  //< len is in elements
+GRUEL_API const int8_t   *pmt_s8vector_elements(pmt_const_t v, size_t &len);  //< len is in elements
+GRUEL_API const uint16_t *pmt_u16vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const int16_t  *pmt_s16vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const uint32_t *pmt_u32vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const int32_t  *pmt_s32vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const uint64_t *pmt_u64vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const int64_t  *pmt_s64vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const float    *pmt_f32vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const double   *pmt_f64vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const std::complex<float>  *pmt_c32vector_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API const std::complex<double> *pmt_c64vector_elements(pmt_const_t v, size_t &len); //< len is in elements
 
 // Return non-const pointers to the elements
 
-GRUEL_API void *pmt_uniform_vector_writable_elements(pmt_t v, size_t &len);  //< works with any; len is in bytes
+GRUEL_API void *pmt_uniform_vector_writable_elements(pmt_const_t v, size_t &len);  //< works with any; len is in bytes
 
-GRUEL_API uint8_t  *pmt_u8vector_writable_elements(pmt_t v, size_t &len);  //< len is in elements
-GRUEL_API int8_t   *pmt_s8vector_writable_elements(pmt_t v, size_t &len);  //< len is in elements
-GRUEL_API uint16_t *pmt_u16vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API int16_t  *pmt_s16vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API uint32_t *pmt_u32vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API int32_t  *pmt_s32vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API uint64_t *pmt_u64vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API int64_t  *pmt_s64vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API float    *pmt_f32vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API double   *pmt_f64vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API std::complex<float>  *pmt_c32vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
-GRUEL_API std::complex<double> *pmt_c64vector_writable_elements(pmt_t v, size_t &len); //< len is in elements
+GRUEL_API uint8_t  *pmt_u8vector_writable_elements(pmt_const_t v, size_t &len);  //< len is in elements
+GRUEL_API int8_t   *pmt_s8vector_writable_elements(pmt_const_t v, size_t &len);  //< len is in elements
+GRUEL_API uint16_t *pmt_u16vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API int16_t  *pmt_s16vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API uint32_t *pmt_u32vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API int32_t  *pmt_s32vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API uint64_t *pmt_u64vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API int64_t  *pmt_s64vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API float    *pmt_f32vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API double   *pmt_f64vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API std::complex<float>  *pmt_c32vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
+GRUEL_API std::complex<double> *pmt_c64vector_writable_elements(pmt_const_t v, size_t &len); //< len is in elements
 
 /*
  * ------------------------------------------------------------------------
@@ -495,31 +514,31 @@ GRUEL_API std::complex<double> *pmt_c64vector_writable_elements(pmt_t v, size_t 
  */
 
 //! Return true if \p obj is a dictionary
-GRUEL_API bool pmt_is_dict(const pmt_t &obj);
+GRUEL_API bool pmt_is_dict(const pmt_const_t &obj);
 
 //! Make an empty dictionary
 GRUEL_API pmt_t pmt_make_dict();
 
 //! Return a new dictionary with \p key associated with \p value.
-GRUEL_API pmt_t pmt_dict_add(const pmt_t &dict, const pmt_t &key, const pmt_t &value);
+GRUEL_API pmt_t pmt_dict_add(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t &value);
 
 //! Return a new dictionary with \p key removed.
-GRUEL_API pmt_t pmt_dict_delete(const pmt_t &dict, const pmt_t &key);
+GRUEL_API pmt_t pmt_dict_delete(const pmt_const_t &dict, const pmt_const_t &key);
 
 //! Return true if \p key exists in \p dict
-GRUEL_API bool  pmt_dict_has_key(const pmt_t &dict, const pmt_t &key);
+GRUEL_API bool  pmt_dict_has_key(const pmt_const_t &dict, const pmt_const_t &key);
 
 //! If \p key exists in \p dict, return associated value; otherwise return \p not_found.
-GRUEL_API pmt_t pmt_dict_ref(const pmt_t &dict, const pmt_t &key, const pmt_t &not_found);
+GRUEL_API pmt_const_t pmt_dict_ref(const pmt_const_t &dict, const pmt_const_t &key, const pmt_const_t &not_found);
 
 //! Return list of (key . value) pairs
-GRUEL_API pmt_t pmt_dict_items(pmt_t dict);
+GRUEL_API pmt_t pmt_dict_items(pmt_const_t dict);
 
 //! Return list of keys
-GRUEL_API pmt_t pmt_dict_keys(pmt_t dict);
+GRUEL_API pmt_t pmt_dict_keys(pmt_const_t dict);
 
 //! Return list of values
-GRUEL_API pmt_t pmt_dict_values(pmt_t dict);
+GRUEL_API pmt_t pmt_dict_values(pmt_const_t dict);
 
 /*
  * ------------------------------------------------------------------------
@@ -531,13 +550,13 @@ GRUEL_API pmt_t pmt_dict_values(pmt_t dict);
  */
 
 //! Return true if \p obj is an any
-GRUEL_API bool pmt_is_any(pmt_t obj);
+GRUEL_API bool pmt_is_any(pmt_const_t obj);
 
 //! make an any
 GRUEL_API pmt_t pmt_make_any(const boost::any &any);
 
 //! Return underlying boost::any
-GRUEL_API boost::any pmt_any_ref(pmt_t obj);
+GRUEL_API boost::any pmt_any_ref(pmt_const_t obj);
 
 //! Store \p any in \p obj
 GRUEL_API void pmt_any_set(pmt_t obj, const boost::any &any);
@@ -549,13 +568,13 @@ GRUEL_API void pmt_any_set(pmt_t obj, const boost::any &any);
  * ------------------------------------------------------------------------
  */
 //! Return true if \p obj is a msg_accepter
-GRUEL_API bool pmt_is_msg_accepter(const pmt_t &obj);
+GRUEL_API bool pmt_is_msg_accepter(const pmt_const_t &obj);
 
 //! make a msg_accepter
 GRUEL_API pmt_t pmt_make_msg_accepter(boost::shared_ptr<gruel::msg_accepter> ma);
 
 //! Return underlying msg_accepter
-GRUEL_API boost::shared_ptr<gruel::msg_accepter> pmt_msg_accepter_ref(const pmt_t &obj);
+GRUEL_API boost::shared_ptr<gruel::msg_accepter> pmt_msg_accepter_ref(const pmt_const_t &obj);
 
 /*
  * ------------------------------------------------------------------------
@@ -564,7 +583,7 @@ GRUEL_API boost::shared_ptr<gruel::msg_accepter> pmt_msg_accepter_ref(const pmt_
  */
 
 //! Return true if x and y are the same object; otherwise return false.
-GRUEL_API bool pmt_eq(const pmt_t& x, const pmt_t& y);
+GRUEL_API bool pmt_eq(const pmt_const_t& x, const pmt_const_t& y);
 
 /*!
  * \brief Return true if x and y should normally be regarded as the same object, else false.
@@ -579,7 +598,7 @@ GRUEL_API bool pmt_eq(const pmt_t& x, const pmt_t& y);
  *   x and y are pairs or vectors that denote same location in store.
  * </pre>
  */
-GRUEL_API bool pmt_eqv(const pmt_t& x, const pmt_t& y);
+GRUEL_API bool pmt_eqv(const pmt_const_t& x, const pmt_const_t& y);
 
 /*!
  * pmt_equal recursively compares the contents of pairs and vectors,
@@ -587,11 +606,11 @@ GRUEL_API bool pmt_eqv(const pmt_t& x, const pmt_t& y);
  * pmt_equal may fail to terminate if its arguments are circular data
  * structures.
  */
-GRUEL_API bool pmt_equal(const pmt_t& x, const pmt_t& y);
+GRUEL_API bool pmt_equal(const pmt_const_t& x, const pmt_const_t& y);
 
 
 //! Return the number of elements in v
-GRUEL_API size_t pmt_length(const pmt_t& v);
+GRUEL_API size_t pmt_length(const pmt_const_t& v);
 
 /*!
  * \brief Find the first pair in \p alist whose car field is \p obj
@@ -601,7 +620,7 @@ GRUEL_API size_t pmt_length(const pmt_t& v);
  * in \p alist has \p obj as its car then \#f is returned.
  * Uses pmt_eq to compare \p obj with car fields of the pairs in \p alist.
  */
-GRUEL_API pmt_t pmt_assq(pmt_t obj, pmt_t alist);
+GRUEL_API pmt_t pmt_assq(pmt_const_t obj, pmt_const_t alist);
 
 /*!
  * \brief Find the first pair in \p alist whose car field is \p obj
@@ -611,7 +630,7 @@ GRUEL_API pmt_t pmt_assq(pmt_t obj, pmt_t alist);
  * in \p alist has \p obj as its car then \#f is returned.
  * Uses pmt_eqv to compare \p obj with car fields of the pairs in \p alist.
  */
-GRUEL_API pmt_t pmt_assv(pmt_t obj, pmt_t alist);
+GRUEL_API pmt_t pmt_assv(pmt_const_t obj, pmt_const_t alist);
 
 /*!
  * \brief Find the first pair in \p alist whose car field is \p obj
@@ -621,7 +640,7 @@ GRUEL_API pmt_t pmt_assv(pmt_t obj, pmt_t alist);
  * in \p alist has \p obj as its car then \#f is returned.
  * Uses pmt_equal to compare \p obj with car fields of the pairs in \p alist.
  */
-GRUEL_API pmt_t pmt_assoc(pmt_t obj, pmt_t alist);
+GRUEL_API pmt_t pmt_assoc(pmt_const_t obj, pmt_const_t alist);
 
 /*!
  * \brief Apply \p proc element-wise to the elements of list and returns
@@ -630,14 +649,14 @@ GRUEL_API pmt_t pmt_assoc(pmt_t obj, pmt_t alist);
  * \p list must be a list.  The dynamic order in which \p proc is
  * applied to the elements of \p list is unspecified.
  */
-GRUEL_API pmt_t pmt_map(pmt_t proc(const pmt_t&), pmt_t list);
+GRUEL_API pmt_t pmt_map(pmt_const_t proc(const pmt_const_t&), pmt_const_t list);
 
 /*!
  * \brief reverse \p list.
  *
  * \p list must be a proper list.
  */
-GRUEL_API pmt_t pmt_reverse(pmt_t list);
+GRUEL_API pmt_t pmt_reverse(pmt_const_t list);
 
 /*!
  * \brief destructively reverse \p list.
@@ -650,7 +669,7 @@ GRUEL_API pmt_t pmt_reverse_x(pmt_t list);
  * \brief (acons x y a) == (cons (cons x y) a)
  */
 inline static pmt_t
-pmt_acons(pmt_t x, pmt_t y, pmt_t a)
+pmt_acons(pmt_const_t x, pmt_const_t y, pmt_const_t a)
 {
   return pmt_cons(pmt_cons(x, y), a);
 }
@@ -658,76 +677,76 @@ pmt_acons(pmt_t x, pmt_t y, pmt_t a)
 /*!
  * \brief locates \p nth element of \n list where the car is the 'zeroth' element.
  */
-GRUEL_API pmt_t pmt_nth(size_t n, pmt_t list);
+GRUEL_API pmt_const_t pmt_nth(size_t n, pmt_const_t list);
 
 /*!
  * \brief returns the tail of \p list that would be obtained by calling
  * cdr \p n times in succession.
  */
-GRUEL_API pmt_t pmt_nthcdr(size_t n, pmt_t list);
+GRUEL_API pmt_const_t pmt_nthcdr(size_t n, pmt_const_t list);
 
 /*!
  * \brief Return the first sublist of \p list whose car is \p obj.
  * If \p obj does not occur in \p list, then \#f is returned.
  * pmt_memq use pmt_eq to compare \p obj with the elements of \p list.
  */
-GRUEL_API pmt_t pmt_memq(pmt_t obj, pmt_t list);
+GRUEL_API pmt_t pmt_memq(pmt_const_t obj, pmt_const_t list);
 
 /*!
  * \brief Return the first sublist of \p list whose car is \p obj.
  * If \p obj does not occur in \p list, then \#f is returned.
  * pmt_memv use pmt_eqv to compare \p obj with the elements of \p list.
  */
-GRUEL_API pmt_t pmt_memv(pmt_t obj, pmt_t list);
+GRUEL_API pmt_t pmt_memv(pmt_const_t obj, pmt_const_t list);
 
 /*!
  * \brief Return the first sublist of \p list whose car is \p obj.
  * If \p obj does not occur in \p list, then \#f is returned.
  * pmt_member use pmt_equal to compare \p obj with the elements of \p list.
  */
-GRUEL_API pmt_t pmt_member(pmt_t obj, pmt_t list);
+GRUEL_API pmt_t pmt_member(pmt_const_t obj, pmt_const_t list);
 
 /*!
  * \brief Return true if every element of \p list1 appears in \p list2, and false otherwise.
  * Comparisons are done with pmt_eqv.
  */
-GRUEL_API bool pmt_subsetp(pmt_t list1, pmt_t list2);
+GRUEL_API bool pmt_subsetp(pmt_const_t list1, pmt_const_t list2);
 
 /*!
  * \brief Return a list of length 1 containing \p x1
  */
-GRUEL_API pmt_t pmt_list1(const pmt_t& x1);
+GRUEL_API pmt_t pmt_list1(const pmt_const_t& x1);
 
 /*!
  * \brief Return a list of length 2 containing \p x1, \p x2
  */
-GRUEL_API pmt_t pmt_list2(const pmt_t& x1, const pmt_t& x2);
+GRUEL_API pmt_t pmt_list2(const pmt_const_t& x1, const pmt_const_t& x2);
 
 /*!
  * \brief Return a list of length 3 containing \p x1, \p x2, \p x3
  */
-GRUEL_API pmt_t pmt_list3(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3);
+GRUEL_API pmt_t pmt_list3(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3);
 
 /*!
  * \brief Return a list of length 4 containing \p x1, \p x2, \p x3, \p x4
  */
-GRUEL_API pmt_t pmt_list4(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3, const pmt_t& x4);
+GRUEL_API pmt_t pmt_list4(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3, const pmt_const_t& x4);
 
 /*!
  * \brief Return a list of length 5 containing \p x1, \p x2, \p x3, \p x4, \p x5
  */
-GRUEL_API pmt_t pmt_list5(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3, const pmt_t& x4, const pmt_t& x5);
+GRUEL_API pmt_t pmt_list5(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3, const pmt_const_t& x4, const pmt_const_t& x5);
 
 /*!
  * \brief Return a list of length 6 containing \p x1, \p x2, \p x3, \p x4, \p
  * x5, \p x6
  */
-GRUEL_API pmt_t pmt_list6(const pmt_t& x1, const pmt_t& x2, const pmt_t& x3, const pmt_t& x4, const pmt_t& x5, const pmt_t& x6);
+GRUEL_API pmt_t pmt_list6(const pmt_const_t& x1, const pmt_const_t& x2, const pmt_const_t& x3, const pmt_const_t& x4, const pmt_const_t& x5, const pmt_const_t& x6);
 
 /*!
  * \brief Return \p list with \p item added to it.
  */
-GRUEL_API pmt_t pmt_list_add(pmt_t list, const pmt_t& item);
+GRUEL_API pmt_t pmt_list_add(pmt_const_t list, const pmt_const_t& item);
 
 
 /*
@@ -738,7 +757,7 @@ GRUEL_API pmt_t pmt_list_add(pmt_t list, const pmt_t& item);
 extern GRUEL_API const pmt_t PMT_EOF;	//< The end of file object
 
 //! return true if obj is the EOF object, otherwise return false.
-GRUEL_API bool pmt_is_eof_object(pmt_t obj);
+GRUEL_API bool pmt_is_eof_object(pmt_const_t obj);
 
 /*!
  * read converts external representations of pmt objects into the
@@ -760,21 +779,21 @@ GRUEL_API pmt_t pmt_read(std::istream &port);
 /*!
  * Write a written representation of \p obj to the given \p port.
  */
-GRUEL_API void pmt_write(pmt_t obj, std::ostream &port);
+GRUEL_API void pmt_write(pmt_const_t obj, std::ostream &port);
 
 /*!
  * Return a string representation of \p obj.
  * This is the same output as would be generated by pmt_write.
  */
-GRUEL_API std::string pmt_write_string(pmt_t obj);
+GRUEL_API std::string pmt_write_string(pmt_const_t obj);
 
 
-GRUEL_API std::ostream& operator<<(std::ostream &os, pmt_t obj);
+GRUEL_API std::ostream& operator<<(std::ostream &os, pmt_const_t obj);
 
 /*!
  * \brief Write pmt string representation to stdout.
  */
-GRUEL_API void pmt_print(pmt_t v);
+GRUEL_API void pmt_print(pmt_const_t v);
 
 
 /*
@@ -785,7 +804,7 @@ GRUEL_API void pmt_print(pmt_t v);
 /*!
  * \brief Write portable byte-serial representation of \p obj to \p sink
  */
-GRUEL_API bool pmt_serialize(pmt_t obj, std::streambuf &sink);
+GRUEL_API bool pmt_serialize(pmt_const_t obj, std::streambuf &sink);
 
 /*!
  * \brief Create obj from portable byte-serial representation
@@ -798,7 +817,7 @@ GRUEL_API void pmt_dump_sizeof();	// debugging
 /*!
  * \brief Provide a simple string generating interface to pmt's serialize function
  */
-GRUEL_API std::string pmt_serialize_str(pmt_t obj);
+GRUEL_API std::string pmt_serialize_str(pmt_const_t obj);
 
 /*!
  * \brief Provide a simple string generating interface to pmt's deserialize function

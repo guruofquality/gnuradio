@@ -224,7 +224,7 @@ deserialize_untagged_f64(double *ip, std::streambuf &sb)
  * N.B., Circular structures cause infinite recursion.
  */
 bool
-pmt_serialize(pmt_t obj, std::streambuf &sb)
+pmt_serialize(pmt_const_t obj, std::streambuf &sb)
 {
   bool ok = true;
   
@@ -383,7 +383,7 @@ pmt_deserialize(std::streambuf &sb)
 /*
  * provide a simple string accessor to the serialized pmt form
  */
-std::string pmt_serialize_str(pmt_t obj){
+std::string pmt_serialize_str(pmt_const_t obj){
   std::stringbuf sb;
   pmt_serialize(obj, sb);
   return sb.str();

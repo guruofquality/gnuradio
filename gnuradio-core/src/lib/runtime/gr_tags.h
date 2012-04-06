@@ -31,13 +31,13 @@ struct GR_CORE_API gr_tag_t{
     uint64_t offset;
 
     //! the key of \p tag (as a PMT symbol)
-    pmt::pmt_t key;
+    pmt::pmt_const_t key;
 
     //! the value of \p tag (as a PMT)
-    pmt::pmt_t value;
+    pmt::pmt_const_t value;
 
     //! the source ID of \p tag (as a PMT)
-    pmt::pmt_t srcid;
+    pmt::pmt_const_t srcid;
 
     //! Comparison function to test which tag, \p x or \p y, came first in time
     static inline bool offset_compare(

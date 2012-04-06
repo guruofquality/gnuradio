@@ -70,7 +70,7 @@ pmt_@TAG@vector::uniform_writable_elements(size_t &len)
 }
 
 bool
-pmt_is_@TAG@vector(pmt_t obj)
+pmt_is_@TAG@vector(pmt_const_t obj)
 {
   return obj->is_@TAG@vector();
 }
@@ -88,7 +88,7 @@ pmt_init_@TAG@vector(size_t k, const @TYPE@ *data)
 }
 
 @TYPE@
-pmt_@TAG@vector_ref(pmt_t vector, size_t k)
+pmt_@TAG@vector_ref(pmt_const_t vector, size_t k)
 {
   if (!vector->is_@TAG@vector())
     throw pmt_wrong_type("pmt_@TAG@vector_ref", vector);
@@ -104,7 +104,7 @@ pmt_@TAG@vector_set(pmt_t vector, size_t k, @TYPE@ obj)
 }
 
 const @TYPE@ *
-pmt_@TAG@vector_elements(pmt_t vector, size_t &len)
+pmt_@TAG@vector_elements(pmt_const_t vector, size_t &len)
 {
   if (!vector->is_@TAG@vector())
     throw pmt_wrong_type("pmt_@TAG@vector_elements", vector);
@@ -112,7 +112,7 @@ pmt_@TAG@vector_elements(pmt_t vector, size_t &len)
 }
 
 @TYPE@ *
-pmt_@TAG@vector_writable_elements(pmt_t vector, size_t &len)
+pmt_@TAG@vector_writable_elements(pmt_const_t vector, size_t &len)
 {
   if (!vector->is_@TAG@vector())
     throw pmt_wrong_type("pmt_@TAG@vector_writable_elements", vector);

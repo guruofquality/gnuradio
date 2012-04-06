@@ -30,6 +30,8 @@
 
 using namespace pmt;
 
+#define PMT_ASSERT_EQUAL(x, y) CPPUNIT_ASSERT_EQUAL(pmt_const_t(x), pmt_const_t(y))
+
 void
 qa_pmt_prims::test_symbols()
 {
@@ -161,16 +163,16 @@ qa_pmt_prims::test_pairs()
   pmt_t c1 = pmt_cons(s1, PMT_NIL);
   CPPUNIT_ASSERT(pmt_is_pair(c1));
   CPPUNIT_ASSERT(!pmt_is_pair(s1));
-  CPPUNIT_ASSERT_EQUAL(s1, pmt_car(c1));
-  CPPUNIT_ASSERT_EQUAL(PMT_NIL, pmt_cdr(c1));
+  PMT_ASSERT_EQUAL(s1, pmt_car(c1));
+  PMT_ASSERT_EQUAL(PMT_NIL, pmt_cdr(c1));
   CPPUNIT_ASSERT_EQUAL((size_t) 1, pmt_length(c1));
 
   pmt_t c3 = pmt_cons(s3, PMT_NIL);
   pmt_t c2 = pmt_cons(s2, c3);
   pmt_set_cdr(c1, c2);
-  CPPUNIT_ASSERT_EQUAL(c2, pmt_cdr(c1));
+  PMT_ASSERT_EQUAL(c2, pmt_cdr(c1));
   pmt_set_car(c1, s3);
-  CPPUNIT_ASSERT_EQUAL(s3, pmt_car(c1));
+  PMT_ASSERT_EQUAL(s3, pmt_car(c1));
   CPPUNIT_ASSERT_EQUAL((size_t)1, pmt_length(c3));
   CPPUNIT_ASSERT_EQUAL((size_t)2, pmt_length(c2));
   
@@ -194,16 +196,16 @@ qa_pmt_prims::test_vectors()
   pmt_vector_set(v1, 1, s1);
   pmt_vector_set(v1, 2, s2);
 
-  CPPUNIT_ASSERT_EQUAL(s0, pmt_vector_ref(v1, 0));
-  CPPUNIT_ASSERT_EQUAL(s1, pmt_vector_ref(v1, 1));
-  CPPUNIT_ASSERT_EQUAL(s2, pmt_vector_ref(v1, 2));
+  PMT_ASSERT_EQUAL(s0, pmt_vector_ref(v1, 0));
+  PMT_ASSERT_EQUAL(s1, pmt_vector_ref(v1, 1));
+  PMT_ASSERT_EQUAL(s2, pmt_vector_ref(v1, 2));
 
   CPPUNIT_ASSERT_THROW(pmt_vector_ref(v1, N), pmt_out_of_range);
   CPPUNIT_ASSERT_THROW(pmt_vector_set(v1, N, PMT_NIL), pmt_out_of_range);
 
   pmt_vector_fill(v1, s0);
   for (size_t i = 0; i < N; i++)
-    CPPUNIT_ASSERT_EQUAL(s0, pmt_vector_ref(v1, i));
+    PMT_ASSERT_EQUAL(s0, pmt_vector_ref(v1, i));
 }
 
 static void
@@ -213,7 +215,7 @@ check_tuple(size_t len, const std::vector<pmt_t> &s, pmt_t t)
   CPPUNIT_ASSERT_EQUAL(len, pmt_length(t));
 
   for (size_t i = 0; i < len; i++)
-    CPPUNIT_ASSERT_EQUAL(s[i], pmt_tuple_ref(t, i));
+    PMT_ASSERT_EQUAL(s[i], pmt_tuple_ref(t, i));
 
 }
 
