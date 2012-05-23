@@ -82,6 +82,7 @@ list(APPEND test_gnuradio_core_sources
 # Install runtime headers
 ########################################################################
 install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/gr_double_buff.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_basic_block.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_flowgraph.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_flat_flowgraph.h

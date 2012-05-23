@@ -31,8 +31,9 @@
  * Allocate one chunk of physical memory that is
  * doubly mapped across a contiguous swath of virtual memory.
  */
-struct GR_CORE_API gr_double_buff : boost::noncopyable
+class GR_CORE_API gr_double_buff : boost::noncopyable
 {
+public:
     typedef boost::shared_ptr<gr_double_buff> sptr;
 
     //! Make a new double mapped buffer, length in bytes
