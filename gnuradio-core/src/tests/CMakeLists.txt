@@ -49,7 +49,6 @@ set(tests_not_run #single source per test
     test_general.cc
     test_filter.cc
     #test_atsc.cc
-    test_vmcircbuf.cc
 )
 
 foreach(test_not_run_src ${tests_not_run})

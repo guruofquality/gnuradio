@@ -1,5 +1,5 @@
 /*
- * Copyright 2002,2007,2011 Free Software Foundation, Inc.
+ * Copyright 2002,2007,2011,2012 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
  *
@@ -30,7 +30,6 @@
 #endif
 
 #include <qa_runtime.h>
-#include <qa_gr_vmcircbuf.h>
 #include <qa_gr_io_signature.h>
 #include <qa_gr_block.h>
 #include <qa_gr_flowgraph.h>
@@ -46,7 +45,6 @@ qa_runtime::suite ()
 {
   CppUnit::TestSuite	*s = new CppUnit::TestSuite ("runtime");
 
-  s->addTest (qa_gr_vmcircbuf::suite ());
   s->addTest (qa_gr_io_signature::suite ());
   s->addTest (qa_gr_block::suite ());
   s->addTest (qa_gr_flowgraph::suite ());

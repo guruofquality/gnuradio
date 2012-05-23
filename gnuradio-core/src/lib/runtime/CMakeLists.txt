@@ -1,4 +1,4 @@
-# Copyright 2010-2010 Free Software Foundation, Inc.
+# Copyright 2010-2012 Free Software Foundation, Inc.
 #
 # This file is part of GNU Radio
 #
@@ -25,6 +25,7 @@
 # Append gnuradio-core library sources
 ########################################################################
 list(APPEND gnuradio_core_sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/gr_double_buff.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_basic_block.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_flowgraph.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_flat_flowgraph.cc
@@ -58,11 +59,6 @@ list(APPEND gnuradio_core_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block_impl.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_detail.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_thread_body.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf_mmap_shm_open.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf_mmap_tmpfile.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf_createfilemapping.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf_sysv_shm.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_select_handler.cc
 )
 
@@ -77,7 +73,6 @@ list(APPEND test_gnuradio_core_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_flowgraph.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_top_block.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_io_signature.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_vmcircbuf.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_block_tags.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_runtime.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_set_msg_handler.cc
@@ -126,7 +121,6 @@ install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sys_paths.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_unittests.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_tags.h
     DESTINATION ${GR_INCLUDE_DIR}/gnuradio
     COMPONENT "core_devel"

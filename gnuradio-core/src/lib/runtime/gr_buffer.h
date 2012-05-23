@@ -30,7 +30,7 @@
 #include <gr_tags.h>
 #include <deque>
 
-class gr_vmcircbuf;
+class gr_double_buff;
 
 /*!
  * \brief Allocate a buffer that holds at least \p nitems of size \p sizeof_item.
@@ -124,7 +124,7 @@ class GR_CORE_API gr_buffer {
   char				       *d_base;		// base address of buffer
   unsigned int	 			d_bufsize;	// in items
  private:
-  gr_vmcircbuf			       *d_vmcircbuf;
+  boost::shared_ptr<gr_double_buff> d_double_buff;
   size_t	 			d_sizeof_item;	// in bytes
   std::vector<gr_buffer_reader *>	d_readers;
   boost::weak_ptr<gr_block>		d_link;		// block that writes to this buffer

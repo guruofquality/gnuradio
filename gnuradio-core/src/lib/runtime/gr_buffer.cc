@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2004,2009,2010 Free Software Foundation, Inc.
+ * Copyright 2004,2009,2010,2012 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
  *
@@ -25,7 +25,7 @@
 #endif
 
 #include <gr_buffer.h>
-#include <gr_vmcircbuf.h>
+#include <gr_double_buff.h>
 #include <gr_math.h>
 #include <stdexcept>
 #include <iostream>
@@ -79,7 +79,7 @@ minimum_buffer_items (long type_size, long page_size)
 
 
 gr_buffer::gr_buffer (int nitems, size_t sizeof_item, gr_block_sptr link)
-  : d_base (0), d_bufsize (0), d_vmcircbuf (0),
+  : d_base (0), d_bufsize (0),
     d_sizeof_item (sizeof_item), d_link(link),
     d_write_index (0), d_abs_write_offset(0), d_done (false),
     d_last_min_items_read(0)
@@ -98,7 +98,6 @@ gr_make_buffer (int nitems, size_t sizeof_item, gr_block_sptr link)
 
 gr_buffer::~gr_buffer ()
 {
-  delete d_vmcircbuf;
   assert (d_readers.size() == 0);
   s_buffer_count--;
 }
@@ -114,7 +113,7 @@ gr_buffer::allocate_buffer (int nitems, size_t sizeof_item)
 
   // Any buffersize we come up with must be a multiple of min_nitems.
 
-  int granularity = gr_vmcircbuf_sysconfig::granularity ();
+  int granularity = gr_double_buff::get_page_size();
   int min_nitems =  minimum_buffer_items (sizeof_item, granularity);
 
   // Round-up nitems to a multiple of min_nitems.
@@ -135,14 +134,9 @@ gr_buffer::allocate_buffer (int nitems, size_t sizeof_item)
   }
 
   d_bufsize = nitems;
-  d_vmcircbuf = gr_vmcircbuf_sysconfig::make (d_bufsize * d_sizeof_item);
-  if (d_vmcircbuf == 0){
-    std::cerr << "gr_buffer::allocate_buffer: failed to allocate buffer of size "
-	      << d_bufsize * d_sizeof_item / 1024 << " KB\n";
-    return false;
-  }
+  d_double_buff = gr_double_buff::make (d_bufsize * d_sizeof_item);
 
-  d_base = (char *) d_vmcircbuf->pointer_to_first_copy ();
+  d_base = (char *) d_double_buff->get();
   return true;
 }
 
