@@ -61,10 +61,12 @@ public:
         // and the physical memory is freed back to the system.
         ////////////////////////////////////////////////////////////////
         {
+            const std::string shm_name = omg_so_unique();
+
             //std::cout << "make shmem 2x\n" << std::endl;
             ipc::shared_memory_object shm_obj_2x(
                 ipc::create_only,                  //only create
-                omg_so_unique().c_str(),              //name
+                shm_name.c_str(),              //name
                 ipc::read_write                   //read-write mode
             );
 
@@ -80,6 +82,7 @@ public:
             );
             //std::cout << "region0.get_address() " << size_t(region0.get_address()) << std::endl;
 
+            ipc::shared_memory_object::remove(shm_name.c_str());
             _addr = (char *)region0.get_address();
         }
 
@@ -87,9 +90,10 @@ public:
         // Step 1) Allocate a chunk of physical memory of length bytes
         ////////////////////////////////////////////////////////////////
         //std::cout << "make shmem\n" << std::endl;
+        _shm_name = omg_so_unique();
         shm_obj = ipc::shared_memory_object(
             ipc::create_only,                  //only create
-            omg_so_unique().c_str(),              //name
+            _shm_name.c_str(),              //name
             ipc::read_write                   //read-write mode
         );
 
@@ -133,7 +137,7 @@ public:
 
     ~gr_double_buff_impl(void)
     {
-        //NOP
+        ipc::shared_memory_object::remove(_shm_name.c_str());
     }
 
     void *get(void)
@@ -143,6 +147,7 @@ public:
 
 private:
     char *_addr;
+    std::string _shm_name;
     ipc::shared_memory_object shm_obj;
     ipc::mapped_region region1;
     ipc::mapped_region region2;
