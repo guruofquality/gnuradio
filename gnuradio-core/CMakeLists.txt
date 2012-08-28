@@ -46,7 +46,9 @@ GR_REGISTER_COMPONENT("gnuradio-core" ENABLE_GR_CORE
 include(GrMiscUtils)
 GR_SET_GLOBAL(GNURADIO_CORE_INCLUDE_DIRS
     ${GRUEL_INCLUDE_DIRS} #headers depend on gruel
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/runtime
+    ${CMAKE_SOURCE_DIR}/../include
+    ${CMAKE_SOURCE_DIR}/../include/gnuradio
+    ${CMAKE_SOURCE_DIR}/../tests
     ${CMAKE_CURRENT_BINARY_DIR}/src/lib/general
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/general
     ${CMAKE_CURRENT_BINARY_DIR}/src/lib/gengen
@@ -66,6 +68,7 @@ GR_SET_GLOBAL(GNURADIO_CORE_SWIG_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/gruel/src/swig
     ${CMAKE_BINARY_DIR}/gruel/src/swig/
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/swig
+    ${CMAKE_SOURCE_DIR}/../swig
     ${GNURADIO_CORE_INCLUDE_DIRS}
 )
 

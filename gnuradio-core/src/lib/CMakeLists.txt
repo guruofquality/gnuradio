@@ -26,7 +26,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/ConfigChecks.cmake)
 # Include subdirs rather to populate to the sources lists.
 ########################################################################
 GR_INCLUDE_SUBDIRECTORY(missing)
-GR_INCLUDE_SUBDIRECTORY(runtime)
+GR_INCLUDE_SUBDIRECTORY(../../../../lib)
 GR_INCLUDE_SUBDIRECTORY(filter)
 GR_INCLUDE_SUBDIRECTORY(viterbi)
 GR_INCLUDE_SUBDIRECTORY(general)
