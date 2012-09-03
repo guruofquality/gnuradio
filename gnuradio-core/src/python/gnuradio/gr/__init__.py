@@ -42,8 +42,8 @@ if _RTLD_GLOBAL != 0:
 
 from gnuradio_core import *
 from exceptions import *
-from hier_block2 import *
-from top_block import *
+#from hier_block2 import *
+#from top_block import *
 
 if _RTLD_GLOBAL != 0:
     sys.setdlopenflags(_dlopenflags)             # Restore original flags
