@@ -48,7 +48,6 @@ GR_SET_GLOBAL(GNURADIO_CORE_INCLUDE_DIRS
     ${GRUEL_INCLUDE_DIRS} #headers depend on gruel
     ${CMAKE_SOURCE_DIR}/../include
     ${CMAKE_SOURCE_DIR}/../include/gnuradio
-    ${CMAKE_SOURCE_DIR}/../tests
     ${CMAKE_CURRENT_BINARY_DIR}/src/lib/general
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/general
     ${CMAKE_CURRENT_BINARY_DIR}/src/lib/gengen
