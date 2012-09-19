@@ -19,7 +19,7 @@
 # Boston, MA 02110-1301, USA.
 #
 
-from gnuradio import gr, gru
+from gnuradio import gr, gru, filter
 
 _plot = None
 
@@ -28,13 +28,12 @@ def design_filter(interpolation, decimation, fractional_bw):
     Given the interpolation rate, decimation rate and a fractional bandwidth,
     design a set of taps.
 
-    @param interpolation: interpolation factor
-    @type  interpolation: integer > 0
-    @param decimation: decimation factor
-    @type  decimation: integer > 0
-    @param fractional_bw: fractional bandwidth in (0, 0.5)  0.4 works well.
-    @type  fractional_bw: float
-    @returns: sequence of numbers
+    Args:
+        interpolation: interpolation factor (integer > 0)
+        decimation: decimation factor (integer > 0)
+        fractional_bw: fractional bandwidth in (0, 0.5)  0.4 works well. (float)
+    Returns:
+        : sequence of numbers
     """
 
     if fractional_bw >= 0.5 or fractional_bw <= 0:
@@ -69,14 +68,11 @@ class _rational_resampler_base(gr.hier_block2):
         If neither is specified, a reasonable default, 0.4, is used as
         the fractional_bw.
 
-        @param interpolation: interpolation factor
-        @type  interpolation: integer > 0
-        @param decimation: decimation factor
-        @type  decimation: integer > 0
-        @param taps: optional filter coefficients
-        @type  taps: sequence
-        @param fractional_bw: fractional bandwidth in (0, 0.5), measured at final freq (use 0.4)
-        @type  fractional_bw: float
+        Args:
+            interpolation: interpolation factor (integer > 0)
+            decimation: decimation factor (integer > 0)
+            taps: optional filter coefficients (sequence)
+            fractional_bw: fractional bandwidth in (0, 0.5), measured at final freq (use 0.4) (float)
         """
 
         if not isinstance(interpolation, int) or interpolation < 1:
@@ -109,7 +105,7 @@ class rational_resampler_fff(_rational_resampler_base):
         Rational resampling polyphase FIR filter with
         float input, float output and float taps.
         """
-        _rational_resampler_base.__init__(self, gr.rational_resampler_base_fff,
+        _rational_resampler_base.__init__(self, filter.rational_resampler_base_fff,
 				          interpolation, decimation, taps, fractional_bw)
 
 class rational_resampler_ccf(_rational_resampler_base):
@@ -118,7 +114,7 @@ class rational_resampler_ccf(_rational_resampler_base):
         Rational resampling polyphase FIR filter with
         complex input, complex output and float taps.
         """
-        _rational_resampler_base.__init__(self, gr.rational_resampler_base_ccf,
+        _rational_resampler_base.__init__(self, filter.rational_resampler_base_ccf,
                                           interpolation, decimation, taps, fractional_bw)
 
 class rational_resampler_ccc(_rational_resampler_base):
@@ -127,5 +123,5 @@ class rational_resampler_ccc(_rational_resampler_base):
         Rational resampling polyphase FIR filter with
         complex input, complex output and complex taps.
         """
-        _rational_resampler_base.__init__(self, gr.rational_resampler_base_ccc,
+        _rational_resampler_base.__init__(self, filter.rational_resampler_base_ccc,
                                           interpolation, decimation, taps, fractional_bw)

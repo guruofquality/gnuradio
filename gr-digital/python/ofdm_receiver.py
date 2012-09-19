@@ -24,11 +24,16 @@ import math
 from numpy import fft
 from gnuradio import gr
 
-import digital_swig
+import digital_swig as digital
 from ofdm_sync_pn import ofdm_sync_pn
 from ofdm_sync_fixed import ofdm_sync_fixed
 from ofdm_sync_pnac import ofdm_sync_pnac
 from ofdm_sync_ml import ofdm_sync_ml
+
+try:
+    from gnuradio import filter
+except ImportError:
+    import filter_swig as filter
 
 class ofdm_receiver(gr.hier_block2):
     """
@@ -47,18 +52,13 @@ class ofdm_receiver(gr.hier_block2):
 	The input is the complex modulated signal at baseband.
         Synchronized packets are sent back to the demodulator.
 
-        @param fft_length: total number of subcarriers
-        @type  fft_length: int
-        @param cp_length: length of cyclic prefix as specified in subcarriers (<= fft_length)
-        @type  cp_length: int
-        @param occupied_tones: number of subcarriers used for data
-        @type  occupied_tones: int
-        @param snr: estimated signal to noise ratio used to guide cyclic prefix synchronizer
-        @type  snr: float
-        @param ks: known symbols used as preambles to each packet
-        @type  ks: list of lists
-        @param logging: turn file logging on or off
-        @type  logging: bool
+        Args:
+            fft_length: total number of subcarriers (int)
+            cp_length: length of cyclic prefix as specified in subcarriers (<= fft_length) (int)
+            occupied_tones: number of subcarriers used for data (int)
+            snr: estimated signal to noise ratio used to guide cyclic prefix synchronizer (float)
+            ks: known symbols used as preambles to each packet (list of lists)
+            logging: turn file logging on or off (bool)
 	"""
 
 	gr.hier_block2.__init__(self, "ofdm_receiver",
@@ -72,7 +72,7 @@ class ofdm_receiver(gr.hier_block2):
                                           bw+tb,                   # midpoint of trans. band
                                           tb,                      # width of trans. band
                                           gr.firdes.WIN_HAMMING)   # filter type
-        self.chan_filt = gr.fft_filter_ccc(1, chan_coeffs)
+        self.chan_filt = filter.fft_filter_ccc(1, chan_coeffs)
         
         win = [1 for i in range(fft_length)]
 
@@ -121,9 +121,9 @@ class ofdm_receiver(gr.hier_block2):
 
         self.nco = gr.frequency_modulator_fc(nco_sensitivity)         # generate a signal proportional to frequency error of sync block
         self.sigmix = gr.multiply_cc()
-        self.sampler = digital_swig.ofdm_sampler(fft_length, fft_length+cp_length)
+        self.sampler = digital.ofdm_sampler(fft_length, fft_length+cp_length)
         self.fft_demod = gr.fft_vcc(fft_length, True, win, True)
-        self.ofdm_frame_acq = digital_swig.ofdm_frame_acquisition(occupied_tones,
+        self.ofdm_frame_acq = digital.ofdm_frame_acquisition(occupied_tones,
                                                                   fft_length,
                                                                   cp_length, ks[0])
 

@@ -38,8 +38,6 @@
 #include <gr_vector_to_stream.h>
 #include <gr_keep_one_in_n.h>
 #include <gr_keep_m_in_n.h>
-#include <gr_fft_vcc.h>
-#include <gr_fft_vfc.h>
 #include <gr_float_to_int.h>
 #include <gr_float_to_short.h>
 #include <gr_float_to_char.h>
@@ -58,6 +56,7 @@
 #include <gr_complex_to_interleaved_short.h>
 #include <gr_interleaved_short_to_complex.h>
 //#include <gr_endianness.h>
+#include <gr_endian_swap.h>
 #include <gr_firdes.h>
 #include <gr_interleave.h>
 #include <gr_deinterleave.h>
@@ -144,8 +143,6 @@
 %include "gr_vector_to_stream.i"
 %include "gr_keep_one_in_n.i"
 %include "gr_keep_m_in_n.i"
-%include "gr_fft_vcc.i"
-%include "gr_fft_vfc.i"
 %include "gr_float_to_int.i"
 %include "gr_float_to_short.i"
 %include "gr_float_to_char.i"
@@ -163,6 +160,7 @@
 %include "gr_complex_to_xxx.i"
 %include "gr_complex_to_interleaved_short.i"
 //%include "gr_endianness.i"
+%include "gr_endian_swap.i"
 %include "gr_interleaved_short_to_complex.i"
 %include "gr_firdes.i"
 %include "gr_interleave.i"

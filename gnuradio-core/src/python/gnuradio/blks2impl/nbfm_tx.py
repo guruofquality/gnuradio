@@ -20,7 +20,7 @@
 #
 
 import math
-from gnuradio import gr, optfir
+from gnuradio import gr, optfir, filter
 from gnuradio.blks2impl.fm_emph import fm_preemph
 
 #from gnuradio import ctcss
@@ -33,14 +33,11 @@ class nbfm_tx(gr.hier_block2):
         Takes a single float input stream of audio samples in the range [-1,+1]
         and produces a single FM modulated complex baseband output.
 
-        @param audio_rate: sample rate of audio stream, >= 16k
-        @type audio_rate: integer
-        @param quad_rate: sample rate of output stream
-        @type quad_rate: integer
-        @param tau: preemphasis time constant (default 75e-6)
-        @type tau: float
-        @param max_dev: maximum deviation in Hz (default 5e3)
-        @type max_dev: float
+        Args:
+            audio_rate: sample rate of audio stream, >= 16k (integer)
+            quad_rate: sample rate of output stream (integer)
+            tau: preemphasis time constant (default 75e-6) (float)
+            max_dev: maximum deviation in Hz (default 5e3) (float)
 
         quad_rate must be an integer multiple of audio_rate.
         """
@@ -69,7 +66,7 @@ class nbfm_tx(gr.hier_block2):
                                            40)              # stopband atten dB
 
             #print "len(interp_taps) =", len(interp_taps)
-            self.interpolator = gr.interp_fir_filter_fff (interp_factor, interp_taps)
+            self.interpolator = filter.interp_fir_filter_fff (interp_factor, interp_taps)
 
         self.preemph = fm_preemph (quad_rate, tau=tau)
 

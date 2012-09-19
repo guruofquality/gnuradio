@@ -19,6 +19,9 @@
  * the Free Software Foundation, Inc., 51 Franklin Street,
  * Boston, MA 02110-1301, USA.
  */
+%module(docstring="Generic coding/decoding.") trellis
+
+#define DIGITAL_API
 
 %include "gnuradio.i"			// the common stuff
 
@@ -26,15 +29,19 @@
 %include "trellis_swig_doc.i"
 
 %{
+#include "digital/constellation.h"
+#include "digital/metric_type.h"
 #include "fsm.h"
 #include "interleaver.h"
 #include "trellis_permutation.h"
 #include "trellis_siso_f.h"
 #include "trellis_siso_combined_f.h"
 #include "trellis_constellation_metrics_cf.h"
-#include "digital_constellation.h"
 %}
 
+%include "digital/constellation.h"
+%include "digital/metric_type.h"
+%include "constellation.i"
 
 // ----------------------------------------------------------------
 
@@ -49,10 +56,3 @@
 %include "trellis_constellation_metrics_cf.i"
 
 %include "trellis_generated.i"
-
-%import "digital_metric_type.h"
-%import "digital_constellation.i"
-
- //%pythoncode %{
- //  from gnuradio.gr import TRELLIS_EUCLIDEAN, TRELLIS_HARD_SYMBOL, TRELLIS_HARD_BIT
- //  %}

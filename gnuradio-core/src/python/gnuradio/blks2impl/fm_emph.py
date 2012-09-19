@@ -19,7 +19,7 @@
 # Boston, MA 02110-1301, USA.
 #
 
-from gnuradio import gr
+from gnuradio import gr, filter
 import math
 
 
@@ -43,10 +43,10 @@ class fm_deemph(gr.hier_block2):
 
     def __init__(self, fs, tau=75e-6):
         """
-        @param fs: sampling frequency in Hz
-        @type fs: float
-        @param tau: Time constant in seconds (75us in US, 50us in EUR)
-        @type tau: float
+        
+        Args:
+            fs: sampling frequency in Hz (float)
+            tau: Time constant in seconds (75us in US, 50us in EUR) (float)
         """
         gr.hier_block2.__init__(self, "fm_deemph",
 				gr.io_signature(1, 1, gr.sizeof_float), # Input signature
@@ -68,7 +68,7 @@ class fm_deemph(gr.hier_block2):
             global plot1
             plot1 = gru.gnuplot_freqz (gru.freqz (btaps, ataps), fs, True)
 
-        deemph = gr.iir_filter_ffd(btaps, ataps)
+        deemph = filter.iir_filter_ffd(btaps, ataps)
 	self.connect(self, deemph, self)
 
 #
@@ -126,10 +126,10 @@ class fm_preemph(gr.hier_block2):
     """
     def __init__(self, fs, tau=75e-6):
         """
-        @param fs: sampling frequency in Hz
-        @type fs: float
-        @param tau: Time constant in seconds (75us in US, 50us in EUR)
-        @type tau: float
+        
+        Args:
+            fs: sampling frequency in Hz (float)
+            tau: Time constant in seconds (75us in US, 50us in EUR) (float)
         """
 
 	gr.hier_block2.__init__(self, "fm_deemph",
@@ -147,5 +147,5 @@ class fm_preemph(gr.hier_block2):
             global plot2
             plot2 = gru.gnuplot_freqz (gru.freqz (btaps, ataps), fs, True)
 
-        preemph = gr.iir_filter_ffd(btaps, ataps)
+        preemph = filter.iir_filter_ffd(btaps, ataps)
 	self.connect(self, preemph, self)

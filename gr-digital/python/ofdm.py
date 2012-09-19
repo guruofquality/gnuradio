@@ -21,8 +21,8 @@
 # 
 
 import math
-from gnuradio import gr
-import digital_swig
+from gnuradio import gr, fft
+import digital_swig as digital
 import ofdm_packet_utils
 from ofdm_receiver import ofdm_receiver
 import gnuradio.gr.gr_threading as _threading
@@ -46,10 +46,10 @@ class ofdm_mod(gr.hier_block2):
         Packets to be sent are enqueued by calling send_pkt.
         The output is the complex modulated signal at baseband.
 
-        @param options: pass modulation options from higher layers (fft length, occupied tones, etc.)
-        @param msgq_limit: maximum number of messages in message queue
-        @type msgq_limit: int
-        @param pad_for_usrp: If true, packets are padded such that they end up a multiple of 128 samples
+        Args:
+            options: pass modulation options from higher layers (fft length, occupied tones, etc.)
+            msgq_limit: maximum number of messages in message queue (int)
+            pad_for_usrp: If true, packets are padded such that they end up a multiple of 128 samples
         """
 
 	gr.hier_block2.__init__(self, "ofdm_mod",
@@ -97,16 +97,16 @@ class ofdm_mod(gr.hier_block2):
             constel = qam.qam_constellation(arity)
             rotated_const = map(lambda pt: pt * rot, constel.points())
         #print rotated_const
-        self._pkt_input = digital_swig.ofdm_mapper_bcv(rotated_const,
-                                                       msgq_limit,
-                                                       options.occupied_tones,
-                                                       options.fft_length)
+        self._pkt_input = digital.ofdm_mapper_bcv(rotated_const,
+                                                  msgq_limit,
+                                                  options.occupied_tones,
+                                                  options.fft_length)
         
-        self.preambles = digital_swig.ofdm_insert_preamble(self._fft_length,
-                                                           padded_preambles)
-        self.ifft = gr.fft_vcc(self._fft_length, False, win, True)
-        self.cp_adder = digital_swig.ofdm_cyclic_prefixer(self._fft_length,
-                                                          symbol_length)
+        self.preambles = digital.ofdm_insert_preamble(self._fft_length,
+                                                      padded_preambles)
+        self.ifft = fft.fft_vcc(self._fft_length, False, win, True)
+        self.cp_adder = digital.ofdm_cyclic_prefixer(self._fft_length,
+                                                     symbol_length)
         self.scale = gr.multiply_const_cc(1.0 / math.sqrt(self._fft_length))
         
         self.connect((self._pkt_input, 0), (self.preambles, 0))
@@ -130,8 +130,8 @@ class ofdm_mod(gr.hier_block2):
         """
         Send the payload.
 
-        @param payload: data to send
-        @type payload: string
+        Args:
+            payload: data to send (string)
         """
         if eof:
             msg = gr.message(1) # tell self._pkt_input we're not sending any more packets
@@ -188,9 +188,9 @@ class ofdm_demod(gr.hier_block2):
 	The input is the complex modulated signal at baseband.
         Demodulated packets are sent to the handler.
 
-        @param options: pass modulation options from higher layers (fft length, occupied tones, etc.)
-        @param callback:  function of two args: ok, payload
-        @type callback: ok: bool; payload: string
+        Args:
+            options: pass modulation options from higher layers (fft length, occupied tones, etc.)
+            callback: function of two args: ok, payload (ok: bool; payload: string)
 	"""
 	gr.hier_block2.__init__(self, "ofdm_demod",
 				gr.io_signature(1, 1, gr.sizeof_gr_complex), # Input signature
@@ -240,10 +240,10 @@ class ofdm_demod(gr.hier_block2):
 
         phgain = 0.25
         frgain = phgain*phgain / 4.0
-        self.ofdm_demod = digital_swig.ofdm_frame_sink(rotated_const, range(arity),
-                                                       self._rcvd_pktq,
-                                                       self._occupied_tones,
-                                                       phgain, frgain)
+        self.ofdm_demod = digital.ofdm_frame_sink(rotated_const, range(arity),
+                                                  self._rcvd_pktq,
+                                                  self._occupied_tones,
+                                                  phgain, frgain)
 
         self.connect(self, self.ofdm_recv)
         self.connect((self.ofdm_recv, 0), (self.ofdm_demod, 0))

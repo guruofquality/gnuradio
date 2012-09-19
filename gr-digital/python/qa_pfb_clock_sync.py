@@ -21,18 +21,19 @@
 # 
 
 from gnuradio import gr, gr_unittest
+import filter_swig as filter
 import digital_swig as digital
 import random, cmath
 
 class test_pfb_clock_sync(gr_unittest.TestCase):
 
-    def setUp (self):
-        self.tb = gr.top_block ()
+    def setUp(self):
+        self.tb = gr.top_block()
 
-    def tearDown (self):
+    def tearDown(self):
         self.tb = None
 
-    def test01 (self):
+    def test01(self):
         # Test BPSK sync
         excess_bw = 0.35
 
@@ -52,7 +53,7 @@ class test_pfb_clock_sync(gr_unittest.TestCase):
                                                max_rate_deviation,
                                                osps)
         
-        data = 1000*[complex(1,0), complex(-1,0)]
+        data = 10000*[complex(1,0), complex(-1,0)]
         self.src = gr.vector_source_c(data, False)
 
         # pulse shaping interpolation filter
@@ -62,18 +63,18 @@ class test_pfb_clock_sync(gr_unittest.TestCase):
             1.0,             # symbol rate
             excess_bw,       # excess bandwidth (roll-off factor)
             ntaps)
-        self.rrc_filter = gr.pfb_arb_resampler_ccf(sps, rrc_taps)
+        self.rrc_filter = filter.pfb_arb_resampler_ccf(sps, rrc_taps)
 
         self.snk = gr.vector_sink_c()
 
         self.tb.connect(self.src, self.rrc_filter, self.test, self.snk)
         self.tb.run()
         
-        expected_result = 1000*[complex(-1,0), complex(1,0)]
+        expected_result = 10000*[complex(-1,0), complex(1,0)]
         dst_data = self.snk.data()
 
         # Only compare last Ncmp samples
-        Ncmp = 100
+        Ncmp = 1000
         len_e = len(expected_result)
         len_d = len(dst_data)
         expected_result = expected_result[len_e - Ncmp:]
@@ -82,10 +83,10 @@ class test_pfb_clock_sync(gr_unittest.TestCase):
         #for e,d in zip(expected_result, dst_data):
         #    print e, d
         
-        self.assertComplexTuplesAlmostEqual (expected_result, dst_data, 1)
+        self.assertComplexTuplesAlmostEqual(expected_result, dst_data, 1)
 
 
-    def test02 (self):
+    def test02(self):
         # Test real BPSK sync
         excess_bw = 0.35
 
@@ -105,7 +106,7 @@ class test_pfb_clock_sync(gr_unittest.TestCase):
                                                max_rate_deviation,
                                                osps)
         
-        data = 1000*[1, -1]
+        data = 10000*[1, -1]
         self.src = gr.vector_source_f(data, False)
 
         # pulse shaping interpolation filter
@@ -115,18 +116,18 @@ class test_pfb_clock_sync(gr_unittest.TestCase):
             1.0,             # symbol rate
             excess_bw,       # excess bandwidth (roll-off factor)
             ntaps)
-        self.rrc_filter = gr.pfb_arb_resampler_fff(sps, rrc_taps)
+        self.rrc_filter = filter.pfb_arb_resampler_fff(sps, rrc_taps)
 
         self.snk = gr.vector_sink_f()
 
         self.tb.connect(self.src, self.rrc_filter, self.test, self.snk)
         self.tb.run()
         
-        expected_result = 1000*[-1, 1]
+        expected_result = 10000*[-1, 1]
         dst_data = self.snk.data()
 
         # Only compare last Ncmp samples
-        Ncmp = 100
+        Ncmp = 1000
         len_e = len(expected_result)
         len_d = len(dst_data)
         expected_result = expected_result[len_e - Ncmp:]
@@ -135,7 +136,7 @@ class test_pfb_clock_sync(gr_unittest.TestCase):
         #for e,d in zip(expected_result, dst_data):
         #    print e, d
         
-        self.assertComplexTuplesAlmostEqual (expected_result, dst_data, 1)
+        self.assertComplexTuplesAlmostEqual(expected_result, dst_data, 1)
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@
 
 # See gnuradio-examples/python/digital for examples
 
-from gnuradio import gr, blks2
+from gnuradio import gr, filter
 from math import pi
 import numpy
 
@@ -49,6 +49,31 @@ _def_log = False
 # /////////////////////////////////////////////////////////////////////////////
 
 class cpm_mod(gr.hier_block2):
+    """
+    Hierarchical block for Continuous Phase modulation.
+    
+    The input is a byte stream (unsigned char) representing packed
+    bits and the output is the complex modulated signal at baseband.
+    
+    See Proakis for definition of generic CPM signals:
+    s(t)=exp(j phi(t))
+    phi(t)= 2 pi h int_0^t f(t') dt'
+    f(t)=sum_k a_k g(t-kT)
+    (normalizing assumption: int_0^infty g(t) dt = 1/2)
+    
+    Args:
+        samples_per_symbol: samples per baud >= 2 (integer)
+        bits_per_symbol: bits per symbol (integer)
+        h_numerator: numerator of modulation index (integer)
+        h_denominator: denominator of modulation index (numerator and denominator must be relative primes) (integer)
+        cpm_type: supported types are: 0=CPFSK, 1=GMSK, 2=RC, 3=GENERAL (integer)
+        bt: bandwidth symbol time product for GMSK (float)
+        symbols_per_pulse: shaping pulse duration in symbols (integer)
+        generic_taps: define a generic CPM pulse shape (sum = samples_per_symbol/2) (list/array of floats)
+        verbose: Print information about modulator? (boolean)
+        debug: Print modulation data to files? (boolean)
+    """
+
     def __init__(self, 
                  samples_per_symbol=_def_samples_per_symbol,
                  bits_per_symbol=_def_bits_per_symbol,
@@ -60,42 +85,6 @@ class cpm_mod(gr.hier_block2):
                  generic_taps=_def_generic_taps,
                  verbose=_def_verbose,
                  log=_def_log):
-        """
-	Hierarchical block for Continuous Phase
-	modulation.
-
-	The input is a byte stream (unsigned char) 
-        representing packed bits and the
-	output is the complex modulated signal at baseband.
-
-        See Proakis for definition of generic CPM signals:
-        s(t)=exp(j phi(t))
-        phi(t)= 2 pi h int_0^t f(t') dt'
-        f(t)=sum_k a_k g(t-kT)
-        (normalizing assumption: int_0^infty g(t) dt = 1/2)
-
-	@param samples_per_symbol: samples per baud >= 2
-	@type samples_per_symbol: integer
-	@param bits_per_symbol: bits per symbol
-	@type bits_per_symbol: integer
-	@param h_numerator: numerator of modulation index
-	@type h_numerator: integer
-	@param h_denominator: denominator of modulation index (numerator and denominator must be relative primes)
-	@type h_denominator: integer
-	@param cpm_type: supported types are: 0=CPFSK, 1=GMSK, 2=RC, 3=GENERAL
-	@type cpm_type: integer
-        @param bt: bandwidth symbol time product for GMSK
-        @type bt: float
-	@param symbols_per_pulse: shaping pulse duration in symbols
-	@type symbols_per_pulse: integer
-	@param generic_taps: define a generic CPM pulse shape (sum = samples_per_symbol/2)
-	@type generic_taps: array of floats
-
-        @param verbose: Print information about modulator?
-        @type verbose: bool
-        @param debug: Print modulation data to files?
-        @type debug: bool       
-	"""
 
 	gr.hier_block2.__init__(self, "cpm_mod", 
 				gr.io_signature(1, 1, gr.sizeof_char),       # Input signature
@@ -153,7 +142,7 @@ class cpm_mod(gr.hier_block2):
         else:
             raise TypeError, ("cpm_type must be an integer in {0,1,2,3}, is %r" % (cpm_type,))
 
-        self.filter = blks2.pfb_arb_resampler_fff(samples_per_symbol, self.taps)
+        self.filter = filter.pfb.arb_resampler_fff(samples_per_symbol, self.taps)
 
 	# FM modulation
 	self.fmmod = gr.frequency_modulator_fc(sensitivity)
