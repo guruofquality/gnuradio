@@ -48,39 +48,39 @@
 # Append gnuradio-core library sources
 ########################################################################
 list(APPEND gnuradio_core_sources
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_basic_block.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_flowgraph.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_flat_flowgraph.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_basic_block.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_flowgraph.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_flat_flowgraph.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_block.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_block_detail.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_block_executor.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_hier_block2.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_hier_block2_detail.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_block_detail.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_block_executor.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_hier_block2.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_hier_block2_detail.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_buffer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_dispatcher.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_error_handler.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_io_signature.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_io_signature.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_local_sighandler.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_message.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_msg_accepter.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_msg_accepter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_msg_handler.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_msg_queue.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_pagesize.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_preferences.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_realtime.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_scheduler.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_scheduler_sts.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_scheduler_tpb.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_single_threaded_scheduler.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_sptr_magic.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_scheduler.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_scheduler_sts.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_scheduler_tpb.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_single_threaded_scheduler.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_sptr_magic.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sync_block.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sync_decimator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sync_interpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sys_paths.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block_impl.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_detail.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_thread_body.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block_impl.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_detail.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_thread_body.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf_mmap_shm_open.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_vmcircbuf_mmap_tmpfile.cc
@@ -97,13 +97,13 @@ list(APPEND test_gnuradio_core_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_hier_block2.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_hier_block2_derived.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_buffer.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_flowgraph.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_flowgraph.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_top_block.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_io_signature.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_vmcircbuf.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/qa_block_tags.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/qa_block_tags.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_runtime.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/qa_set_msg_handler.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/qa_set_msg_handler.cc
 )
 
 ########################################################################

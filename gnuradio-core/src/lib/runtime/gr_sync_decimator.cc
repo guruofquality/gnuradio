@@ -26,44 +26,18 @@
 
 #include <gr_sync_decimator.h>
 
-gr_sync_decimator::gr_sync_decimator (const std::string &name,
-				      gr_io_signature_sptr input_signature,
-				      gr_io_signature_sptr output_signature,
-				      unsigned decimation)
-  : gr_sync_block (name, input_signature, output_signature)
+gr_sync_decimator::gr_sync_decimator(void)
 {
-  set_decimation (decimation);
+    //NOP
 }
 
-void
-gr_sync_decimator::forecast (int noutput_items, gr_vector_int &ninput_items_required)
+gr_sync_decimator::gr_sync_decimator(
+    const std::string &name,
+    gr_io_signature_sptr input_signature,
+    gr_io_signature_sptr output_signature,
+    const size_t decim_rate
+):
+    gr_sync_block(name, input_signature, output_signature)
 {
-  unsigned ninputs = ninput_items_required.size ();
-  for (unsigned i = 0; i < ninputs; i++)
-    ninput_items_required[i] = fixed_rate_noutput_to_ninput(noutput_items);
+    this->set_decimation(decim_rate);
 }
-
-int
-gr_sync_decimator::fixed_rate_noutput_to_ninput(int noutput_items)
-{
-  return noutput_items * decimation() + history() - 1;
-}
-
-int
-gr_sync_decimator::fixed_rate_ninput_to_noutput(int ninput_items)
-{
-  return std::max(0, ninput_items - (int)history() + 1) / decimation();
-}
-
-int
-gr_sync_decimator::general_work (int noutput_items,
-				 gr_vector_int &ninput_items,
-				 gr_vector_const_void_star &input_items,
-				 gr_vector_void_star &output_items)
-{
-  int	r = work (noutput_items, input_items, output_items);
-  if (r > 0)
-    consume_each (r * decimation ());
-  return r;
-}
-
