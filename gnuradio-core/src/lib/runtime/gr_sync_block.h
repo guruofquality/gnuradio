@@ -30,19 +30,12 @@ struct GR_CORE_API gr_sync_block : public gr_block
     );
 
     //! implements work -> calls work
-    inline int general_work(
+    int general_work(
         int noutput_items,
         gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items
-    ){
-        const int work_ret = this->work(noutput_items, input_items, output_items);
-        if (work_ret > 0)
-        {
-            this->consume_each(size_t(0.5+(work_ret/this->relative_rate())));
-        }
-        return work_ret;
-    }
+    );
 
    /*!
     * \brief just like gr_block::general_work, only this arranges to call consume_each for you

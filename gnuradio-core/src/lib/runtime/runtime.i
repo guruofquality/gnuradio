@@ -44,8 +44,6 @@
 
 %}
 
-%include <gras/element.i>
-
 %include <gr_message.i>
 %include <gr_msg_handler.i>
 %include <gr_msg_queue.i>
@@ -69,7 +67,7 @@
 %ignore gras::Block::input_buffer_allocator;
 %ignore gras::Block::output_buffer_allocator;
 
-%include <gras/element.i>
+%include <gras/element.hpp>
 %include <gras/io_signature.i>
 %include <gras/tags.hpp>
 %include <gras/block.hpp>
@@ -85,7 +83,7 @@
 #else
 
 //the bare minimum block inheritance interface to make things work but keep swig cxx file size down
-%include <gras/element.i>
+%include <gras/element.hpp>
 namespace gras
 {
     struct Block : Element{};

@@ -17,11 +17,7 @@
 #include "pmx_helper.hpp"
 #include <gr_block.h>
 #include <boost/foreach.hpp>
-
-static inline unsigned long long myullround(const double x)
-{
-    return (unsigned long long)(x + 0.5);
-}
+#include <iostream>
 
 gr_block::gr_block(void)
 {
@@ -70,7 +66,7 @@ int gr_block::work(
         {
             if (items <= _input_history_items)
             {
-                return gras::Block::WORK_DONE_ON_INPUT; //TODO return index
+                return i;
             }
             items -= _input_history_items;
         }
@@ -125,7 +121,7 @@ int gr_block::work(
             //handle the case of forecast failing
             if (work_noutput_items <= _output_multiple_items)
             {
-                return gras::Block::WORK_DONE_ON_INPUT; //TODO return index
+                return i;
             }
 
             work_noutput_items = work_noutput_items/2; //backoff regime
@@ -148,7 +144,14 @@ int gr_block::work(
         this->produce(i, work_ret);
     }
 
+    if (work_ret >= 0) return -2;
+
     return work_ret;
+}
+
+static inline unsigned long long myullround(const double x)
+{
+    return (unsigned long long)(x + 0.5);
 }
 
 void gr_block::propagate_tags(const size_t which_input, const TagIter &iter)
