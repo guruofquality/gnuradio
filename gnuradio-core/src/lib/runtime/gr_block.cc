@@ -18,6 +18,11 @@
 #include <gr_block.h>
 #include <boost/foreach.hpp>
 
+static inline unsigned long long myullround(const double x)
+{
+    return (unsigned long long)(x + 0.5);
+}
+
 gr_block::gr_block(void)
 {
     //NOP
@@ -31,6 +36,10 @@ gr_block::gr_block(
     gras::Block(name)
 {
     this->set_fixed_rate(false);
+    this->set_output_multiple(1);
+    this->set_history(1);
+    this->set_relative_rate(1.0);
+    this->set_tag_propagation_policy(TPP_ALL_TO_ALL);
     this->set_input_signature(input_signature);
     this->set_output_signature(output_signature);
 }
@@ -40,28 +49,136 @@ int gr_block::work(
     const OutputItems &output_items
 ){
     _work_io_ptr_mask = 0;
-    _work_ninput_items.resize(input_items.size());
-    _work_input_items.resize(input_items.size());
-    for (size_t i = 0; i < input_items.size(); i++)
+    #define REALLY_BIG size_t(1 << 30)
+    const size_t num_inputs = input_items.size();
+    const size_t num_outputs = output_items.size();
+
+    //------------------------------------------------------------------
+    //-- initialize input buffers before work
+    //------------------------------------------------------------------
+    size_t num_input_items = REALLY_BIG; //so big that it must std::min
+    _fcast_ninput_items.resize(num_inputs);
+    _work_ninput_items.resize(num_inputs);
+    _work_input_items.resize(num_inputs);
+    for (size_t i = 0; i < num_inputs; i++)
     {
         _work_ninput_items[i] = input_items[i].size();
         _work_input_items[i] = input_items[i].get();
         _work_io_ptr_mask |= ptrdiff_t(_work_input_items[i]);
+        size_t items = input_items[i].size();
+        if (_enable_fixed_rate)
+        {
+            if (items <= _input_history_items)
+            {
+                return gras::Block::WORK_DONE_ON_INPUT; //TODO return index
+            }
+            items -= _input_history_items;
+        }
+
+        num_input_items = std::min(num_input_items, items);
     }
 
-    _work_output_items.resize(output_items.size());
-    for (size_t i = 0; i < output_items.size(); i++)
+    //------------------------------------------------------------------
+    //-- initialize output buffers before work
+    //------------------------------------------------------------------
+    size_t num_output_items = REALLY_BIG; //so big that it must std::min
+    _work_output_items.resize(num_outputs);
+    for (size_t i = 0; i < num_outputs; i++)
     {
         _work_output_items[i] = output_items[i].get();
         _work_io_ptr_mask |= ptrdiff_t(_work_output_items[i]);
+        size_t items = output_items[i].size();
+        items /= _output_multiple_items;
+        items *= _output_multiple_items;
+        num_output_items = std::min(num_output_items, items);
     }
 
-    return this->general_work(
-        (output_items.size())? output_items[0].size() : input_items[0].size(),
+    //------------------------------------------------------------------
+    //-- calculate the work_noutput_items given:
+    //-- min of num_input_items
+    //-- min of num_output_items
+    //-- relative rate and output multiple items
+    //------------------------------------------------------------------
+    size_t work_noutput_items = num_output_items;
+    if (num_inputs and (_enable_fixed_rate or not num_outputs))
+    {
+        size_t calc_output_items = size_t(num_input_items*_relative_rate);
+        calc_output_items += _output_multiple_items-1;
+        calc_output_items /= _output_multiple_items;
+        calc_output_items *= _output_multiple_items;
+        if (calc_output_items and calc_output_items < work_noutput_items)
+            work_noutput_items = calc_output_items;
+    }
+
+    //------------------------------------------------------------------
+    //-- forecast
+    //------------------------------------------------------------------
+    if (num_inputs or num_outputs)
+    {
+        forecast_again_you_jerk:
+        _fcast_ninput_items = _work_ninput_items; //init for NOP case
+        this->forecast(work_noutput_items, _fcast_ninput_items);
+        for (size_t i = 0; i < input_items.size(); i++)
+        {
+            if (_fcast_ninput_items[i] <= _work_ninput_items[i]) continue;
+
+            //handle the case of forecast failing
+            if (work_noutput_items <= _output_multiple_items)
+            {
+                return gras::Block::WORK_DONE_ON_INPUT; //TODO return index
+            }
+
+            work_noutput_items = work_noutput_items/2; //backoff regime
+            work_noutput_items += _output_multiple_items-1;
+            work_noutput_items /= _output_multiple_items;
+            work_noutput_items *= _output_multiple_items;
+            goto forecast_again_you_jerk;
+        }
+    }
+
+    const int work_ret = this->general_work(
+        work_noutput_items,
         _work_ninput_items,
         _work_input_items,
         _work_output_items
     );
+
+    if (work_ret > 0) for (size_t i = 0; i < num_outputs; i++)
+    {
+        this->produce(i, work_ret);
+    }
+
+    return work_ret;
+}
+
+void gr_block::propagate_tags(const size_t which_input, const TagIter &iter)
+{
+    const size_t num_outputs = _work_output_items.size();
+
+    switch (_tag_prop_policy)
+    {
+    case TPP_DONT: break; //well that was ez
+    case TPP_ALL_TO_ALL:
+        for (size_t out_i = 0; out_i < num_outputs; out_i++)
+        {
+            BOOST_FOREACH(gras::Tag t, iter)
+            {
+                t.offset = myullround(t.offset * _relative_rate);
+                this->post_output_tag(out_i, t);
+            }
+        }
+        break;
+    case TPP_ONE_TO_ONE:
+        if (which_input < num_outputs)
+        {
+            BOOST_FOREACH(gras::Tag t, iter)
+            {
+                t.offset = myullround(t.offset * _relative_rate);
+                this->post_output_tag(which_input, t);
+            }
+        }
+        break;
+    };
 }
 
 void gr_block::forecast(int noutput_items, std::vector<int> &ninputs_req)
@@ -132,7 +249,7 @@ void gr_block::set_decimation(const size_t decim)
 unsigned gr_block::history(void) const
 {
     //implement off-by-one history compat
-    return this->input_config().lookahead_items+1;
+    return _input_history_items+1;
 }
 
 void gr_block::set_history(unsigned history)
@@ -140,8 +257,42 @@ void gr_block::set_history(unsigned history)
     gras::InputPortConfig config = this->input_config();
     //implement off-by-one history compat
     if (history == 0) history++;
-    config.lookahead_items = history-1;
+    _input_history_items = history-1;
+    config.lookahead_items = _input_history_items;
     this->set_input_config(config);
+}
+
+void gr_block::set_fixed_rate(const bool fixed_rate)
+{
+    _enable_fixed_rate = fixed_rate;
+}
+
+bool gr_block::fixed_rate(void) const
+{
+    return _enable_fixed_rate;
+}
+
+void gr_block::set_output_multiple(const size_t multiple)
+{
+    _output_multiple_items = multiple;
+    gras::OutputPortConfig config = this->output_config();
+    config.reserve_items = multiple;
+    this->set_output_config(config);
+}
+
+size_t gr_block::output_multiple(void) const
+{
+    return _output_multiple_items;
+}
+
+void gr_block::set_relative_rate(double relative_rate)
+{
+    _relative_rate = relative_rate;
+}
+
+double gr_block::relative_rate(void) const
+{
+    return _relative_rate;
 }
 
 int gr_block::max_noutput_items(void) const
@@ -166,8 +317,6 @@ bool gr_block::is_set_max_noutput_items(void) const
     return this->max_noutput_items() != 0;
 }
 
-//TODO Tag2gr_tag and gr_tag2Tag need PMC to/from PMT logic
-//currently PMC holds the pmt_t, this is temporary
 static gr_tag_t Tag2gr_tag(const gras::Tag &tag)
 {
     gr_tag_t t;
@@ -226,4 +375,14 @@ void gr_block::get_tags_in_range(
             if (key or pmt::pmt_equal(t.key, key)) tags.push_back(t);
         }
     }
+}
+
+gr_block::tag_propagation_policy_t gr_block::tag_propagation_policy(void)
+{
+    return _tag_prop_policy;
+}
+
+void gr_block::set_tag_propagation_policy(gr_block::tag_propagation_policy_t p)
+{
+    _tag_prop_policy = p;
 }

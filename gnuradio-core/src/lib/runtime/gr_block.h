@@ -57,8 +57,18 @@ struct GR_CORE_API gr_block : gras::Block
         const OutputItems &output_items
     );
 
+    //! implements tag_propagation_policy()
+    virtual void propagate_tags(const size_t which_input, const TagIter &iter);
+
     //! Overload me! I am the forecast
     virtual void forecast(int, std::vector<int> &);
+
+    //! Return options for the work call
+    enum
+    {
+        WORK_CALLED_PRODUCE = -2,
+        WORK_DONE = -1
+    };
 
     /*!
     * \brief compute output items from input items
@@ -81,11 +91,6 @@ struct GR_CORE_API gr_block : gras::Block
         gr_vector_void_star &output_items
     );
 
-    gr_vector_int _work_ninput_items;
-    gr_vector_const_void_star _work_input_items;
-    gr_vector_void_star _work_output_items;
-    ptrdiff_t _work_io_ptr_mask;
-
     void add_item_tag(
         const size_t which_output, const gr_tag_t &tag
     );
@@ -105,10 +110,6 @@ struct GR_CORE_API gr_block : gras::Block
         uint64_t abs_end,
         const pmt::pmt_t &key = pmt::pmt_t()
     );
-
-    unsigned history(void) const;
-
-    void set_history(unsigned history);
 
     void set_alignment(const size_t alignment);
 
@@ -132,6 +133,58 @@ struct GR_CORE_API gr_block : gras::Block
 
     bool is_set_max_noutput_items(void) const;
 
+    /*******************************************************************
+     * Deal with input and output port configuration
+     ******************************************************************/
+
+    unsigned history(void) const;
+
+    void set_history(unsigned history);
+
+    /*!
+     * Enable fixed rate logic.
+     * When enabled, relative rate is assumed to be set,
+     * and forecast is automatically called.
+     * Also, consume will be called automatically.
+     */
+    void set_fixed_rate(const bool fixed_rate);
+
+    //! Get the fixed rate setting
+    bool fixed_rate(void) const;
+
+    /*!
+     * The relative rate can be thought of as interpolation/decimation.
+     * In other words, relative rate is the ratio of output items to input items.
+     */
+    void set_relative_rate(const double relative_rate);
+
+    //! Get the relative rate setting
+    double relative_rate(void) const;
+
+    /*!
+     * The output multiple setting controls work output buffer sizes.
+     * Buffers will be number of items modulo rounted to the multiple.
+     */
+    void set_output_multiple(const size_t multiple);
+
+    //! Get the output multiple setting
+    size_t output_multiple(void) const;
+
+    /*******************************************************************
+     * Deal with tag handling and tag configuration
+     ******************************************************************/
+
+    enum tag_propagation_policy_t
+    {
+        TPP_DONT = 0,
+        TPP_ALL_TO_ALL = 1,
+        TPP_ONE_TO_ONE = 2
+    };
+
+    tag_propagation_policy_t tag_propagation_policy(void);
+
+    void set_tag_propagation_policy(tag_propagation_policy_t p);
+
     ///////////// TODO //////////////////////
     void set_max_output_buffer(long){}
     void set_max_output_buffer(int, long){}
@@ -139,6 +192,17 @@ struct GR_CORE_API gr_block : gras::Block
     void set_min_output_buffer(long){}
     void set_min_output_buffer(int, long){}
     long min_output_buffer(size_t){return 0;}
+
+    gr_vector_int _work_ninput_items;
+    gr_vector_int _fcast_ninput_items;
+    gr_vector_const_void_star _work_input_items;
+    gr_vector_void_star _work_output_items;
+    ptrdiff_t _work_io_ptr_mask;
+    size_t _output_multiple_items;
+    double _relative_rate;
+    bool _enable_fixed_rate;
+    size_t _input_history_items;
+    tag_propagation_policy_t _tag_prop_policy;
 
 };
 
