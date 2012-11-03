@@ -24,8 +24,6 @@
 
 %{
 
-#include <gras/thread_pool.hpp>
-#include <gras/element.hpp>
 #include <gras/block.hpp>
 #include <gras/hier_block.hpp>
 #include <gras/top_block.hpp>
@@ -67,7 +65,7 @@
 %ignore gras::Block::input_buffer_allocator;
 %ignore gras::Block::output_buffer_allocator;
 
-%include <gras/element.hpp>
+%include <gras/element.i>
 %include <gras/io_signature.i>
 %include <gras/tags.hpp>
 %include <gras/block.hpp>
@@ -86,8 +84,8 @@
 %include <gras/element.hpp>
 namespace gras
 {
-    struct Block : Element{};
-    struct HierBlock : Element{};
+    struct Block : gras::Element{};
+    struct HierBlock : gras::Element{};
 }
 struct gr_hier_block2 : gras::HierBlock{};
 struct gr_block : gras::Block{};
