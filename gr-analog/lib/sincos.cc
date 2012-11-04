@@ -41,7 +41,7 @@ namespace gr {
     void
     sincos(double x, double *sinx, double *cosx)
     {
-      sincos(x, sinx, cosx);
+      ::sincos(x, sinx, cosx);
     }
 
 #else
@@ -84,3 +84,6 @@ namespace gr {
     }
 
 #endif
+
+  } /* namespace analog */
+} /* namespace gr */
