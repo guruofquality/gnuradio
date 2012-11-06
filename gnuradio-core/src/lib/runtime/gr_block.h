@@ -84,6 +84,9 @@ struct GR_CORE_API gr_block : gras::Block
         gr_vector_void_star &output_items
     );
 
+    //! Call during work to consume items
+    void consume_each(const size_t how_many_items);
+
     void add_item_tag(
         const size_t which_output, const gr_tag_t &tag
     );

@@ -209,6 +209,14 @@ int gr_block::general_work(
     throw std::runtime_error("gr_block subclasses must overload general_work!");
 }
 
+void gr_block::consume_each(const size_t how_many_items)
+{
+    for (size_t i = 0; i < _work_ninput_items.size(); i++)
+    {
+        this->consume(i, how_many_items);
+    }
+}
+
 void gr_block::set_alignment(const size_t)
 {
     //TODO
