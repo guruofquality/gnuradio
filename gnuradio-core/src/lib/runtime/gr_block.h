@@ -51,14 +51,7 @@ struct GR_CORE_API gr_block : gras::Block
 
     template <typename T> void set_msg_handler(T msg_handler){/*LOL*/}
 
-    //! implements work -> calls general work
-    int work(
-        const InputItems &input_items,
-        const OutputItems &output_items
-    );
-
-    //! implements tag_propagation_policy()
-    virtual void propagate_tags(const size_t which_input, const TagIter &iter);
+    virtual bool check_topology(int ninputs, int noutputs);
 
     //! Overload me! I am the forecast
     virtual void forecast(int, std::vector<int> &);
@@ -203,6 +196,21 @@ struct GR_CORE_API gr_block : gras::Block
     bool _enable_fixed_rate;
     size_t _input_history_items;
     tag_propagation_policy_t _tag_prop_policy;
+
+    ///////////////// the Block overloads //////////////////////
+
+    //! implements work -> calls general work
+    void work(
+        const InputItems &input_items,
+        const OutputItems &output_items
+    );
+
+    //! notifications of new topological commits
+    void notify_topology(const size_t num_inputs, const size_t num_outputs);
+
+    //! implements tag_propagation_policy()
+    virtual void propagate_tags(const size_t which_input, const TagIter &iter);
+
 
 };
 

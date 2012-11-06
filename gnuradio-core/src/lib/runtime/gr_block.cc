@@ -40,7 +40,21 @@ gr_block::gr_block(
     this->set_output_signature(output_signature);
 }
 
-int gr_block::work(
+void gr_block::notify_topology(const size_t num_inputs, const size_t num_outputs)
+{
+    _fcast_ninput_items.resize(num_inputs);
+    _work_ninput_items.resize(num_inputs);
+    _work_input_items.resize(num_inputs);
+    _work_output_items.resize(num_outputs);
+    this->check_topology(num_inputs, num_outputs);
+}
+
+bool gr_block::check_topology(int, int)
+{
+    return true;
+}
+
+void gr_block::work(
     const InputItems &input_items,
     const OutputItems &output_items
 ){
@@ -53,9 +67,6 @@ int gr_block::work(
     //-- initialize input buffers before work
     //------------------------------------------------------------------
     size_t num_input_items = REALLY_BIG; //so big that it must std::min
-    _fcast_ninput_items.resize(num_inputs);
-    _work_ninput_items.resize(num_inputs);
-    _work_input_items.resize(num_inputs);
     for (size_t i = 0; i < num_inputs; i++)
     {
         _work_ninput_items[i] = input_items[i].size();
@@ -66,7 +77,7 @@ int gr_block::work(
         {
             if (items <= _input_history_items)
             {
-                return i;
+                return this->mark_input_fail(i);
             }
             items -= _input_history_items;
         }
@@ -78,7 +89,6 @@ int gr_block::work(
     //-- initialize output buffers before work
     //------------------------------------------------------------------
     size_t num_output_items = REALLY_BIG; //so big that it must std::min
-    _work_output_items.resize(num_outputs);
     for (size_t i = 0; i < num_outputs; i++)
     {
         _work_output_items[i] = output_items[i].get();
@@ -121,7 +131,7 @@ int gr_block::work(
             //handle the case of forecast failing
             if (work_noutput_items <= _output_multiple_items)
             {
-                return i;
+                return this->mark_input_fail(i);
             }
 
             work_noutput_items = work_noutput_items/2; //backoff regime
@@ -144,9 +154,7 @@ int gr_block::work(
         this->produce(i, work_ret);
     }
 
-    if (work_ret >= 0) return -2;
-
-    return work_ret;
+    if (work_ret == -1) this->mark_done();
 }
 
 static inline unsigned long long myullround(const double x)
