@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define GR_CORE_API
-#define GRAS_API
 
 //not here to fight you swig, reference() is ambigi with shared ptr, but whatevs
 %ignore gri_agc_cc::reference();
@@ -65,6 +64,7 @@
 %ignore gras::Block::input_buffer_allocator;
 %ignore gras::Block::output_buffer_allocator;
 
+%include <gras/gras.hpp>
 %include <gras/element.i>
 %include <gras/io_signature.i>
 %include <gras/tags.hpp>
@@ -81,6 +81,7 @@
 #else
 
 //the bare minimum block inheritance interface to make things work but keep swig cxx file size down
+%include <gras/gras.hpp>
 %include <gras/element.hpp>
 namespace gras
 {
