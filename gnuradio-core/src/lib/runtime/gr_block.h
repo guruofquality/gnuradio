@@ -214,6 +214,7 @@ struct GR_CORE_API gr_block : gras::Block
     //! implements tag_propagation_policy()
     virtual void propagate_tags(const size_t which_input, const TagIter &iter);
 
+    void _update_input_reserve(void);
 
 };
 

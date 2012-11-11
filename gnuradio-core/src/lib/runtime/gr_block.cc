@@ -291,12 +291,30 @@ bool gr_block::fixed_rate(void) const
     return _enable_fixed_rate;
 }
 
+void gr_block::_update_input_reserve(void)
+{
+    /*!
+     * Set an input reserve for fixed rate blocks.
+     *
+     * FIXME: Also do this when output multiple is large,
+     * This makes gr-trellis pass under conditions where not fixed rate set,
+     * but the output multiple is so large that default input isnt sufficient.
+     */
+    if (_enable_fixed_rate or _output_multiple_items > 1024)
+    {
+        gras::InputPortConfig config = this->input_config();
+        config.reserve_items = size_t(0.5 + _output_multiple_items/_relative_rate);
+        if (config.reserve_items) this->set_input_config(config);
+    }
+}
+
 void gr_block::set_output_multiple(const size_t multiple)
 {
     _output_multiple_items = multiple;
     gras::OutputPortConfig config = this->output_config();
     config.reserve_items = multiple;
     this->set_output_config(config);
+    this->_update_input_reserve();
 }
 
 size_t gr_block::output_multiple(void) const
@@ -307,6 +325,7 @@ size_t gr_block::output_multiple(void) const
 void gr_block::set_relative_rate(double relative_rate)
 {
     _relative_rate = relative_rate;
+    this->_update_input_reserve();
 }
 
 double gr_block::relative_rate(void) const
