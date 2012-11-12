@@ -219,12 +219,12 @@ void gr_block::consume_each(const size_t how_many_items)
 
 uint64_t gr_block::nitems_read(const size_t which_input)
 {
-    return Block::num_items_consumed(which_input);
+    return Block::get_consumed(which_input);
 }
 
 uint64_t gr_block::nitems_written(const size_t which_output)
 {
-    return Block::num_items_produced(which_output);
+    return Block::get_produced(which_output);
 }
 
 void gr_block::set_alignment(const size_t)
@@ -283,7 +283,7 @@ unsigned gr_block::history(void) const
 
 void gr_block::set_history(unsigned history)
 {
-    gras::InputPortConfig config = this->input_config(0);
+    gras::InputPortConfig config = this->get_input_config(0);
     //implement off-by-one history compat
     if (history == 0) history++;
     _input_history_items = history-1;
@@ -312,7 +312,7 @@ void gr_block::_update_input_reserve(void)
      */
     if (_enable_fixed_rate or _output_multiple_items > 1024)
     {
-        gras::InputPortConfig config = this->input_config(0);
+        gras::InputPortConfig config = this->get_input_config(0);
         config.reserve_items = size_t(0.5 + _output_multiple_items/_relative_rate);
         if (config.reserve_items) this->set_input_config(0, config);
     }
@@ -321,7 +321,7 @@ void gr_block::_update_input_reserve(void)
 void gr_block::set_output_multiple(const size_t multiple)
 {
     _output_multiple_items = multiple;
-    gras::OutputPortConfig config = this->output_config(0);
+    gras::OutputPortConfig config = this->get_output_config(0);
     config.reserve_items = multiple;
     this->set_output_config(0, config);
     this->_update_input_reserve();
@@ -345,12 +345,12 @@ double gr_block::relative_rate(void) const
 
 int gr_block::max_noutput_items(void) const
 {
-    return this->output_config(0).maximum_items;
+    return this->get_output_config(0).maximum_items;
 }
 
 void gr_block::set_max_noutput_items(int max_items)
 {
-    gras::OutputPortConfig config = this->output_config(0);
+    gras::OutputPortConfig config = this->get_output_config(0);
     config.maximum_items = max_items;
     this->set_output_config(0, config);
 }
