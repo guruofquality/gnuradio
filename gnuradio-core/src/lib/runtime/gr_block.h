@@ -87,6 +87,12 @@ struct GR_CORE_API gr_block : gras::Block
     //! Call during work to consume items
     void consume_each(const size_t how_many_items);
 
+    //! Get absolute count of all items consumed on the given input port
+    uint64_t nitems_read(const size_t which_input = 0);
+
+    //! Get absolute count of all items produced on the given output port
+    uint64_t nitems_written(const size_t which_output = 0);
+
     void add_item_tag(
         const size_t which_output, const gr_tag_t &tag
     );
@@ -203,16 +209,13 @@ struct GR_CORE_API gr_block : gras::Block
     ///////////////// the Block overloads //////////////////////
 
     //! implements work -> calls general work
-    void work(
-        const InputItems &input_items,
-        const OutputItems &output_items
-    );
+    void work(const InputItems &, const OutputItems &);
 
     //! notifications of new topological commits
-    void notify_topology(const size_t num_inputs, const size_t num_outputs);
+    void notify_topology(const size_t, const size_t);
 
     //! implements tag_propagation_policy()
-    virtual void propagate_tags(const size_t which_input, const TagIter &iter);
+    virtual void propagate_tags(const size_t, const gras::TagIter &);
 
     void _update_input_reserve(void);
 
