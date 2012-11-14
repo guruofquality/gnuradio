@@ -27,7 +27,6 @@
 #include <gras/hier_block.hpp>
 #include <gras/top_block.hpp>
 #include <gras/io_signature.hpp>
-#include <gras/tags.hpp>
 #include <gr_io_signature.h>
 #include <gr_block.h>
 #include <gr_top_block.h>
@@ -67,7 +66,8 @@
 %include <gras/gras.hpp>
 %include <gras/element.i>
 %include <gras/io_signature.i>
-%include <gras/tags.hpp>
+%include <gras/tags.i>
+%include <gras/sbuffer.hpp>
 %include <gras/block.hpp>
 
 %include <gr_io_signature.h>
