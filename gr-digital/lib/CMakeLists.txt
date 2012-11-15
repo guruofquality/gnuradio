@@ -152,6 +152,7 @@ list(APPEND digital_libs
     volk
     gnuradio-core
     gnuradio-filter
+    gnuradio-analog
     ${Boost_LIBRARIES}
 )
 

@@ -35,7 +35,7 @@
 #include <gr_top_block.h>
 #include <filter/firdes.h>
 #include <filter/fir_filter_ccf.h>
-#include <gr_quadrature_demod_cf.h>
+#include <analog/quadrature_demod_cf.h>
 #include <gr_audio_sink.h>
 #include <fcd_source_c.h>
 
@@ -43,7 +43,7 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
-
+using namespace gr;
 namespace po = boost::program_options;
 
 int main(int argc, char **argv)
@@ -85,12 +85,13 @@ int main(int argc, char **argv)
     fcd->set_lna_gain(gain);
 
     // Low pass filter
-    std::vector<float> taps = gr::filter::firdes::low_pass(1.0, 96000, 5000.0, 1000.0);
-    gr::filter::fir_filter_ccf::sptr filter = gr::filter::fir_filter_ccf::make (2, taps);
+    std::vector<float> taps = filter::firdes::low_pass(1.0, 96000, 5000.0, 1000.0);
+    filter::fir_filter_ccf::sptr filter = filter::fir_filter_ccf::make (2, taps);
 
     // FM demodulator
     // gain = sample_rate / (2*pi*max_dev)
-    gr_quadrature_demod_cf_sptr demod = gr_make_quadrature_demod_cf (rate/(2.0*pi*5000.0));
+    analog::quadrature_demod_cf::sptr demod = \
+      analog::quadrature_demod_cf::make(rate/(2.0*pi*5000.0));
 
     // Audio sink
     audio_sink::sptr sink = audio_make_sink(rate);

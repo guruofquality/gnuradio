@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2005-2007,2011 Free Software Foundation, Inc.
+# Copyright 2005-2007,2011,2012 Free Software Foundation, Inc.
 #
 # This file is part of GNU Radio
 #
@@ -47,6 +47,7 @@ except:
   print "FYI: gr-video-sdl is not installed"
   print "realtime SDL video output window will not be available"
 from gnuradio import uhd
+from gnuradio import analog
 from gnuradio.eng_option import eng_option
 from gnuradio.wxgui import slider, powermate
 from gnuradio.wxgui import stdgui2, fftsink2, form
@@ -194,7 +195,7 @@ class tv_rx_block (stdgui2.std_top_block):
           file_sink=gr.file_sink(gr.sizeof_char, options.out_filename)
           self.dst =file_sink
 
-        self.agc=gr.agc_cc(1e-7,1.0,1.0) #1e-7
+        self.agc = analog.agc_cc(1e-7,1.0,1.0) #1e-7
         self.am_demod = gr.complex_to_mag ()
         self.set_blacklevel=gr.add_const_ff(0.0)
         self.invert_and_scale = gr.multiply_const_ff (0.0) #-self.contrast *128.0*255.0/(200.0)
@@ -243,8 +244,8 @@ class tv_rx_block (stdgui2.std_top_block):
                         self.invert_and_scale, self.set_blacklevel,
                         f2uc, self.dst)
         else: # process_type=='do_test_image':
-          src_vertical_bars = gr.sig_source_f (usrp_rate, gr.GR_SIN_WAVE,
-                                               10.0 *usrp_rate/320, 255,128)
+          src_vertical_bars = analog.sig_source_f(usrp_rate, analog.GR_SIN_WAVE,
+                                                  10.0 *usrp_rate/320, 255,128)
           self.connect(src_vertical_bars, f2uc, self.dst)
 
         self._build_gui(vbox, usrp_rate, usrp_rate, usrp_rate)

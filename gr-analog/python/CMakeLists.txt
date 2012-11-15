@@ -25,6 +25,16 @@ include(GrPython)
 GR_PYTHON_INSTALL(
     FILES
     __init__.py
+    am_demod.py
+    fm_demod.py
+    fm_emph.py
+    nbfm_rx.py
+    nbfm_tx.py
+    standard_squelch.py
+    wfm_rcv.py
+    wfm_rcv_fmdet.py
+    wfm_rcv_pll.py
+    wfm_tx.py
     DESTINATION ${GR_PYTHON_DIR}/gnuradio/analog
     COMPONENT "analog_python"
 )
@@ -33,19 +43,19 @@ GR_PYTHON_INSTALL(
 # Handle the unit tests
 ########################################################################
 if(ENABLE_TESTING)
+
+list(APPEND GR_TEST_PYTHON_DIRS
+    ${CMAKE_BINARY_DIR}/gr-analog/python
+    ${CMAKE_BINARY_DIR}/gr-analog/swig
+    ${CMAKE_BINARY_DIR}/gr-filter/python
+    ${CMAKE_BINARY_DIR}/gr-filter/swig
+)
+list(APPEND GR_TEST_TARGET_DEPS gnuradio-analog gnuradio-filter gnuradio-fft)
+
 include(GrTest)
 file(GLOB py_qa_test_files "qa_*.py")
 foreach(py_qa_test_file ${py_qa_test_files})
     get_filename_component(py_qa_test_name ${py_qa_test_file} NAME_WE)
-    set(GR_TEST_PYTHON_DIRS
-        ${CMAKE_BINARY_DIR}/gnuradio-core/src/python
-        ${CMAKE_BINARY_DIR}/gnuradio-core/src/lib/swig
-        ${CMAKE_BINARY_DIR}/gr-analog/python
-        ${CMAKE_BINARY_DIR}/gr-analog/swig
-        ${CMAKE_BINARY_DIR}/gr-filter/python
-        ${CMAKE_BINARY_DIR}/gr-filter/swig
-    )
-    set(GR_TEST_TARGET_DEPS volk gruel gnuradio-core gnuradio-analog)
     GR_ADD_TEST(${py_qa_test_name} ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B} ${py_qa_test_file})
 endforeach(py_qa_test_file)
 endif(ENABLE_TESTING)

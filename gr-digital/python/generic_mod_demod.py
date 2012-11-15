@@ -36,6 +36,11 @@ try:
 except ImportError:
     import filter_swig as filter
 
+try:
+    from gnuradio import analog
+except ImportError:
+    import analog_swig as analog
+
 # default values (used in __init__ and add_options)
 _def_samples_per_symbol = 2
 _def_excess_bw = 0.35
@@ -264,7 +269,7 @@ class generic_demod(gr.hier_block2):
         ntaps = 11 * int(self._samples_per_symbol*nfilts)
 
         # Automatic gain control
-        self.agc = gr.agc2_cc(0.6e-1, 1e-3, 1, 1, 100)
+        self.agc = analog.agc2_cc(0.6e-1, 1e-3, 1, 1, 100)
 
         # Frequency correction
         fll_ntaps = 55

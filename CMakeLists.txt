@@ -220,6 +220,14 @@ install(
     COMPONENT "docs"
 )
 
+########################################################################
+# The following dependency libraries are needed by all gr modules:
+########################################################################
+list(APPEND GR_TEST_TARGET_DEPS volk gruel gnuradio-core)
+list(APPEND GR_TEST_PYTHON_DIRS
+    ${CMAKE_BINARY_DIR}/gnuradio-core/src/python
+    ${CMAKE_BINARY_DIR}/gnuradio-core/src/lib/swig
+)
 
 ########################################################################
 # Add subdirectories (in order of deps)
@@ -227,15 +235,17 @@ install(
 add_subdirectory(docs)
 add_subdirectory(gruel)
 add_subdirectory(gnuradio-core)
+add_subdirectory(gr-blocks)
 add_subdirectory(grc)
-
+add_subdirectory(gr-fec)
 add_subdirectory(gr-fft)
 add_subdirectory(gr-filter)
+add_subdirectory(gr-analog)
+add_subdirectory(gr-digital)
 add_subdirectory(gr-atsc)
 add_subdirectory(gr-audio)
 add_subdirectory(gr-comedi)
-add_subdirectory(gr-analog)
-add_subdirectory(gr-digital)
+add_subdirectory(gr-channels)
 add_subdirectory(gr-noaa)
 add_subdirectory(gr-pager)
 add_subdirectory(gr-qtgui)
@@ -248,7 +258,6 @@ add_subdirectory(gr-vocoder)
 add_subdirectory(gr-fcd)
 add_subdirectory(gr-wavelet)
 add_subdirectory(gr-wxgui)
-add_subdirectory(gr-blocks)
 
 #finalize cpack after subdirs processed
 include(GrPackage)

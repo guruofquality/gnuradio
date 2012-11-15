@@ -9,6 +9,12 @@ import sys
 import random
 import fsm_utils
 
+try:
+    from gnuradio import analog
+except ImportError:
+    sys.stderr.write("Error: Program requires gr-analog.\n")
+    sys.exit(1)
+
 def run_test (f,Kb,bitspersymbol,K,dimensionality,constellation,N0,seed):
     tb = gr.top_block ()
 
@@ -21,7 +27,7 @@ def run_test (f,Kb,bitspersymbol,K,dimensionality,constellation,N0,seed):
 
     # CHANNEL
     add = gr.add_ff()
-    noise = gr.noise_source_f(gr.GR_GAUSSIAN,math.sqrt(N0/2),seed)
+    noise = analog.noise_source_f(analog.GR_GAUSSIAN,math.sqrt(N0/2),seed)
 
     # RX
     metrics = trellis.metrics_f(f.O(),dimensionality,constellation,digital.TRELLIS_EUCLIDEAN) # data preprocessing to generate metrics for Viterbi

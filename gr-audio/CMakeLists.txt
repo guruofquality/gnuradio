@@ -87,13 +87,16 @@ CPACK_COMPONENT("audio_swig"
 add_subdirectory(include)
 add_subdirectory(lib)
 add_subdirectory(doc)
-add_subdirectory(examples/c++)
 if(ENABLE_PYTHON)
     add_subdirectory(swig)
     add_subdirectory(grc)
     add_subdirectory(examples/python)
     add_subdirectory(examples/grc)
 endif(ENABLE_PYTHON)
+
+if(ENABLE_GR_ANALOG)
+  add_subdirectory(examples/c++)
+endif(ENABLE_GR_ANALOG)
 
 ########################################################################
 # Create Pkg Config File

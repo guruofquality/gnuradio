@@ -23,14 +23,6 @@ Signal Sources
 
    gnuradio.gr.lfsr_32k_source_s
    gnuradio.gr.null_source
-   gnuradio.gr.noise_source_c
-   gnuradio.gr.noise_source_f
-   gnuradio.gr.noise_source_i
-   gnuradio.gr.noise_source_s
-   gnuradio.gr.sig_source_c
-   gnuradio.gr.sig_source_f
-   gnuradio.gr.sig_source_i
-   gnuradio.gr.sig_source_s
    gnuradio.gr.vector_source_b
    gnuradio.gr.vector_source_c
    gnuradio.gr.vector_source_f
@@ -52,9 +44,6 @@ Signal Sinks
    gnuradio.gr.check_counting_s
    gnuradio.gr.check_lfsr_32k_s
    gnuradio.gr.null_sink
-   gnuradio.gr.probe_avg_mag_sqrd_c
-   gnuradio.gr.probe_avg_mag_sqrd_cf
-   gnuradio.gr.probe_avg_mag_sqrd_f
    gnuradio.gr.probe_signal_f
    gnuradio.gr.vector_sink_b
    gnuradio.gr.vector_sink_c
@@ -182,24 +171,6 @@ Mathematics
    gnuradio.gr.xor_ii
    gnuradio.gr.xor_ss
 
-Modulation
-^^^^^^^^^^
-
-.. autosummary::
-   :nosignatures:
-
-   gnuradio.gr.cpfsk_bc
-   gnuradio.gr.frequency_modulator_fc
-   gnuradio.gr.phase_modulator_fc
-
-Demodulation
-^^^^^^^^^^^^
-
-.. autosummary::
-   :nosignatures:
-
-   gnuradio.gr.quadrature_demod_cf
-
 Information Coding and Decoding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -215,9 +186,6 @@ Synchronization
 .. autosummary::
    :nosignatures:
 
-   gnuradio.gr.pll_carriertracking_cc
-   gnuradio.gr.pll_freqdet_cf
-   gnuradio.gr.pll_refout_cc
    gnuradio.gr.simple_correlator
 
 Type Conversions
@@ -255,18 +223,8 @@ Signal Level Control (AGC)
 .. autosummary::
    :nosignatures:
 
-   gnuradio.gr.agc2_cc
-   gnuradio.gr.agc2_ff
-   gnuradio.gr.agc_cc
-   gnuradio.gr.agc_ff
-   gnuradio.gr.ctcss_squelch_ff
-   gnuradio.gr.dpll_bb
-   gnuradio.gr.feedforward_agc_cc
    gnuradio.gr.peak_detector2_fb
-   gnuradio.gr.pwr_squelch_cc
-   gnuradio.gr.pwr_squelch_ff
    gnuradio.gr.regenerate_bb
-   gnuradio.gr.simple_squelch_cc
    gnuradio.gr.mute_cc
    gnuradio.gr.mute_ff
    gnuradio.gr.mute_ii

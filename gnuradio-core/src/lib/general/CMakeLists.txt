@@ -97,7 +97,6 @@ list(APPEND gnuradio_core_sources
 list(APPEND test_gnuradio_core_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_general.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_circular_file.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_cpm.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_firdes.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_fxpt.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_gr_fxpt_nco.cc
@@ -127,10 +126,6 @@ install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_test_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_vco.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_add_const_ss.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc_cc.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc_ff.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc2_cc.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc2_ff.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_char_to_float.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_control_loop.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_debugger_hook.h
@@ -139,7 +134,6 @@ install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_float_to_int.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_float_to_short.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_float_to_uchar.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_lfsr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_interleaved_short_to_complex.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_lfsr_15_1_0.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_lfsr_32k.h
@@ -159,10 +153,6 @@ if(ENABLE_PYTHON)
 install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/general.i
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_constants.i
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc_cc.i
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc_ff.i
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc2_cc.i
-    ${CMAKE_CURRENT_SOURCE_DIR}/gri_agc2_ff.i
     ${CMAKE_CURRENT_SOURCE_DIR}/gri_control_loop.i
     DESTINATION ${GR_INCLUDE_DIR}/gnuradio/swig
     COMPONENT "core_swig"
@@ -175,10 +165,6 @@ endif(ENABLE_PYTHON)
 set(gr_core_general_triple_threats
     complex_vec_test
     gr_add_ff
-    gr_agc_cc
-    gr_agc_ff
-    gr_agc2_cc
-    gr_agc2_ff
     gr_align_on_samplenumbers_ss
     gr_bin_statistics_f
     gr_char_to_float
@@ -189,17 +175,10 @@ set(gr_core_general_triple_threats
     gr_complex_to_xxx
     gr_conjugate_cc
     gr_copy
-    gr_cpfsk_bc
-    gr_cpm
-    gr_ctcss_squelch_ff
-    gr_decode_ccsds_27_fb
-    gr_dpll_bb
     gr_deinterleave
     gr_delay
-    gr_encode_ccsds_27_bb
     gr_endian_swap
     gr_fake_channel_coder_pp
-    gr_feedforward_agc_cc
     gr_feval
     gr_firdes
     gr_float_to_char
@@ -207,8 +186,6 @@ set(gr_core_general_triple_threats
     gr_float_to_int
     gr_float_to_short
     gr_float_to_uchar
-    gr_fmdet_cf
-    gr_frequency_modulator_fc
     gr_head
     gr_int_to_float
     gr_interleave
@@ -229,18 +206,7 @@ set(gr_core_general_triple_threats
     gr_null_source
     gr_pa_2x2_phase_combiner
     gr_peak_detector2_fb
-    gr_phase_modulator_fc
-    gr_pll_carriertracking_cc
-    gr_pll_freqdet_cf
-    gr_pll_refout_cc
     gr_prefs
-    gr_probe_avg_mag_sqrd_c
-    gr_probe_avg_mag_sqrd_cf
-    gr_probe_avg_mag_sqrd_f
-    gr_pwr_squelch_cc
-    gr_pwr_squelch_ff
-    gr_quadrature_demod_cf
-    gr_rail_ff
     gr_regenerate_bb
     gr_remez
     gr_rms_cf
@@ -249,10 +215,7 @@ set(gr_core_general_triple_threats
     gr_short_to_float
     gr_short_to_char
     gr_simple_correlator
-    gr_simple_squelch_cc
     gr_skiphead
-    gr_squelch_base_cc
-    gr_squelch_base_ff
     gr_stream_mux
     gr_stream_to_streams
     gr_stream_to_vector
