@@ -63,13 +63,7 @@
 %ignore gras::Block::input_buffer_allocator;
 %ignore gras::Block::output_buffer_allocator;
 
-%include <gras/gras.hpp>
-%include <gras/element.i>
-%include <gras/io_signature.i>
-%include <gras/tags.i>
-%include <gras/sbuffer.hpp>
-%include <gras/block.hpp>
-
+%include <gras/block.i>
 %include <gr_io_signature.h>
 %include <gr_block.h>
 %include <gr_hier_block2.h>
