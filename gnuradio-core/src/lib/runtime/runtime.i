@@ -60,10 +60,7 @@
 %constant int sizeof_double     = sizeof(double);
 %constant int sizeof_gr_complex = sizeof(gr_complex);
 
-%ignore gras::Block::input_buffer_allocator;
-%ignore gras::Block::output_buffer_allocator;
-
-%include <gras/block.i>
+%import <gras/block.i>
 %include <gr_io_signature.h>
 %include <gr_block.h>
 %include <gr_hier_block2.h>
