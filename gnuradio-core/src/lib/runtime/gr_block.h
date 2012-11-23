@@ -85,7 +85,11 @@ struct GR_CORE_API gr_block : gras::Block
     );
 
     //! Call during work to consume items
-    void consume_each(const size_t how_many_items);
+    void consume_each(const int how_many_items);
+
+    void consume(const size_t i, const int how_many_items);
+
+    void produce(const size_t o, const int how_many_items);
 
     //! Get absolute count of all items consumed on the given input port
     uint64_t nitems_read(const size_t which_input = 0);

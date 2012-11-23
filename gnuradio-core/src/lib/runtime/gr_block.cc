@@ -209,12 +209,22 @@ int gr_block::general_work(
     throw std::runtime_error("gr_block subclasses must overload general_work!");
 }
 
-void gr_block::consume_each(const size_t how_many_items)
+void gr_block::consume_each(const int how_many_items)
 {
-    for (size_t i = 0; i < _work_ninput_items.size(); i++)
-    {
-        this->consume(i, how_many_items);
-    }
+    if (how_many_items < 0) return;
+    gras::Block::consume(size_t(how_many_items));
+}
+
+void gr_block::consume(const size_t i, const int how_many_items)
+{
+    if (how_many_items < 0) return;
+    gras::Block::consume(i, size_t(how_many_items));
+}
+
+void gr_block::produce(const size_t o, const int how_many_items)
+{
+    if (how_many_items < 0) return;
+    gras::Block::produce(o, size_t(how_many_items));
 }
 
 uint64_t gr_block::nitems_read(const size_t which_input)
