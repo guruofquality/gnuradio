@@ -157,13 +157,13 @@ inline PMCC pmt_to_pmc(const pmt_t &p)
     //if the container null?
     if (not p) return PMC();
 
-    #define decl_pmt_to_pmc(check, conv) if (check(p)) return PMC::make(conv(p))
+    #define decl_pmt_to_pmc(check, conv) if (check(p)) return PMC_M(conv(p))
 
     //bool
     decl_pmt_to_pmc(pmt_is_bool, pmt_to_bool);
 
-    //string
-    decl_pmt_to_pmc(pmt_is_symbol, pmt_symbol_to_string);
+    //string (do object interning for strings)
+    decl_pmt_to_pmc(pmt_is_symbol, pmt_symbol_to_string).intern();
 
     //numeric types
     decl_pmt_to_pmc(pmt_is_integer, pmt_to_long);
@@ -182,7 +182,7 @@ inline PMCC pmt_to_pmc(const pmt_t &p)
     if (pmt_is_pair(p))
     {
         PMCPair pr(pmt_to_pmc(pmt_car(p)), pmt_to_pmc(pmt_cdr(p)));
-        return PMC::make(pr);
+        return PMC_M(pr);
     }
 
     //fucking tuples
@@ -191,7 +191,7 @@ inline PMCC pmt_to_pmc(const pmt_t &p)
     { \
         PMCTuple<n> t; \
         for (size_t i = 0; i < n; i++) t[i] = pmt_to_pmc(pmt_tuple_ref(p, i)); \
-        return PMC::make(t); \
+        return PMC_M(t); \
     }
     decl_pmt_to_pmc_tuple(0);
     decl_pmt_to_pmc_tuple(1);
@@ -213,7 +213,7 @@ inline PMCC pmt_to_pmc(const pmt_t &p)
         {
             l[i] = pmt_to_pmc(pmt_vector_ref(p, i));
         }
-        return PMC::make(l);
+        return PMC_M(l);
     }
 
     //numeric arrays
@@ -221,7 +221,7 @@ inline PMCC pmt_to_pmc(const pmt_t &p)
     if (pmt_is_ ## suffix ## vector(p)) \
     { \
         size_t n; const type* i = pmt_ ## suffix ## vector_elements(p, n); \
-        return PMC::make(std::vector<type>(i, i+n)); \
+        return PMC_M(std::vector<type>(i, i+n)); \
     }
     decl_pmt_to_pmc_numeric_array(uint8_t, u8);
     decl_pmt_to_pmc_numeric_array(uint16_t, u16);
@@ -248,14 +248,14 @@ inline PMCC pmt_to_pmc(const pmt_t &p)
             PMCC val = pmt_to_pmc(pmt_cdr(item));
             m[key] = val;
         }
-        return PMC::make(m);
+        return PMC_M(m);
     }
 
     //set container
     //FIXME no pmt_is_list...
 
     //backup plan... store the pmt
-    return PMC::make(p);
+    return PMC_M(p);
 }
 
 }
