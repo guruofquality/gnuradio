@@ -297,7 +297,7 @@ void gr_block::set_history(unsigned history)
     //implement off-by-one history compat
     if (history == 0) history++;
     _input_history_items = history-1;
-    config.lookahead_items = _input_history_items;
+    config.preload_items = _input_history_items;
     this->set_input_config(0, config);
 }
 
