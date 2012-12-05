@@ -379,9 +379,10 @@ static gr_tag_t Tag2gr_tag(const gras::Tag &tag)
 {
     gr_tag_t t;
     t.offset = tag.offset;
-    t.key = pmt::pmc_to_pmt(tag.key);
-    t.value = pmt::pmc_to_pmt(tag.value);
-    t.srcid = pmt::pmc_to_pmt(tag.srcid);
+    const gras::StreamTag &st = tag.object.as<gras::StreamTag>();
+    t.key = pmt::pmc_to_pmt(st.key);
+    t.value = pmt::pmc_to_pmt(st.val);
+    t.srcid = pmt::pmc_to_pmt(st.src);
     return t;
 }
 
@@ -390,9 +391,11 @@ static gras::Tag gr_tag2Tag(const gr_tag_t &tag)
     return gras::Tag
     (
         tag.offset,
-        pmt::pmt_to_pmc(tag.key),
-        pmt::pmt_to_pmc(tag.value),
-        pmt::pmt_to_pmc(tag.srcid)
+        PMC_M(gras::StreamTag(
+            pmt::pmt_to_pmc(tag.key),
+            pmt::pmt_to_pmc(tag.value),
+            pmt::pmt_to_pmc(tag.srcid)
+        ))
     );
 }
 
