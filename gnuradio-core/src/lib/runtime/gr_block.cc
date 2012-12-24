@@ -447,3 +447,12 @@ void gr_block::set_tag_propagation_policy(gr_block::tag_propagation_policy_t p)
 {
     _tag_prop_policy = p;
 }
+
+gras::BufferQueueSptr gr_block::input_buffer_allocator(const size_t, const gras::SBufferConfig &config)
+{
+    if (_input_history_items)
+    {
+        return gras::BufferQueue::make_circ(config, 32/*many*/);
+    }
+    return gras::BufferQueueSptr();
+}

@@ -223,6 +223,8 @@ struct GR_CORE_API gr_block : gras::Block
 
     void _update_input_reserve(void);
 
+    gras::BufferQueueSptr input_buffer_allocator(const size_t, const gras::SBufferConfig &);
+
 };
 
 typedef boost::shared_ptr<gr_block> gr_block_sptr;
