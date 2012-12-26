@@ -209,6 +209,7 @@ struct GR_CORE_API gr_block : gras::Block
     bool _enable_fixed_rate;
     size_t _input_history_items;
     tag_propagation_policy_t _tag_prop_policy;
+    size_t _interp, _decim;
 
     ///////////////// the Block overloads //////////////////////
 

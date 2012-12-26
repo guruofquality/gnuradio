@@ -58,7 +58,7 @@ int gr_sync_block::general_work(
     const int work_ret = this->work(noutput_items, input_items, output_items);
     if (work_ret > 0)
     {
-        this->consume_each(size_t(0.5+(work_ret/this->relative_rate())));
+        this->consume_each((decimation()*size_t(work_ret))/interpolation());
     }
     return work_ret;
 }

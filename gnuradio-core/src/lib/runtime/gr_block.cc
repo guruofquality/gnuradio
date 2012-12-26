@@ -31,10 +31,13 @@ gr_block::gr_block(
 ):
     gras::Block(name)
 {
+    //this initializes private vars, order matters
     this->set_fixed_rate(false);
     this->set_output_multiple(1);
     this->set_history(1);
     this->set_relative_rate(1.0);
+    this->set_decimation(1);
+    this->set_interpolation(1);
     this->set_tag_propagation_policy(TPP_ALL_TO_ALL);
     this->set_input_signature(input_signature);
     this->set_output_signature(output_signature);
@@ -254,34 +257,29 @@ bool gr_block::is_unaligned(void)
 
 size_t gr_block::fixed_rate_noutput_to_ninput(const size_t noutput_items)
 {
-    if (this->fixed_rate())
-    {
-        return size_t(0.5 + (noutput_items/this->relative_rate())) + this->history() - 1;
-    }
-    else
-    {
-        return noutput_items + this->history() - 1;
-    }
+    return ((decimation()*noutput_items)/interpolation()) + _input_history_items;
 }
 
 size_t gr_block::interpolation(void) const
 {
-    return size_t(1.0*this->relative_rate());
+    return _interp;
 }
 
 void gr_block::set_interpolation(const size_t interp)
 {
+    _interp = interp;
     this->set_relative_rate(1.0*interp);
     this->set_output_multiple(interp);
 }
 
 size_t gr_block::decimation(void) const
 {
-    return size_t(1.0/this->relative_rate());
+    return _decim;
 }
 
 void gr_block::set_decimation(const size_t decim)
 {
+    _decim = decim;
     this->set_relative_rate(1.0/decim);
 }
 
