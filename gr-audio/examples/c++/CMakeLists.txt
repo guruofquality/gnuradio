@@ -24,7 +24,7 @@ include_directories(
         ${Boost_INCLUDE_DIRS}
 )
 add_executable(dial_tone dial_tone.cc)
-target_link_libraries(dial_tone gnuradio-audio)
+target_link_libraries(dial_tone gnuradio-audio ${GRAS_LIBRARIES})
 
 INSTALL(TARGETS
     dial_tone

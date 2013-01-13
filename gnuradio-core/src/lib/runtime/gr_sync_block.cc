@@ -26,43 +26,39 @@
 
 #include <gr_sync_block.h>
 
-gr_sync_block::gr_sync_block (const std::string &name,
-			      gr_io_signature_sptr input_signature,
-			      gr_io_signature_sptr output_signature)
-  : gr_block(name, input_signature, output_signature)
+gr_sync_block::gr_sync_block(void)
 {
-  set_fixed_rate(true);
+    //NOP
 }
 
-
-void
-gr_sync_block::forecast (int noutput_items, gr_vector_int &ninput_items_required)
+gr_sync_block::gr_sync_block(
+    const std::string &name,
+    gr_io_signature_sptr input_signature,
+    gr_io_signature_sptr output_signature
+):
+    gr_block(name, input_signature, output_signature)
 {
-  unsigned ninputs = ninput_items_required.size();
-  for (unsigned i = 0; i < ninputs; i++)
-    ninput_items_required[i] = fixed_rate_noutput_to_ninput (noutput_items);
+    this->set_fixed_rate(true);
 }
 
-int
-gr_sync_block::fixed_rate_noutput_to_ninput(int noutput_items)
-{
-  return noutput_items + history() - 1;
+int gr_sync_block::work(
+    int noutput_items,
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items
+){
+    throw std::runtime_error("gr_block subclasses must overload general_work!");
 }
 
-int
-gr_sync_block::fixed_rate_ninput_to_noutput(int ninput_items)
-{
-  return std::max(0, ninput_items - (int)history() + 1);
-}
-
-int
-gr_sync_block::general_work (int noutput_items,
-			     gr_vector_int &ninput_items,
-			     gr_vector_const_void_star &input_items,
-			     gr_vector_void_star &output_items)
-{
-  int	r = work (noutput_items, input_items, output_items);
-  if (r > 0)
-    consume_each (r);
-  return r;
+int gr_sync_block::general_work(
+    int noutput_items,
+    gr_vector_int &ninput_items,
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items
+){
+    const int work_ret = this->work(noutput_items, input_items, output_items);
+    if (work_ret > 0)
+    {
+        this->consume_each((decimation()*size_t(work_ret))/interpolation());
+    }
+    return work_ret;
 }

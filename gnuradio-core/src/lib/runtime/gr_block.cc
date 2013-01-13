@@ -1,262 +1,456 @@
-/* -*- c++ -*- */
-/*
- * Copyright 2004,2009,2010 Free Software Foundation, Inc.
- *
- * This file is part of GNU Radio
- *
- * GNU Radio is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3, or (at your option)
- * any later version.
- *
- * GNU Radio is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNU Radio; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street,
- * Boston, MA 02110-1301, USA.
- */
+//
+// Copyright 2012 Josh Blum
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
+#include "pmx_helper.hpp"
 #include <gr_block.h>
-#include <gr_block_detail.h>
-#include <stdexcept>
+#include <boost/foreach.hpp>
 #include <iostream>
-#include <gr_block_registry.h>
 
-gr_block::gr_block (const std::string &name,
-		    gr_io_signature_sptr input_signature,
-		    gr_io_signature_sptr output_signature)
-  : gr_basic_block(name, input_signature, output_signature),
-    d_output_multiple (1),
-    d_output_multiple_set(false),
-    d_unaligned(0),
-    d_is_unaligned(false),
-    d_relative_rate (1.0),
-    d_history(1),
-    d_fixed_rate(false),
-    d_max_noutput_items_set(false),
-    d_max_noutput_items(0),
-    d_tag_propagation_policy(TPP_ALL_TO_ALL),
-    d_max_output_buffer(std::max(output_signature->max_streams(),1), -1),
-    d_min_output_buffer(std::max(output_signature->max_streams(),1), -1)
+gr_block::gr_block(void)
 {
-    global_block_registry.register_primitive(alias(), this);
+    //NOP
 }
 
-gr_block::~gr_block ()
+gr_block::gr_block(
+    const std::string &name,
+    gr_io_signature_sptr input_signature,
+    gr_io_signature_sptr output_signature
+):
+    gras::Block(name)
 {
-    global_block_registry.unregister_primitive(alias());
+    //this initializes private vars, order matters
+    this->set_fixed_rate(false);
+    this->set_output_multiple(1);
+    this->set_history(1);
+    this->set_relative_rate(1.0);
+    this->set_decimation(1);
+    this->set_interpolation(1);
+    this->set_tag_propagation_policy(TPP_ALL_TO_ALL);
+    this->set_input_signature(input_signature);
+    this->set_output_signature(output_signature);
 }
 
-// stub implementation:  1:1
-
-void
-gr_block::forecast (int noutput_items, gr_vector_int &ninput_items_required)
+void gr_block::notify_topology(const size_t num_inputs, const size_t num_outputs)
 {
-  unsigned ninputs = ninput_items_required.size ();
-  for (unsigned i = 0; i < ninputs; i++)
-    ninput_items_required[i] = noutput_items + history() - 1;
+    _fcast_ninput_items.resize(num_inputs);
+    _work_ninput_items.resize(num_inputs);
+    _work_input_items.resize(num_inputs);
+    _work_output_items.resize(num_outputs);
+    this->check_topology(num_inputs, num_outputs);
 }
 
-// default implementation
-
-bool
-gr_block::start()
+bool gr_block::check_topology(int, int)
 {
-  return true;
+    return true;
 }
 
-bool
-gr_block::stop()
-{
-  return true;
+void gr_block::work(
+    const InputItems &input_items,
+    const OutputItems &output_items
+){
+    _work_io_ptr_mask = 0;
+    #define REALLY_BIG size_t(1 << 30)
+    const size_t num_inputs = input_items.size();
+    const size_t num_outputs = output_items.size();
+
+    //------------------------------------------------------------------
+    //-- initialize input buffers before work
+    //------------------------------------------------------------------
+    size_t num_input_items = REALLY_BIG; //so big that it must std::min
+    for (size_t i = 0; i < num_inputs; i++)
+    {
+        _work_ninput_items[i] = input_items[i].size();
+        _work_input_items[i] = input_items[i].get();
+        _work_io_ptr_mask |= ptrdiff_t(_work_input_items[i]);
+        size_t items = input_items[i].size();
+        if (_enable_fixed_rate)
+        {
+            if (items <= _input_history_items)
+            {
+                return this->mark_input_fail(i);
+            }
+            items -= _input_history_items;
+        }
+
+        num_input_items = std::min(num_input_items, items);
+    }
+
+    //------------------------------------------------------------------
+    //-- initialize output buffers before work
+    //------------------------------------------------------------------
+    size_t num_output_items = REALLY_BIG; //so big that it must std::min
+    for (size_t i = 0; i < num_outputs; i++)
+    {
+        _work_output_items[i] = output_items[i].get();
+        _work_io_ptr_mask |= ptrdiff_t(_work_output_items[i]);
+        size_t items = output_items[i].size();
+        items /= _output_multiple_items;
+        items *= _output_multiple_items;
+        num_output_items = std::min(num_output_items, items);
+    }
+
+    //------------------------------------------------------------------
+    //-- calculate the work_noutput_items given:
+    //-- min of num_input_items
+    //-- min of num_output_items
+    //-- relative rate and output multiple items
+    //------------------------------------------------------------------
+    size_t work_noutput_items = num_output_items;
+    if (num_inputs and (_enable_fixed_rate or not num_outputs))
+    {
+        size_t calc_output_items = size_t(num_input_items*_relative_rate);
+        calc_output_items += _output_multiple_items-1;
+        calc_output_items /= _output_multiple_items;
+        calc_output_items *= _output_multiple_items;
+        if (calc_output_items and calc_output_items < work_noutput_items)
+            work_noutput_items = calc_output_items;
+    }
+
+    //------------------------------------------------------------------
+    //-- forecast
+    //------------------------------------------------------------------
+    if (num_inputs or num_outputs)
+    {
+        forecast_again_you_jerk:
+        _fcast_ninput_items = _work_ninput_items; //init for NOP case
+        this->forecast(work_noutput_items, _fcast_ninput_items);
+        for (size_t i = 0; i < input_items.size(); i++)
+        {
+            if (_fcast_ninput_items[i] <= _work_ninput_items[i]) continue;
+
+            //handle the case of forecast failing
+            if (work_noutput_items <= _output_multiple_items)
+            {
+                return this->mark_input_fail(i);
+            }
+
+            work_noutput_items = work_noutput_items/2; //backoff regime
+            work_noutput_items += _output_multiple_items-1;
+            work_noutput_items /= _output_multiple_items;
+            work_noutput_items *= _output_multiple_items;
+            goto forecast_again_you_jerk;
+        }
+    }
+
+    const int work_ret = this->general_work(
+        work_noutput_items,
+        _work_ninput_items,
+        _work_input_items,
+        _work_output_items
+    );
+
+    if (work_ret > 0) for (size_t i = 0; i < num_outputs; i++)
+    {
+        this->produce(i, work_ret);
+    }
+
+    if (work_ret == -1) this->mark_done();
 }
 
-void
-gr_block::set_output_multiple (int multiple)
+static inline unsigned long long myullround(const double x)
 {
-  if (multiple < 1)
-    throw std::invalid_argument ("gr_block::set_output_multiple");
-
-  d_output_multiple_set = true;
-  d_output_multiple = multiple;
+    return (unsigned long long)(x + 0.5);
 }
 
-void
-gr_block::set_alignment (int multiple)
+void gr_block::propagate_tags(const size_t which_input, const gras::TagIter &iter)
 {
-  if (multiple < 1)
-    throw std::invalid_argument ("gr_block::set_alignment_multiple");
+    const size_t num_outputs = _work_output_items.size();
 
-  d_output_multiple = multiple;
+    switch (_tag_prop_policy)
+    {
+    case TPP_DONT: break; //well that was ez
+    case TPP_ALL_TO_ALL:
+        for (size_t out_i = 0; out_i < num_outputs; out_i++)
+        {
+            BOOST_FOREACH(gras::Tag t, iter)
+            {
+                t.offset = myullround(t.offset * _relative_rate);
+                this->post_output_tag(out_i, t);
+            }
+        }
+        break;
+    case TPP_ONE_TO_ONE:
+        if (which_input < num_outputs)
+        {
+            BOOST_FOREACH(gras::Tag t, iter)
+            {
+                t.offset = myullround(t.offset * _relative_rate);
+                this->post_output_tag(which_input, t);
+            }
+        }
+        break;
+    };
 }
 
-void
-gr_block::set_unaligned (int na)
+void gr_block::forecast(int noutput_items, std::vector<int> &ninputs_req)
 {
-  // unaligned value must be less than 0 and it doesn't make sense
-  // that it's larger than the alignment value.
-  if ((na < 0) || (na > d_output_multiple))
-    throw std::invalid_argument ("gr_block::set_unaligned");
-
-  d_unaligned = na;
+    for (size_t i = 0; i < ninputs_req.size(); i++)
+    {
+        ninputs_req[i] = fixed_rate_noutput_to_ninput(noutput_items);
+    }
 }
 
-void
-gr_block::set_is_unaligned (bool u)
-{
-  d_is_unaligned = u;
+int gr_block::general_work(
+    int noutput_items,
+    gr_vector_int &ninput_items,
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items
+){
+    throw std::runtime_error("gr_block subclasses must overload general_work!");
 }
 
-void
-gr_block::set_relative_rate (double relative_rate)
+void gr_block::consume_each(const int how_many_items)
 {
-  if (relative_rate < 0.0)
-    throw std::invalid_argument ("gr_block::set_relative_rate");
-
-  d_relative_rate = relative_rate;
+    if (how_many_items < 0) return;
+    gras::Block::consume(size_t(how_many_items));
 }
 
-
-void
-gr_block::consume (int which_input, int how_many_items)
+void gr_block::consume(const size_t i, const int how_many_items)
 {
-  d_detail->consume (which_input, how_many_items);
+    if (how_many_items < 0) return;
+    gras::Block::consume(i, size_t(how_many_items));
 }
 
-void
-gr_block::consume_each (int how_many_items)
+void gr_block::produce(const size_t o, const int how_many_items)
 {
-  d_detail->consume_each (how_many_items);
+    if (how_many_items < 0) return;
+    gras::Block::produce(o, size_t(how_many_items));
 }
 
-void
-gr_block::produce (int which_output, int how_many_items)
+uint64_t gr_block::nitems_read(const size_t which_input)
 {
-  d_detail->produce (which_output, how_many_items);
+    return Block::get_consumed(which_input);
 }
 
-int
-gr_block::fixed_rate_ninput_to_noutput(int ninput)
+uint64_t gr_block::nitems_written(const size_t which_output)
 {
-  throw std::runtime_error("Unimplemented");
+    return Block::get_produced(which_output);
 }
 
-int
-gr_block::fixed_rate_noutput_to_ninput(int noutput)
+void gr_block::set_alignment(const size_t)
 {
-  throw std::runtime_error("Unimplemented");
+    //TODO
+    //probably dont need this since buffers always start aligned
+    //and therefore alignment is always re-acheived
 }
 
-uint64_t
-gr_block::nitems_read(unsigned int which_input)
+bool gr_block::is_unaligned(void)
 {
-  if(d_detail) {
-    return d_detail->nitems_read(which_input);
-  }
-  else {
-    //throw std::runtime_error("No block_detail associated with block yet");
-    return 0;
-  }
+    //TODO
+    //probably dont need this since volk dispatcher checks alignment
+    //32 byte aligned is good enough for you
+    return (_work_io_ptr_mask & ptrdiff_t(GRAS_MAX_ALIGNMENT-1)) != 0;
 }
 
-uint64_t
-gr_block::nitems_written(unsigned int which_output)
+size_t gr_block::fixed_rate_noutput_to_ninput(const size_t noutput_items)
 {
-  if(d_detail) {
-    return d_detail->nitems_written(which_output);
-  }
-  else {
-    //throw std::runtime_error("No block_detail associated with block yet");
-    return 0;
-  }
+    return ((decimation()*noutput_items)/interpolation()) + _input_history_items;
 }
 
-void
-gr_block::add_item_tag(unsigned int which_output,
-		       const gr_tag_t &tag)
+size_t gr_block::interpolation(void) const
 {
-  d_detail->add_item_tag(which_output, tag);
+    return _interp;
 }
 
-void
-gr_block::get_tags_in_range(std::vector<gr_tag_t> &v,
-			    unsigned int which_output,
-			    uint64_t start, uint64_t end)
+void gr_block::set_interpolation(const size_t interp)
 {
-  d_detail->get_tags_in_range(v, which_output, start, end);
+    _interp = interp;
+    this->set_relative_rate(1.0*interp);
+    this->set_output_multiple(interp);
 }
 
-void
-gr_block::get_tags_in_range(std::vector<gr_tag_t> &v,
-			    unsigned int which_output,
-			    uint64_t start, uint64_t end,
-			    const pmt::pmt_t &key)
+size_t gr_block::decimation(void) const
 {
-  d_detail->get_tags_in_range(v, which_output, start, end, key);
+    return _decim;
 }
 
-gr_block::tag_propagation_policy_t
-gr_block::tag_propagation_policy()
+void gr_block::set_decimation(const size_t decim)
 {
-  return d_tag_propagation_policy;
+    _decim = decim;
+    this->set_relative_rate(1.0/decim);
 }
 
-void
-gr_block::set_tag_propagation_policy(tag_propagation_policy_t p)
+unsigned gr_block::history(void) const
 {
-  d_tag_propagation_policy = p;
+    //implement off-by-one history compat
+    return _input_history_items+1;
 }
 
-
-int
-gr_block::max_noutput_items()
+void gr_block::set_history(unsigned history)
 {
-  return d_max_noutput_items;
+    gras::InputPortConfig config = this->get_input_config(0);
+    //implement off-by-one history compat
+    if (history == 0) history++;
+    _input_history_items = history-1;
+    config.preload_items = _input_history_items;
+    this->set_input_config(0, config);
 }
 
-void
-gr_block::set_max_noutput_items(int m)
+void gr_block::set_fixed_rate(const bool fixed_rate)
 {
-  if(m <= 0)
-    throw std::runtime_error("gr_block::set_max_noutput_items: value for max_noutput_items must be greater than 0.\n");
-
-  d_max_noutput_items = m;
-  d_max_noutput_items_set = true;
+    _enable_fixed_rate = fixed_rate;
 }
 
-void
-gr_block::unset_max_noutput_items()
+bool gr_block::fixed_rate(void) const
 {
-  d_max_noutput_items_set = false;
+    return _enable_fixed_rate;
 }
 
-bool
-gr_block::is_set_max_noutput_items()
+void gr_block::_update_input_reserve(void)
 {
-  return d_max_noutput_items_set;
+    /*!
+     * Set an input reserve for fixed rate blocks.
+     *
+     * FIXME: Also do this when output multiple is large,
+     * This makes gr-trellis pass under conditions where not fixed rate set,
+     * but the output multiple is so large that default input isnt sufficient.
+     */
+    if (_enable_fixed_rate or _output_multiple_items > 1024)
+    {
+        gras::InputPortConfig config = this->get_input_config(0);
+        config.reserve_items = size_t(0.5 + _output_multiple_items/_relative_rate);
+        if (config.reserve_items) this->set_input_config(0, config);
+    }
 }
 
-std::ostream&
-operator << (std::ostream& os, const gr_block *m)
+void gr_block::set_output_multiple(const size_t multiple)
 {
-  os << "<gr_block " << m->name() << " (" << m->unique_id() << ")>";
-  return os;
+    _output_multiple_items = multiple;
+    gras::OutputPortConfig config = this->get_output_config(0);
+    config.reserve_items = multiple;
+    this->set_output_config(0, config);
+    this->_update_input_reserve();
 }
 
-int
-gr_block::general_work(int noutput_items,
-		       gr_vector_int &ninput_items,
-		       gr_vector_const_void_star &input_items,
-		       gr_vector_void_star &output_items)
+size_t gr_block::output_multiple(void) const
 {
-  throw std::runtime_error("gr_block::general_work() not implemented");
-  return 0;
+    return _output_multiple_items;
+}
+
+void gr_block::set_relative_rate(double relative_rate)
+{
+    _relative_rate = relative_rate;
+    this->_update_input_reserve();
+}
+
+double gr_block::relative_rate(void) const
+{
+    return _relative_rate;
+}
+
+int gr_block::max_noutput_items(void) const
+{
+    return this->get_output_config(0).maximum_items;
+}
+
+void gr_block::set_max_noutput_items(int max_items)
+{
+    gras::OutputPortConfig config = this->get_output_config(0);
+    config.maximum_items = max_items;
+    this->set_output_config(0, config);
+}
+
+void gr_block::unset_max_noutput_items(void)
+{
+    this->set_max_noutput_items(0);
+}
+
+bool gr_block::is_set_max_noutput_items(void) const
+{
+    return this->max_noutput_items() != 0;
+}
+
+static gr_tag_t Tag2gr_tag(const gras::Tag &tag)
+{
+    gr_tag_t t;
+    t.offset = tag.offset;
+    const gras::StreamTag &st = tag.object.as<gras::StreamTag>();
+    t.key = pmt::pmc_to_pmt(st.key);
+    t.value = pmt::pmc_to_pmt(st.val);
+    t.srcid = pmt::pmc_to_pmt(st.src);
+    return t;
+}
+
+static gras::Tag gr_tag2Tag(const gr_tag_t &tag)
+{
+    return gras::Tag
+    (
+        tag.offset,
+        PMC_M(gras::StreamTag(
+            pmt::pmt_to_pmc(tag.key),
+            pmt::pmt_to_pmc(tag.value),
+            pmt::pmt_to_pmc(tag.srcid)
+        ))
+    );
+}
+
+void gr_block::add_item_tag(
+    const size_t which_output, const gr_tag_t &tag
+){
+    this->post_output_tag(which_output, gr_tag2Tag(tag));
+}
+
+void gr_block::add_item_tag(
+    const size_t which_output,
+    uint64_t abs_offset,
+    const pmt::pmt_t &key,
+    const pmt::pmt_t &value,
+    const pmt::pmt_t &srcid
+){
+    gr_tag_t t;
+    t.offset = abs_offset;
+    t.key = key;
+    t.value = value;
+    t.srcid = srcid;
+    this->add_item_tag(which_output, t);
+}
+
+void gr_block::get_tags_in_range(
+    std::vector<gr_tag_t> &tags,
+    const size_t which_input,
+    uint64_t abs_start,
+    uint64_t abs_end,
+    const pmt::pmt_t &key
+){
+    tags.clear();
+    BOOST_FOREACH(const gras::Tag &tag, this->get_input_tags(which_input))
+    {
+        if (tag.offset >= abs_start and tag.offset <= abs_end)
+        {
+            gr_tag_t t = Tag2gr_tag(tag);
+            if (key or pmt::pmt_equal(t.key, key)) tags.push_back(t);
+        }
+    }
+}
+
+gr_block::tag_propagation_policy_t gr_block::tag_propagation_policy(void)
+{
+    return _tag_prop_policy;
+}
+
+void gr_block::set_tag_propagation_policy(gr_block::tag_propagation_policy_t p)
+{
+    _tag_prop_policy = p;
+}
+
+gras::BufferQueueSptr gr_block::input_buffer_allocator(const size_t, const gras::SBufferConfig &config)
+{
+    if (_input_history_items)
+    {
+        return gras::BufferQueue::make_circ(config, 32/*many*/);
+    }
+    return gras::BufferQueueSptr();
 }

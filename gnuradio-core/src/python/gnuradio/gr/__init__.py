@@ -26,9 +26,12 @@
 
 from gnuradio_core import *
 from exceptions import *
-from hier_block2 import *
-from top_block import *
-from gateway import basic_block, sync_block, decim_block, interp_block
+#from hier_block2 import *
+#from top_block import *
+#from gateway import basic_block, sync_block, decim_block, interp_block
+
+from gras import HierBlock as hier_block2
+from gras import TopBlock as top_block
 
 # create a couple of aliases
 serial_to_parallel = stream_to_vector

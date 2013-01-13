@@ -49,13 +49,13 @@ qa_runtime::suite ()
   s->addTest (qa_gr_vmcircbuf::suite ());
   s->addTest (qa_gr_io_signature::suite ());
   s->addTest (qa_gr_block::suite ());
-  s->addTest (qa_gr_flowgraph::suite ());
+  //s->addTest (qa_gr_flowgraph::suite ());
   s->addTest (qa_gr_top_block::suite ());
   s->addTest (qa_gr_hier_block2::suite ());
   s->addTest (qa_gr_hier_block2_derived::suite ());
   s->addTest (qa_gr_buffer::suite ());
-  s->addTest (qa_block_tags::suite ());
-  s->addTest (qa_set_msg_handler::suite ());
+  //s->addTest (qa_block_tags::suite ());
+  //s->addTest (qa_set_msg_handler::suite ());
 
   return s;
 }
