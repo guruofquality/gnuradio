@@ -431,7 +431,7 @@ void gr_block::get_tags_in_range(
         if (tag.offset >= abs_start and tag.offset <= abs_end)
         {
             gr_tag_t t = Tag2gr_tag(tag);
-            if (key or pmt::pmt_equal(t.key, key)) tags.push_back(t);
+            if (not key or pmt::pmt_equal(t.key, key)) tags.push_back(t);
         }
     }
 }

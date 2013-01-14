@@ -68,11 +68,10 @@ inline gr_io_signature_sptr gr_make_io_signature3(
     return io_sig;
 }
 
-template <typename T>
 inline gr_io_signature_sptr gr_make_io_signaturev(
     int min_streams,
     int max_streams,
-    const std::vector<T> &sizeof_stream_items
+    const std::vector<int> &sizeof_stream_items
 ){
     gr_io_signature io_sig(min_streams, max_streams);
     for (unsigned i = 0; i < sizeof_stream_items.size(); i++)

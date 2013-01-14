@@ -97,6 +97,9 @@ class gateway_block(object):
             setattr(self, attr.replace(prefix, ''), getattr(self.__gateway, attr))
         self.pop_msg_queue = lambda: gr_core.gr_block_gw_pop_msg_queue_safe(self.__gateway)
 
+    #gras version of the to_basic_block()
+    def shared_to_element(self): return self.__gateway.shared_to_element()
+
     def to_basic_block(self):
         """
         Makes this block connectable by hier/top block python

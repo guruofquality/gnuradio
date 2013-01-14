@@ -40,17 +40,18 @@
 
 %}
 
-%include <gr_message.i>
-%include <gr_msg_handler.i>
-%include <gr_msg_queue.i>
-%include <gr_swig_block_magic.i>
-
-#ifdef SW_RUNTIME
-
 %rename(io_signature)  gr_make_io_signature;
 %rename(io_signature2) gr_make_io_signature2;
 %rename(io_signature3) gr_make_io_signature3;
 %rename(io_signaturev) gr_make_io_signaturev;
+
+%include <gr_message.i>
+%include <gr_msg_handler.i>
+%include <gr_msg_queue.i>
+%include <gr_swig_block_magic.i>
+%include <gr_io_signature.h>
+
+#ifdef SW_RUNTIME
 
 //const size types used by blocks in python
 %constant int sizeof_char       = sizeof(char);
