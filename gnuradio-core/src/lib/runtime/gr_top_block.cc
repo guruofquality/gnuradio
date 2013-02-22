@@ -26,90 +26,65 @@
 
 #include <unistd.h>
 #include <gr_top_block.h>
-#include <gr_top_block_impl.h>
-#include <gr_io_signature.h>
-#include <iostream>
 
-gr_top_block_sptr
-gr_make_top_block(const std::string &name)
+gr_top_block::gr_top_block(void):
+    //cannot make a null top block, use name constructor
+    gras::TopBlock("top")
 {
-  return gnuradio::get_initial_sptr(new gr_top_block(name));
+    //NOP
 }
 
-gr_top_block::gr_top_block(const std::string &name)
-  : gr_hier_block2(name,
-		   gr_make_io_signature(0,0,0),
-		   gr_make_io_signature(0,0,0))
-
+gr_top_block::gr_top_block(const std::string &name):
+    gras::TopBlock(name)
 {
-  d_impl = new gr_top_block_impl(this);
+    //NOP
 }
 
-gr_top_block::~gr_top_block()
+gr_top_block_sptr gr_make_top_block(const std::string &name)
 {
-  stop();
-  wait();
-
-  delete d_impl;
+    return gr_top_block_sptr(new gr_top_block(name));
 }
 
-void
-gr_top_block::start(int max_noutput_items)
+void gr_top_block::start(const size_t max_items)
 {
-  d_impl->start(max_noutput_items);
+    this->set_max_noutput_items(max_items);
+    this->start();
 }
 
-void
-gr_top_block::stop()
+void gr_top_block::run(const size_t max_items)
 {
-  d_impl->stop();
+    this->set_max_noutput_items(max_items);
+    this->run();
 }
 
-void
-gr_top_block::wait()
+int gr_top_block::max_noutput_items(void) const
 {
-  d_impl->wait();
+    return this->get_global_config().maximum_output_items;
 }
 
-void
-gr_top_block::run(int max_noutput_items)
+void gr_top_block::set_max_noutput_items(int max_items)
 {
-  start(max_noutput_items);
-  wait();
+    gras::GlobalBlockConfig config = this->get_global_config();
+    config.maximum_output_items = max_items;
+    this->set_global_config(config);
 }
 
-void
-gr_top_block::lock()
+void gr_top_block::run(void)
 {
-  d_impl->lock();
+    gras::TopBlock::run();
 }
 
-void
-gr_top_block::unlock()
+void gr_top_block::start(void)
 {
-  d_impl->unlock();
+    gras::TopBlock::start();
 }
 
-void
-gr_top_block::dump()
+void gr_top_block::stop(void)
 {
-  d_impl->dump();
+    gras::TopBlock::stop();
 }
 
-int
-gr_top_block::max_noutput_items()
+void gr_top_block::wait(void)
 {
-  return d_impl->max_noutput_items();
-}
-
-void
-gr_top_block::set_max_noutput_items(int nmax)
-{
-  d_impl->set_max_noutput_items(nmax);
-}
-
-gr_top_block_sptr
-gr_top_block::to_top_block()
-{
-  return cast_to_top_block_sptr(shared_from_this());
+    gras::TopBlock::wait();
 }

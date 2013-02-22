@@ -43,6 +43,26 @@ gr_block::gr_block(
     this->set_output_signature(output_signature);
 }
 
+void gr_block::notify_active(void)
+{
+    this->start();
+}
+
+bool gr_block::start(void)
+{
+    return true;
+}
+
+void gr_block::notify_inactive(void)
+{
+    this->stop();
+}
+
+bool gr_block::stop(void)
+{
+    return true;
+}
+
 void gr_block::notify_topology(const size_t num_inputs, const size_t num_outputs)
 {
     _fcast_ninput_items.resize(num_inputs);
@@ -55,6 +75,16 @@ void gr_block::notify_topology(const size_t num_inputs, const size_t num_outputs
 bool gr_block::check_topology(int, int)
 {
     return true;
+}
+
+const gr_io_signature_sptr &gr_block::input_signature(void) const
+{
+    return gras::Block::input_signature();
+}
+
+const gr_io_signature_sptr &gr_block::output_signature(void) const
+{
+    return gras::Block::output_signature();
 }
 
 void gr_block::work(
@@ -453,4 +483,9 @@ gras::BufferQueueSptr gr_block::input_buffer_allocator(const size_t, const gras:
         return gras::BufferQueue::make_circ(config, 32/*many*/);
     }
     return gras::BufferQueueSptr();
+}
+
+gras::BufferQueueSptr gr_block::output_buffer_allocator(const size_t which, const gras::SBufferConfig &config)
+{
+    return gras::Block::output_buffer_allocator(which, config);
 }

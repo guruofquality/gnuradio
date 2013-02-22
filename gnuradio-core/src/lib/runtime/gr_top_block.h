@@ -28,28 +28,26 @@ struct GR_CORE_API gr_top_block : gras::TopBlock
 
     gr_top_block(const std::string &name);
 
+    void start(const size_t max_items);
+
+    void run(const size_t max_items);
+
+    int max_noutput_items(void) const;
+
+    void set_max_noutput_items(int max_items);
+
+    void run(void);
+
+    virtual void start(void);
+
+    virtual void stop(void);
+
+    virtual void wait(void);
+
 };
 
 typedef boost::shared_ptr<gr_top_block> gr_top_block_sptr;
 
 GR_CORE_API gr_top_block_sptr gr_make_top_block(const std::string &name);
-
-inline gr_top_block::gr_top_block(void):
-    //cannot make a null top block, use name constructor
-    gras::TopBlock("top")
-{
-    //NOP
-}
-
-inline gr_top_block::gr_top_block(const std::string &name):
-    gras::TopBlock(name)
-{
-    //NOP
-}
-
-inline gr_top_block_sptr gr_make_top_block(const std::string &name)
-{
-    return gr_top_block_sptr(new gr_top_block(name));
-}
 
 #endif /*INCLUDED_GNURADIO_GR_TOP_BLOCK_H*/

@@ -55,7 +55,7 @@ list(APPEND gnuradio_core_sources
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_block_detail.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_block_executor.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_block_registry.cc
-    #${CMAKE_CURRENT_SOURCE_DIR}/gr_hier_block2.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/gr_hier_block2.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_hier_block2_detail.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_buffer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_dispatcher.cc
@@ -78,7 +78,7 @@ list(APPEND gnuradio_core_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sync_decimator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sync_interpolator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_sys_paths.cc
-    #${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_top_block_impl.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_detail.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_tpb_thread_body.cc

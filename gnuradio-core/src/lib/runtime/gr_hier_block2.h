@@ -36,7 +36,6 @@ struct GR_CORE_API gr_hier_block2 : gras::HierBlock
     {
         return *this;
     }
-
 };
 
 typedef boost::shared_ptr<gr_hier_block2> gr_hier_block2_sptr;
@@ -46,29 +45,5 @@ GR_CORE_API gr_hier_block2_sptr gr_make_hier_block2(
     gr_io_signature_sptr input_signature,
     gr_io_signature_sptr output_signature
 );
-
-inline gr_hier_block2::gr_hier_block2(void)
-{
-    //NOP
-}
-
-inline gr_hier_block2::gr_hier_block2(
-    const std::string &name,
-    gr_io_signature_sptr input_signature,
-    gr_io_signature_sptr output_signature
-):
-    gras::HierBlock(name)
-{
-    this->set_input_signature(input_signature);
-    this->set_output_signature(output_signature);
-}
-
-inline gr_hier_block2_sptr gr_make_hier_block2(
-    const std::string &name,
-    gr_io_signature_sptr input_signature,
-    gr_io_signature_sptr output_signature
-){
-    return gr_hier_block2_sptr(new gr_hier_block2(name, input_signature, output_signature));
-}
 
 #endif /*INCLUDED_GNURADIO_GR_HIER_BLOCK2_H*/

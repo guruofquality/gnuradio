@@ -85,6 +85,9 @@ struct GR_CORE_API gr_block : gras::Block
         gr_vector_void_star &output_items
     );
 
+    virtual bool start(void);
+    virtual bool stop(void);
+
     //! Call during work to consume items
     void consume_each(const int how_many_items);
 
@@ -139,6 +142,10 @@ struct GR_CORE_API gr_block : gras::Block
     void unset_max_noutput_items(void);
 
     bool is_set_max_noutput_items(void) const;
+
+    const gr_io_signature_sptr &input_signature(void) const;
+
+    const gr_io_signature_sptr &output_signature(void) const;
 
     /*******************************************************************
      * Deal with input and output port configuration
@@ -308,12 +315,19 @@ struct GR_CORE_API gr_block : gras::Block
     //! notifications of new topological commits
     void notify_topology(const size_t, const size_t);
 
+    //! start notification
+    void notify_active(void);
+
+    //! stop notification
+    void notify_inactive(void);
+
     //! implements tag_propagation_policy()
     virtual void propagate_tags(const size_t, const gras::TagIter &);
 
     void _update_input_reserve(void);
 
     gras::BufferQueueSptr input_buffer_allocator(const size_t, const gras::SBufferConfig &);
+    gras::BufferQueueSptr output_buffer_allocator(const size_t, const gras::SBufferConfig &);
 
 };
 

@@ -27,7 +27,7 @@ set(GR_SWIG_INCLUDE_DIRS
     ${GRUEL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
-set(GR_SWIG_LIBRARIES gnuradio-core)
+set(GR_SWIG_LIBRARIES ${GRAS_LIBRARIES} gnuradio-core)
 
 link_directories(${Boost_LIBRARY_DIRS})
 

@@ -102,6 +102,6 @@ include_directories(${CPPUNIT_INCLUDE_DIRS})
 link_directories(${CPPUNIT_LIBRARY_DIRS})
 
 add_library(test-gnuradio-core SHARED ${test_gnuradio_core_sources})
-target_link_libraries(test-gnuradio-core gnuradio-core ${CPPUNIT_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(test-gnuradio-core ${GR_TEST_TARGET_DEPS} ${CPPUNIT_LIBRARIES} ${Boost_LIBRARIES})
 
 endif(ENABLE_TESTING)

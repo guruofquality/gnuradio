@@ -25,129 +25,28 @@
 #endif
 
 #include <gr_hier_block2.h>
-#include <gr_io_signature.h>
-#include <gr_hier_block2_detail.h>
-#include <iostream>
-
-#define GR_HIER_BLOCK2_DEBUG 0
 
 
-gr_hier_block2_sptr
-gr_make_hier_block2(const std::string &name,
-                    gr_io_signature_sptr input_signature,
-                    gr_io_signature_sptr output_signature)
+gr_hier_block2::gr_hier_block2(void)
 {
-  return gnuradio::get_initial_sptr(new gr_hier_block2(name, input_signature, output_signature));
+    //NOP
 }
 
-gr_hier_block2::gr_hier_block2(const std::string &name,
-                               gr_io_signature_sptr input_signature,
-                               gr_io_signature_sptr output_signature)
-  : gr_basic_block(name, input_signature, output_signature),
-    d_detail(new gr_hier_block2_detail(this)),
-    hier_message_ports_in(pmt::PMT_NIL),
-    hier_message_ports_out(pmt::PMT_NIL)
+gr_hier_block2::gr_hier_block2(
+    const std::string &name,
+    gr_io_signature_sptr input_signature,
+    gr_io_signature_sptr output_signature
+):
+    gras::HierBlock(name)
 {
-  // This bit of magic ensures that self() works in the constructors of derived classes.
-  gnuradio::detail::sptr_magic::create_and_stash_initial_sptr(this);
+    this->set_input_signature(input_signature);
+    this->set_output_signature(output_signature);
 }
 
-gr_hier_block2::~gr_hier_block2()
-{
-  delete d_detail;
-}
-
-gr_hier_block2::opaque_self
-gr_hier_block2::self()
-{
-  return shared_from_this();
-}
-
-gr_hier_block2_sptr
-gr_hier_block2::to_hier_block2()
-{
-  return cast_to_hier_block2_sptr(shared_from_this());
-}
-
-void
-gr_hier_block2::connect(gr_basic_block_sptr block)
-{
-  d_detail->connect(block);
-}
-
-void
-gr_hier_block2::connect(gr_basic_block_sptr src, int src_port,
-                        gr_basic_block_sptr dst, int dst_port)
-{
-  d_detail->connect(src, src_port, dst, dst_port);
-}
-
-void
-gr_hier_block2::msg_connect(gr_basic_block_sptr src, pmt::pmt_t srcport,
-                        gr_basic_block_sptr dst, pmt::pmt_t dstport)
-{
-  if(!pmt::pmt_is_symbol(srcport)){throw std::runtime_error("bad port id"); }
-  d_detail->msg_connect(src, srcport, dst, dstport);
-}
-
-void
-gr_hier_block2::msg_connect(gr_basic_block_sptr src, std::string srcport,
-                        gr_basic_block_sptr dst, std::string dstport)
-{
-  d_detail->msg_connect(src, pmt::mp(srcport), dst, pmt::mp(dstport));
-}
-
-void
-gr_hier_block2::msg_disconnect(gr_basic_block_sptr src, pmt::pmt_t srcport,
-                        gr_basic_block_sptr dst, pmt::pmt_t dstport)
-{
-  if(!pmt::pmt_is_symbol(srcport)){throw std::runtime_error("bad port id"); }
-  d_detail->msg_disconnect(src, srcport, dst, dstport);
-}
-
-void
-gr_hier_block2::msg_disconnect(gr_basic_block_sptr src, std::string srcport,
-                        gr_basic_block_sptr dst, std::string dstport)
-{
-  d_detail->msg_disconnect(src, pmt::mp(srcport), dst, pmt::mp(dstport));
-}
-
-void
-gr_hier_block2::disconnect(gr_basic_block_sptr block)
-{
-  d_detail->disconnect(block);
-}
-
-void
-gr_hier_block2::disconnect(gr_basic_block_sptr src, int src_port,
-                           gr_basic_block_sptr dst, int dst_port)
-{
-  d_detail->disconnect(src, src_port, dst, dst_port);
-}
-
-void
-gr_hier_block2::disconnect_all()
-{
-  d_detail->disconnect_all();
-}
-
-void
-gr_hier_block2::lock()
-{
-  d_detail->lock();
-}
-
-void
-gr_hier_block2::unlock()
-{
-  d_detail->unlock();
-}
-
-
-gr_flat_flowgraph_sptr
-gr_hier_block2::flatten() const
-{
-  gr_flat_flowgraph_sptr new_ffg = gr_make_flat_flowgraph();
-  d_detail->flatten_aux(new_ffg);
-  return new_ffg;
+gr_hier_block2_sptr gr_make_hier_block2(
+    const std::string &name,
+    gr_io_signature_sptr input_signature,
+    gr_io_signature_sptr output_signature
+){
+    return gr_hier_block2_sptr(new gr_hier_block2(name, input_signature, output_signature));
 }
