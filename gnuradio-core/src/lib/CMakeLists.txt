@@ -58,7 +58,6 @@ link_directories(
 # Setup library
 ########################################################################
 list(APPEND gnuradio_core_libs
-    ${GRAS_LIBRARIES}
     gruel
     ${Boost_LIBRARIES}
     ${FFTW3F_LIBRARIES}

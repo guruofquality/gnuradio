@@ -52,6 +52,8 @@ struct GR_CORE_API gr_block : gras::Block
         gr_io_signature_sptr output_signature
     );
 
+    virtual ~gr_block(void);
+
     virtual bool check_topology(int ninputs, int noutputs);
 
     //! Overload me! I am the forecast
@@ -142,10 +144,6 @@ struct GR_CORE_API gr_block : gras::Block
     void unset_max_noutput_items(void);
 
     bool is_set_max_noutput_items(void) const;
-
-    const gr_io_signature_sptr &input_signature(void) const;
-
-    const gr_io_signature_sptr &output_signature(void) const;
 
     /*******************************************************************
      * Deal with input and output port configuration

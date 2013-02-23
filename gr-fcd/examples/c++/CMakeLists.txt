@@ -26,7 +26,7 @@ include_directories(
 )
 
 add_executable(fcd_nfm_rx fcd_nfm_rx.cc)
-target_link_libraries(fcd_nfm_rx gnuradio-fcd ${GRAS_LIBRARIES})
+target_link_libraries(fcd_nfm_rx gnuradio-fcd)
 
 INSTALL(TARGETS
     fcd_nfm_rx

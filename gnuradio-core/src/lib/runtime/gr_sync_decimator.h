@@ -31,6 +31,8 @@ struct GR_CORE_API gr_sync_decimator : gr_sync_block
         const size_t decim_rate
     );
 
+    virtual ~gr_sync_decimator(void);
+
 };
 
 #endif /*INCLUDED_GNURADIO_GR_SYNC_DECIMATOR_H*/

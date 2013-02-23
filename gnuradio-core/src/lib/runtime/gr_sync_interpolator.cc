@@ -41,3 +41,8 @@ gr_sync_interpolator::gr_sync_interpolator(
 {
     this->set_interpolation(interp_rate);
 }
+
+gr_sync_interpolator::~gr_sync_interpolator(void)
+{
+    //NOP
+}

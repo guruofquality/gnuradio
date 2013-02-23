@@ -41,6 +41,11 @@ gr_sync_block::gr_sync_block(
     this->set_fixed_rate(true);
 }
 
+gr_sync_block::~gr_sync_block(void)
+{
+    //NOP
+}
+
 int gr_sync_block::work(
     int noutput_items,
     gr_vector_const_void_star &input_items,

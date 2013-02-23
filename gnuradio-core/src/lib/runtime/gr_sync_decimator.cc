@@ -41,3 +41,8 @@ gr_sync_decimator::gr_sync_decimator(
 {
     this->set_decimation(decim_rate);
 }
+
+gr_sync_decimator::~gr_sync_decimator(void)
+{
+    //NOP
+}

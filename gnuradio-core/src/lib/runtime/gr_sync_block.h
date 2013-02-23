@@ -29,6 +29,8 @@ struct GR_CORE_API gr_sync_block : public gr_block
         gr_io_signature_sptr output_signature
     );
 
+    virtual ~gr_sync_block(void);
+
     //! implements work -> calls work
     int general_work(
         int noutput_items,
