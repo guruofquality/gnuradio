@@ -55,7 +55,6 @@
 #ifdef SW_RUNTIME
 
 %import <gras/block.i>
-%include <gr_io_signature.i>
 %include <gr_block.h>
 %include <gr_hier_block2.h>
 %include <gr_top_block.h>
