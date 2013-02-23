@@ -23,7 +23,6 @@
 GR_SWIG_BLOCK_MAGIC(gr, vector_map);
 
 %template() std::vector<size_t>;
-%template() std::vector< std::vector<size_t> >;
 %template() std::vector< std::vector< std::vector<size_t> > >;
 
 %include "gr_vector_map.h"
