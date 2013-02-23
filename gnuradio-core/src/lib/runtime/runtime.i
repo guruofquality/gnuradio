@@ -26,8 +26,6 @@
 #include <gras/block.hpp>
 #include <gras/hier_block.hpp>
 #include <gras/top_block.hpp>
-#include <gras/io_signature.hpp>
-#include <gr_io_signature.h>
 #include <gr_block.h>
 #include <gr_top_block.h>
 #include <gr_hier_block2.h>
@@ -40,19 +38,6 @@
 
 %}
 
-%rename(io_signature)  gr_make_io_signature;
-%rename(io_signature2) gr_make_io_signature2;
-%rename(io_signature3) gr_make_io_signature3;
-%rename(io_signaturev) gr_make_io_signaturev;
-
-%include <gr_message.i>
-%include <gr_msg_handler.i>
-%include <gr_msg_queue.i>
-%include <gr_swig_block_magic.i>
-%include <gr_io_signature.h>
-
-#ifdef SW_RUNTIME
-
 //const size types used by blocks in python
 %constant int sizeof_char       = sizeof(char);
 %constant int sizeof_short      = sizeof(short);
@@ -61,8 +46,16 @@
 %constant int sizeof_double     = sizeof(double);
 %constant int sizeof_gr_complex = sizeof(gr_complex);
 
+%include <gr_message.i>
+%include <gr_msg_handler.i>
+%include <gr_msg_queue.i>
+%include <gr_swig_block_magic.i>
+%include <gr_io_signature.i>
+
+#ifdef SW_RUNTIME
+
 %import <gras/block.i>
-%include <gr_io_signature.h>
+%include <gr_io_signature.i>
 %include <gr_block.h>
 %include <gr_hier_block2.h>
 %include <gr_top_block.h>
@@ -81,7 +74,11 @@ namespace gras
     struct HierBlock : gras::Element{};
 }
 struct gr_hier_block2 : gras::HierBlock{};
-struct gr_block : gras::Block{};
+struct gr_block : gras::Block
+{
+    gr_io_signature_sptr input_signature(void) const;
+    gr_io_signature_sptr output_signature(void) const;
+};
 struct gr_sync_block : gr_block{};
 struct gr_sync_interpolator : gr_sync_block{};
 struct gr_sync_decimator : gr_sync_block{};

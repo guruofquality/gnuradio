@@ -19,7 +19,6 @@
 
 // this section is to satisfy swig includes for gras.i
 // since gras.i includes gr_types.h, we only have to edit this file
-#include <gras/io_signature.hpp>
 #include <gras/element.hpp>
 #include <gras/block.hpp>
 #include <gras/top_block.hpp>

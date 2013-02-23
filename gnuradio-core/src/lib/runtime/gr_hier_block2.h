@@ -36,6 +36,14 @@ struct GR_CORE_API gr_hier_block2 : gras::HierBlock
     {
         return *this;
     }
+
+    gr_io_signature_sptr input_signature(void) const;
+    gr_io_signature_sptr output_signature(void) const;
+
+    void set_input_signature(gr_io_signature_sptr sig);
+    void set_output_signature(gr_io_signature_sptr sig);
+
+    gr_io_signature_sptr _in_sig, _out_sig;
 };
 
 typedef boost::shared_ptr<gr_hier_block2> gr_hier_block2_sptr;

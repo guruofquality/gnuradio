@@ -60,7 +60,7 @@ list(APPEND gnuradio_core_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_buffer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_dispatcher.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_error_handler.cc
-    #${CMAKE_CURRENT_SOURCE_DIR}/gr_io_signature.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/gr_io_signature.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_local_sighandler.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gr_message.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/gr_msg_accepter.cc

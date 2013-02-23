@@ -43,6 +43,34 @@ gr_block::gr_block(
     this->set_output_signature(output_signature);
 }
 
+gr_io_signature_sptr gr_block::input_signature(void) const
+{
+    return _in_sig;
+}
+
+gr_io_signature_sptr gr_block::output_signature(void) const
+{
+    return _out_sig;
+}
+
+void gr_block::set_input_signature(gr_io_signature_sptr sig)
+{
+    for (size_t i = 0; i < sig->sizeof_stream_items().size(); i++)
+    {
+        this->set_input_size(i, sig->sizeof_stream_items().at(i));
+    }
+    _in_sig = sig;
+}
+
+void gr_block::set_output_signature(gr_io_signature_sptr sig)
+{
+    for (size_t i = 0; i < sig->sizeof_stream_items().size(); i++)
+    {
+        this->set_output_size(i, sig->sizeof_stream_items().at(i));
+    }
+    _out_sig = sig;
+}
+
 gr_block::~gr_block(void)
 {
     //NOP

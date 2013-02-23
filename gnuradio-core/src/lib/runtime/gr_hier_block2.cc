@@ -50,3 +50,23 @@ gr_hier_block2_sptr gr_make_hier_block2(
 ){
     return gr_hier_block2_sptr(new gr_hier_block2(name, input_signature, output_signature));
 }
+
+gr_io_signature_sptr gr_hier_block2::input_signature(void) const
+{
+    return _in_sig;
+}
+
+gr_io_signature_sptr gr_hier_block2::output_signature(void) const
+{
+    return _out_sig;
+}
+
+void gr_hier_block2::set_input_signature(gr_io_signature_sptr sig)
+{
+    _in_sig = sig;
+}
+
+void gr_hier_block2::set_output_signature(gr_io_signature_sptr sig)
+{
+    _out_sig = sig;
+}

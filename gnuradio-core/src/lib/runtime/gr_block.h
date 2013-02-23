@@ -54,6 +54,12 @@ struct GR_CORE_API gr_block : gras::Block
 
     virtual ~gr_block(void);
 
+    gr_io_signature_sptr input_signature(void) const;
+    gr_io_signature_sptr output_signature(void) const;
+
+    void set_input_signature(gr_io_signature_sptr sig);
+    void set_output_signature(gr_io_signature_sptr sig);
+
     virtual bool check_topology(int ninputs, int noutputs);
 
     //! Overload me! I am the forecast
@@ -304,6 +310,7 @@ struct GR_CORE_API gr_block : gras::Block
     size_t _input_history_items;
     tag_propagation_policy_t _tag_prop_policy;
     size_t _interp, _decim;
+    gr_io_signature_sptr _in_sig, _out_sig;
 
     ///////////////// the Block overloads //////////////////////
 
