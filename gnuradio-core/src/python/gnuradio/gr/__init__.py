@@ -30,8 +30,25 @@ from exceptions import *
 #from top_block import *
 from gateway import basic_block, sync_block, decim_block, interp_block
 
-from gras import HierBlock as hier_block2
-from gras import TopBlock as top_block
+import gras
+
+class top_block(gras.TopBlock):
+    def __init__(self, name="Top"):
+        gras.TopBlock.__init__(self, name)
+
+class hier_block2(gras.HierBlock):
+    def __init__(self, name="Hier", in_sig=None, out_sig=None):
+        gras.HierBlock.__init__(self, name)
+
+        self.__in_sig = in_sig
+        self.__out_sig = out_sig
+
+        #backwards compatible silliness
+        import weakref
+        self._hb = weakref.proxy(self)
+
+    def input_signature(self): return self.__in_sig
+    def output_signature(self): return self.__out_sig
 
 # create a couple of aliases
 serial_to_parallel = stream_to_vector
