@@ -57,7 +57,7 @@ void gr_block::set_input_signature(gr_io_signature_sptr sig)
 {
     for (size_t i = 0; i < sig->sizeof_stream_items().size(); i++)
     {
-        this->set_input_size(i, sig->sizeof_stream_items().at(i));
+        this->input_config(i).item_size = sig->sizeof_stream_items().at(i);
     }
     _in_sig = sig;
 }
@@ -66,7 +66,7 @@ void gr_block::set_output_signature(gr_io_signature_sptr sig)
 {
     for (size_t i = 0; i < sig->sizeof_stream_items().size(); i++)
     {
-        this->set_output_size(i, sig->sizeof_stream_items().at(i));
+        this->output_config(i).item_size = sig->sizeof_stream_items().at(i);
     }
     _out_sig = sig;
 }
@@ -344,12 +344,11 @@ unsigned gr_block::history(void) const
 
 void gr_block::set_history(unsigned history)
 {
-    gras::InputPortConfig config = this->get_input_config(0);
     //implement off-by-one history compat
     if (history == 0) history++;
     _input_history_items = history-1;
-    config.preload_items = _input_history_items;
-    this->set_input_config(0, config);
+    this->input_config(0).preload_items = _input_history_items;
+    this->commit_config();
 }
 
 void gr_block::set_fixed_rate(const bool fixed_rate)
@@ -373,18 +372,15 @@ void gr_block::_update_input_reserve(void)
      */
     if (_enable_fixed_rate or _output_multiple_items > 1024)
     {
-        gras::InputPortConfig config = this->get_input_config(0);
-        config.reserve_items = size_t(0.5 + _output_multiple_items/_relative_rate);
-        if (config.reserve_items) this->set_input_config(0, config);
+        const size_t reserve = size_t(0.5 + _output_multiple_items/_relative_rate);
+        if (reserve) this->input_config(0).reserve_items = reserve;
     }
 }
 
 void gr_block::set_output_multiple(const size_t multiple)
 {
     _output_multiple_items = multiple;
-    gras::OutputPortConfig config = this->get_output_config(0);
-    config.reserve_items = multiple;
-    this->set_output_config(0, config);
+    this->output_config(0).reserve_items = multiple;
     this->_update_input_reserve();
 }
 
@@ -406,14 +402,12 @@ double gr_block::relative_rate(void) const
 
 int gr_block::max_noutput_items(void) const
 {
-    return this->get_output_config(0).maximum_items;
+    return this->output_config(0).maximum_items;
 }
 
 void gr_block::set_max_noutput_items(int max_items)
 {
-    gras::OutputPortConfig config = this->get_output_config(0);
-    config.maximum_items = max_items;
-    this->set_output_config(0, config);
+    this->output_config(0).maximum_items = max_items;
 }
 
 void gr_block::unset_max_noutput_items(void)
