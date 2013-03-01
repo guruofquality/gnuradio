@@ -33,6 +33,9 @@ typedef boost::shared_ptr<digital_framer_sink_1> digital_framer_sink_1_sptr;
 DIGITAL_API digital_framer_sink_1_sptr
 digital_make_framer_sink_1(gr_msg_queue_sptr target_queue);
 
+DIGITAL_API digital_framer_sink_1_sptr
+digital_make_framer_sink_1(void);
+
 /*!
  * \brief Given a stream of bits and access_code flags, assemble packets.
  * \ingroup sink_blk
@@ -55,6 +58,9 @@ class DIGITAL_API digital_framer_sink_1 : public gr_sync_block
 {
   friend DIGITAL_API digital_framer_sink_1_sptr
     digital_make_framer_sink_1(gr_msg_queue_sptr target_queue);
+
+  friend DIGITAL_API digital_framer_sink_1_sptr
+    digital_make_framer_sink_1(void);
 
  private:
   enum state_t {STATE_SYNC_SEARCH, STATE_HAVE_SYNC, STATE_HAVE_HEADER};

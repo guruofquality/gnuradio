@@ -25,6 +25,9 @@ GR_SWIG_BLOCK_MAGIC(digital,framer_sink_1);
 digital_framer_sink_1_sptr
 digital_make_framer_sink_1(gr_msg_queue_sptr target_queue);
 
+digital_framer_sink_1_sptr
+digital_make_framer_sink_1(void);
+
 class digital_framer_sink_1 : public gr_sync_block
 {
 };
