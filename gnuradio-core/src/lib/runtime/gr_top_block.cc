@@ -59,14 +59,12 @@ void gr_top_block::run(const size_t max_items)
 
 int gr_top_block::max_noutput_items(void) const
 {
-    return this->get_global_config().maximum_output_items;
+    return this->global_config().maximum_output_items;
 }
 
 void gr_top_block::set_max_noutput_items(int max_items)
 {
-    gras::GlobalBlockConfig config = this->get_global_config();
-    config.maximum_output_items = max_items;
-    this->set_global_config(config);
+    this->global_config().maximum_output_items = max_items;
 }
 
 void gr_top_block::run(void)
