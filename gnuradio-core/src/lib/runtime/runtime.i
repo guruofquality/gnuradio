@@ -20,6 +20,7 @@
 %ignore gri_agc_cc::reference();
 %ignore gri_agc2_ff::reference();
 %ignore gri_agc2_cc::reference();
+%ignore gr_block::d_setlock;
 
 %{
 

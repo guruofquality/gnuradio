@@ -26,6 +26,7 @@
 #include <deque>
 #include <map>
 #include <boost/foreach.hpp>
+#include <gruel/thread.h>
 
 namespace gnuradio
 {
@@ -317,6 +318,34 @@ struct GR_CORE_API gr_block : gras::Block
       d_msg_handlers[which_port](msg); // Yes, invoke it.
     }
   }
+
+  /*! Used by block's setters and work functions to make
+   * setting/resetting of parameters thread-safe.
+   *
+   * Used by calling gruel::scoped_lock l(d_setlock);
+   */ 
+  gruel::mutex d_setlock;
+
+  // ----------------------------------------------------------------------------
+  // Functions to handle thread affinity
+  std::vector<unsigned int> d_affinity;              // thread affinity proc. mask
+
+  /*!
+   * \brief Set the thread's affinity to processor core \p n.
+   *
+   * \param mask a vector of unsigned ints of the core numbers available to this block.
+   */
+  void set_processor_affinity(const std::vector<unsigned int> &mask){d_affinity=mask;}
+
+  /*!
+   * \brief Remove processor affinity to a specific core.
+   */
+  void unset_processor_affinity(){}
+
+  /*!
+   * \brief Get the current processor affinity.
+   */
+  std::vector<unsigned int> processor_affinity() { return d_affinity; }
 
     ///////////////// private vars //////////////////////
 
