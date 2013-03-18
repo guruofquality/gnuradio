@@ -35,6 +35,13 @@ typedef boost::uint16_t gr_uint16;
 typedef boost::uint32_t gr_uint32;
 typedef boost::uint64_t gr_uint64;
 
+typedef std::vector<int>			gr_vector_int;
+typedef std::vector<unsigned int>		gr_vector_uint;
+typedef std::vector<float>			gr_vector_float;
+typedef std::vector<double>			gr_vector_double;
+typedef std::vector<void *>			gr_vector_void_star;
+typedef std::vector<const void *>		gr_vector_const_void_star;
+
 #include <complex>
 typedef std::complex<float> gr_complex;
 typedef std::complex<double> gr_complexd;

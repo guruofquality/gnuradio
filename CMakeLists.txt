@@ -41,7 +41,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 # Set the version information here
 set(VERSION_INFO_MAJOR_VERSION 3)
 set(VERSION_INFO_API_COMPAT    6)
-set(VERSION_INFO_MINOR_VERSION 4)
+set(VERSION_INFO_MINOR_VERSION 5)
 set(VERSION_INFO_MAINT_VERSION git)
 include(GrVersion) #setup version info
 
@@ -116,6 +116,14 @@ set(GR_PKG_LIBEXEC_DIR  ${GR_LIBEXEC_DIR}/${CMAKE_PROJECT_NAME})
 set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
 set(SYSCONFDIR          "${CMAKE_INSTALL_PREFIX}/${GR_CONF_DIR}" CACHE PATH "System configuration directory")
 set(GR_PREFSDIR         ${SYSCONFDIR}/${CMAKE_PROJECT_NAME}/conf.d)
+
+OPTION(ENABLE_PERFORMANCE_COUNTERS "Enable block performance counters" OFF)
+if(ENABLE_PERFORMANCE_COUNTERS)
+  message(STATUS "ADDING PERF COUNTERS")
+  add_definitions(-DGR_PERFORMANCE_COUNTERS)
+else(ENABLE_PERFORMANCE_COUNTERS)
+  message(STATUS "NO PERF COUNTERS")
+endif(ENABLE_PERFORMANCE_COUNTERS)
 
 ########################################################################
 # Variables replaced when configuring the package config files

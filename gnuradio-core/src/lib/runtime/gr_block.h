@@ -27,10 +27,6 @@
 #include <map>
 #include <boost/foreach.hpp>
 
-typedef std::vector<int> gr_vector_int;
-typedef std::vector<void *> gr_vector_void_star;
-typedef std::vector<const void *> gr_vector_const_void_star;
-
 namespace gnuradio
 {
 //! dummy entry, just here for legacy purposes
@@ -227,6 +223,10 @@ struct GR_CORE_API gr_block : gras::Block
     msg_queue_map_t msg_queue;
     pmt::pmt_t message_subscribers;
 
+  typedef boost::function<void(pmt::pmt_t)> msg_handler_t;
+  typedef std::map<pmt::pmt_t , msg_handler_t, pmt::pmt_comperator> d_msg_handlers_t;
+  d_msg_handlers_t d_msg_handlers;
+
     template <typename T> void set_msg_handler(pmt::pmt_t which_port, T msg_handler){}
 
     void message_port_register_in(pmt::pmt_t /*port_id*/){}
@@ -296,6 +296,27 @@ struct GR_CORE_API gr_block : gras::Block
         }
         return false;
     }
+
+  /*!
+   * \brief Tests if there is a handler attached to port \p which_port
+   */
+   bool has_msg_handler(pmt::pmt_t which_port) {
+     return (d_msg_handlers.find(which_port) != d_msg_handlers.end());
+   }
+
+  /*
+   * This function is called by the runtime system to dispatch messages.
+   *
+   * The thread-safety guarantees mentioned in set_msg_handler are implemented
+   * by the callers of this method.
+   */
+  virtual void dispatch_msg(pmt::pmt_t which_port, pmt::pmt_t msg)
+  {
+    // AA Update this
+    if(has_msg_handler(which_port)) {  // Is there a handler?
+      d_msg_handlers[which_port](msg); // Yes, invoke it.
+    }
+  }
 
     ///////////////// private vars //////////////////////
 
