@@ -1,8 +1,9 @@
 #include "qa_utils.h"
-extern "C" {
+
 #include <volk/volk.h>
 #include <volk/volk_prefs.h>
-}
+
+#include <ciso646>
 #include <vector>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
