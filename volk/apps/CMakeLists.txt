@@ -21,7 +21,7 @@
 if(Boost_FOUND)
 
 if(MSVC)
-    include_directories(${CMAKE_SOURCE_DIR}/msvc)
+    include_directories(${CMAKE_SOURCE_DIR}/cmake/msvc)
 endif(MSVC)
 
 include_directories(
