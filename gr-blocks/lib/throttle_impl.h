@@ -24,6 +24,7 @@
 #define INCLUDED_GR_THROTTLE_IMPL_H
 
 #include <blocks/throttle.h>
+#include <boost/thread/thread.hpp> //d_start
 
 namespace gr {
   namespace blocks {
