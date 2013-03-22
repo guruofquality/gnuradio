@@ -44,6 +44,10 @@ struct GR_CORE_API gr_top_block : gras::TopBlock
 
     virtual void wait(void);
 
+    inline void lock(void){}
+
+    inline void unlock(void){this->commit();}
+
 };
 
 typedef boost::shared_ptr<gr_top_block> gr_top_block_sptr;

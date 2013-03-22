@@ -43,6 +43,10 @@ struct GR_CORE_API gr_hier_block2 : gras::HierBlock
     void set_input_signature(gr_io_signature_sptr sig);
     void set_output_signature(gr_io_signature_sptr sig);
 
+    inline void lock(void){}
+
+    inline void unlock(void){this->commit();}
+
     gr_io_signature_sptr _in_sig, _out_sig;
 };
 
