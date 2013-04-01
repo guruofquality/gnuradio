@@ -67,7 +67,7 @@
 
 //the bare minimum block inheritance interface to make things work but keep swig cxx file size down
 %include <gras/gras.hpp>
-%include <gras/element.hpp>
+%import <gras/element.i>
 namespace gras
 {
     struct Block : gras::Element{};

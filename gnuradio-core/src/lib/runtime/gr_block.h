@@ -328,14 +328,14 @@ struct GR_CORE_API gr_block : gras::Block
 
   // ----------------------------------------------------------------------------
   // Functions to handle thread affinity
-  std::vector<unsigned int> d_affinity;              // thread affinity proc. mask
+  std::vector<int> d_affinity;              // thread affinity proc. mask
 
   /*!
    * \brief Set the thread's affinity to processor core \p n.
    *
    * \param mask a vector of unsigned ints of the core numbers available to this block.
    */
-  void set_processor_affinity(const std::vector<unsigned int> &mask){d_affinity=mask;}
+  void set_processor_affinity(const std::vector<int> &mask){d_affinity=mask;}
 
   /*!
    * \brief Remove processor affinity to a specific core.
@@ -345,7 +345,7 @@ struct GR_CORE_API gr_block : gras::Block
   /*!
    * \brief Get the current processor affinity.
    */
-  std::vector<unsigned int> processor_affinity() { return d_affinity; }
+  std::vector<int> processor_affinity() { return d_affinity; }
 
     ///////////////// private vars //////////////////////
 
