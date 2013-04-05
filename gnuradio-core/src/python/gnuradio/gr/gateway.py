@@ -119,7 +119,7 @@ class gateway_block(object):
         self.pop_msg_queue = lambda: gr_core.gr_block_gw_pop_msg_queue_safe(self.__gateway)
 
     #gras version of the to_basic_block()
-    def shared_to_element(self): return self.__gateway.shared_to_element()
+    def to_element(self): return self.__gateway.to_element()
 
     def to_basic_block(self):
         """
