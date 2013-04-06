@@ -74,11 +74,6 @@ digital_make_framer_sink_1(gr_msg_queue_sptr target_queue)
   return gnuradio::get_initial_sptr(new digital_framer_sink_1(target_queue));
 }
 
-digital_framer_sink_1_sptr
-digital_make_framer_sink_1(void)
-{
-  return gnuradio::get_initial_sptr(new digital_framer_sink_1(gr_msg_queue_sptr()));
-}
 
 digital_framer_sink_1::digital_framer_sink_1(gr_msg_queue_sptr target_queue)
   : gr_sync_block ("framer_sink_1",
@@ -86,11 +81,6 @@ digital_framer_sink_1::digital_framer_sink_1(gr_msg_queue_sptr target_queue)
 		   gr_make_io_signature (0, 0, 0)),
     d_target_queue(target_queue)
 {
-    if (!d_target_queue)
-    {
-        this->output_config(0).reserve_items = 4096; //max pkt frame possible
-        this->output_config(0).item_size = 1;
-    }
   enter_search();
 }
 
@@ -145,10 +135,6 @@ digital_framer_sink_1::work (int noutput_items,
 	    enter_have_header(payload_len, whitener_offset);
 
 	    if (d_packetlen == 0){	    // check for zero-length payload
-
-        if (d_target_queue)
-        {
-
 	      // build a zero-length message
 	      // NOTE: passing header field as arg1 is not scalable
 	      gr_message_sptr msg =
@@ -156,14 +142,6 @@ digital_framer_sink_1::work (int noutput_items,
 
 	      d_target_queue->insert_tail(msg);		// send it
 	      msg.reset();  				// free it up
-
-        }
-        else
-        {
-            gras::PacketMsg msg;
-            msg.info = PMC_M(d_packet_whitener_offset);
-            this->post_output_msg(0, PMC_M(msg));
-        }
 
 	      enter_search();
 	    }
@@ -187,9 +165,6 @@ digital_framer_sink_1::work (int noutput_items,
 
 	  if (d_packetlen_cnt == d_packetlen){		// packet is filled
 
-        if (d_target_queue)
-        {
-
 	    // build a message
 	    // NOTE: passing header field as arg1 is not scalable
 	    gr_message_sptr msg =
@@ -198,17 +173,6 @@ digital_framer_sink_1::work (int noutput_items,
 
 	    d_target_queue->insert_tail(msg);		// send it
 	    msg.reset();  				// free it up
-
-        }
-        else
-        {
-            gras::PacketMsg msg;
-            msg.info = PMC_M(d_packet_whitener_offset);
-            msg.buff = this->get_output_buffer(0);
-            memcpy(msg.buff.get(), d_packet, d_packetlen_cnt);
-            msg.buff.length = d_packetlen_cnt;
-            this->post_output_msg(0, PMC_M(msg));
-        }
 
 	    enter_search();
 	    break;
@@ -224,7 +188,5 @@ digital_framer_sink_1::work (int noutput_items,
 
   }   // while
 
-  this->consume(0, noutput_items);
-  return 0;
-  //return noutput_items;
+  return noutput_items;
 }
