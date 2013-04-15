@@ -20,7 +20,14 @@
 %ignore gri_agc_cc::reference();
 %ignore gri_agc2_ff::reference();
 %ignore gri_agc2_cc::reference();
+
+//someone forgot about d_detail
 %ignore gr_block::d_setlock;
+
+//dont export work overloads
+%ignore general_work;
+%ignore work;
+%ignore forecast;
 
 %{
 
@@ -78,6 +85,31 @@ struct gr_block : gras::Block
 {
     gr_io_signature_sptr input_signature(void) const;
     gr_io_signature_sptr output_signature(void) const;
+
+    unsigned history () const;
+
+    int  output_multiple () const;
+    double relative_rate () const;
+
+    bool start();
+    bool stop();
+
+    uint64_t nitems_read(unsigned int which_input);
+    uint64_t nitems_written(unsigned int which_output);
+
+    // Methods to manage the block's max_noutput_items size.
+    int max_noutput_items();
+    void set_max_noutput_items(int m);
+    void unset_max_noutput_items();
+    bool is_set_max_noutput_items();
+
+    // Methods to manage block's min/max buffer sizes.
+    long max_output_buffer(int i);
+    void set_max_output_buffer(long max_output_buffer);
+    void set_max_output_buffer(int port, long max_output_buffer);
+    long min_output_buffer(int i);
+    void set_min_output_buffer(long min_output_buffer);
+    void set_min_output_buffer(int port, long min_output_buffer);
 };
 struct gr_sync_block : gr_block{};
 struct gr_sync_interpolator : gr_sync_block{};
