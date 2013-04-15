@@ -1,3 +1,5 @@
+#ifndef SWIG_INTRUSIVE_PTR_NAMESPACE
+
 // This file was borrowed from the SWIG project to allow use to
 // wrap PMTs that use intrusive pointers. This is only necessary
 // to support backwards compatability with older distributions of
@@ -99,4 +101,4 @@ SWIG_INTRUSIVE_PTR_TYPEMAPS_NO_WRAP(PROXYCLASS, const, TYPE)
 }
 %enddef
 
-
+#endif //SWIG_INTRUSIVE_PTR_NAMESPACE
