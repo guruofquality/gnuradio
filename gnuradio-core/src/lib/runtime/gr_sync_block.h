@@ -52,4 +52,18 @@ struct GR_CORE_API gr_sync_block : public gr_block
 
 };
 
+GRAS_FORCE_INLINE int gr_sync_block::general_work(
+    int noutput_items,
+    gr_vector_int &ninput_items,
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items
+){
+    const int work_ret = this->work(noutput_items, input_items, output_items);
+    if (work_ret > 0)
+    {
+        this->consume_each((decimation()*size_t(work_ret))/interpolation());
+    }
+    return work_ret;
+}
+
 #endif /*INCLUDED_GNURADIO_GR_SYNC_BLOCK_H*/

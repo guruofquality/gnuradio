@@ -388,4 +388,50 @@ struct GR_CORE_API gr_block : gras::Block
 
 typedef boost::shared_ptr<gr_block> gr_block_sptr;
 
+GRAS_FORCE_INLINE void gr_block::consume_each(const int how_many_items)
+{
+    if GRAS_UNLIKELY(how_many_items < 0) return;
+    gras::Block::consume(size_t(how_many_items));
+}
+
+GRAS_FORCE_INLINE void gr_block::consume(const size_t i, const int how_many_items)
+{
+    if GRAS_UNLIKELY(how_many_items < 0) return;
+    gras::Block::consume(i, size_t(how_many_items));
+}
+
+GRAS_FORCE_INLINE void gr_block::produce(const size_t o, const int how_many_items)
+{
+    if GRAS_UNLIKELY(how_many_items < 0) return;
+    gras::Block::produce(o, size_t(how_many_items));
+}
+
+GRAS_FORCE_INLINE uint64_t gr_block::nitems_read(const size_t which_input)
+{
+    return Block::get_consumed(which_input);
+}
+
+GRAS_FORCE_INLINE uint64_t gr_block::nitems_written(const size_t which_output)
+{
+    return Block::get_produced(which_output);
+}
+
+GRAS_FORCE_INLINE size_t gr_block::interpolation(void) const
+{
+    return _interp;
+}
+
+GRAS_FORCE_INLINE size_t gr_block::decimation(void) const
+{
+    return _decim;
+}
+
+GRAS_FORCE_INLINE bool gr_block::is_unaligned(void)
+{
+    //TODO
+    //probably dont need this since volk dispatcher checks alignment
+    //32 byte aligned is good enough for you
+    return (_work_io_ptr_mask & ptrdiff_t(GRAS_MAX_ALIGNMENT-1)) != 0;
+}
+
 #endif /*INCLUDED_GNURADIO_GR_BLOCK_H*/

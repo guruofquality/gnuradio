@@ -122,37 +122,29 @@ void gr_block::work(
     //------------------------------------------------------------------
     //-- initialize input buffers before work
     //------------------------------------------------------------------
-    size_t num_input_items = REALLY_BIG; //so big that it must std::min
+    size_t num_input_items = input_items.min();
+    if (_enable_fixed_rate) num_input_items -= _input_history_items;
     for (size_t i = 0; i < num_inputs; i++)
     {
         _work_ninput_items[i] = input_items[i].size();
         _work_input_items[i] = input_items[i].get();
         _work_io_ptr_mask |= ptrdiff_t(_work_input_items[i]);
-        size_t items = input_items[i].size();
-        if (_enable_fixed_rate)
+        if GRAS_UNLIKELY(_enable_fixed_rate and input_items[i].size() <= _input_history_items)
         {
-            if (items <= _input_history_items)
-            {
-                return this->mark_input_fail(i);
-            }
-            items -= _input_history_items;
+            return this->mark_input_fail(i);
         }
-
-        num_input_items = std::min(num_input_items, items);
     }
 
     //------------------------------------------------------------------
     //-- initialize output buffers before work
     //------------------------------------------------------------------
-    size_t num_output_items = REALLY_BIG; //so big that it must std::min
+    size_t num_output_items = output_items.min();
+    num_output_items /= _output_multiple_items;
+    num_output_items *= _output_multiple_items;
     for (size_t i = 0; i < num_outputs; i++)
     {
         _work_output_items[i] = output_items[i].get();
         _work_io_ptr_mask |= ptrdiff_t(_work_output_items[i]);
-        size_t items = output_items[i].size();
-        items /= _output_multiple_items;
-        items *= _output_multiple_items;
-        num_output_items = std::min(num_output_items, items);
     }
 
     //------------------------------------------------------------------
@@ -182,10 +174,10 @@ void gr_block::work(
         this->forecast(work_noutput_items, _fcast_ninput_items);
         for (size_t i = 0; i < input_items.size(); i++)
         {
-            if (_fcast_ninput_items[i] <= _work_ninput_items[i]) continue;
+            if GRAS_LIKELY(_fcast_ninput_items[i] <= _work_ninput_items[i]) continue;
 
             //handle the case of forecast failing
-            if (work_noutput_items <= _output_multiple_items)
+            if GRAS_UNLIKELY(work_noutput_items <= _output_multiple_items)
             {
                 return this->mark_input_fail(i);
             }
@@ -205,12 +197,12 @@ void gr_block::work(
         _work_output_items
     );
 
-    if (work_ret > 0) for (size_t i = 0; i < num_outputs; i++)
+    if GRAS_LIKELY(work_ret > 0) for (size_t i = 0; i < num_outputs; i++)
     {
         this->produce(i, work_ret);
     }
 
-    if (work_ret == -1) this->mark_done();
+    if GRAS_UNLIKELY(work_ret == -1) this->mark_done();
 }
 
 static inline unsigned long long myullround(const double x)
@@ -265,34 +257,6 @@ int gr_block::general_work(
     throw std::runtime_error("gr_block subclasses must overload general_work!");
 }
 
-void gr_block::consume_each(const int how_many_items)
-{
-    if (how_many_items < 0) return;
-    gras::Block::consume(size_t(how_many_items));
-}
-
-void gr_block::consume(const size_t i, const int how_many_items)
-{
-    if (how_many_items < 0) return;
-    gras::Block::consume(i, size_t(how_many_items));
-}
-
-void gr_block::produce(const size_t o, const int how_many_items)
-{
-    if (how_many_items < 0) return;
-    gras::Block::produce(o, size_t(how_many_items));
-}
-
-uint64_t gr_block::nitems_read(const size_t which_input)
-{
-    return Block::get_consumed(which_input);
-}
-
-uint64_t gr_block::nitems_written(const size_t which_output)
-{
-    return Block::get_produced(which_output);
-}
-
 void gr_block::set_alignment(const size_t)
 {
     //TODO
@@ -300,22 +264,9 @@ void gr_block::set_alignment(const size_t)
     //and therefore alignment is always re-acheived
 }
 
-bool gr_block::is_unaligned(void)
-{
-    //TODO
-    //probably dont need this since volk dispatcher checks alignment
-    //32 byte aligned is good enough for you
-    return (_work_io_ptr_mask & ptrdiff_t(GRAS_MAX_ALIGNMENT-1)) != 0;
-}
-
 size_t gr_block::fixed_rate_noutput_to_ninput(const size_t noutput_items)
 {
     return ((decimation()*noutput_items)/interpolation()) + _input_history_items;
-}
-
-size_t gr_block::interpolation(void) const
-{
-    return _interp;
 }
 
 void gr_block::set_interpolation(const size_t interp)
@@ -323,11 +274,6 @@ void gr_block::set_interpolation(const size_t interp)
     _interp = interp;
     this->set_relative_rate(1.0*interp);
     this->set_output_multiple(interp);
-}
-
-size_t gr_block::decimation(void) const
-{
-    return _decim;
 }
 
 void gr_block::set_decimation(const size_t decim)
