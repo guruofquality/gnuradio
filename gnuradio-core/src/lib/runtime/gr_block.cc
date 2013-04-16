@@ -98,10 +98,9 @@ bool gr_block::stop(void)
 
 void gr_block::notify_topology(const size_t num_inputs, const size_t num_outputs)
 {
+    _num_outputs = num_outputs;
     _fcast_ninput_items.resize(num_inputs);
     _work_ninput_items.resize(num_inputs);
-    _work_input_items.resize(num_inputs);
-    _work_output_items.resize(num_outputs);
     this->check_topology(num_inputs, num_outputs);
 }
 
@@ -127,8 +126,7 @@ void gr_block::work(
     for (size_t i = 0; i < num_inputs; i++)
     {
         _work_ninput_items[i] = input_items[i].size();
-        _work_input_items[i] = input_items[i].get();
-        _work_io_ptr_mask |= ptrdiff_t(_work_input_items[i]);
+        _work_io_ptr_mask |= ptrdiff_t(input_items.vec()[i]);
         if GRAS_UNLIKELY(_enable_fixed_rate and input_items[i].size() <= _input_history_items)
         {
             return this->mark_input_fail(i);
@@ -143,8 +141,7 @@ void gr_block::work(
     num_output_items *= _output_multiple_items;
     for (size_t i = 0; i < num_outputs; i++)
     {
-        _work_output_items[i] = output_items[i].get();
-        _work_io_ptr_mask |= ptrdiff_t(_work_output_items[i]);
+        _work_io_ptr_mask |= ptrdiff_t(output_items.vec()[i]);
     }
 
     //------------------------------------------------------------------
@@ -193,8 +190,8 @@ void gr_block::work(
     const int work_ret = this->general_work(
         work_noutput_items,
         _work_ninput_items,
-        _work_input_items,
-        _work_output_items
+        const_cast<InputItems &>(input_items).vec(),
+        const_cast<OutputItems &>(output_items).vec()
     );
 
     if GRAS_LIKELY(work_ret > 0) for (size_t i = 0; i < num_outputs; i++)
@@ -212,13 +209,11 @@ static inline unsigned long long myullround(const double x)
 
 void gr_block::propagate_tags(const size_t which_input, const gras::TagIter &iter)
 {
-    const size_t num_outputs = _work_output_items.size();
-
     switch (_tag_prop_policy)
     {
     case TPP_DONT: break; //well that was ez
     case TPP_ALL_TO_ALL:
-        for (size_t out_i = 0; out_i < num_outputs; out_i++)
+        for (size_t out_i = 0; out_i < _num_outputs; out_i++)
         {
             BOOST_FOREACH(gras::Tag t, iter)
             {
@@ -228,7 +223,7 @@ void gr_block::propagate_tags(const size_t which_input, const gras::TagIter &ite
         }
         break;
     case TPP_ONE_TO_ONE:
-        if (which_input < num_outputs)
+        if (which_input < _num_outputs)
         {
             BOOST_FOREACH(gras::Tag t, iter)
             {

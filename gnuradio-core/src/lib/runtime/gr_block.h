@@ -351,8 +351,7 @@ struct GR_CORE_API gr_block : gras::Block
 
     gr_vector_int _work_ninput_items;
     gr_vector_int _fcast_ninput_items;
-    gr_vector_const_void_star _work_input_items;
-    gr_vector_void_star _work_output_items;
+    size_t _num_outputs;
     ptrdiff_t _work_io_ptr_mask;
     size_t _output_multiple_items;
     double _relative_rate;
