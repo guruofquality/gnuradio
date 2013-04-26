@@ -67,6 +67,7 @@ public:
     }
 
     uhd::dict<std::string, std::string> get_usrp_info(size_t chan){
+        chan = _stream_args.channels[chan];
         #ifdef UHD_USRP_MULTI_USRP_GET_USRP_INFO_API
         return _dev->get_usrp_tx_info(chan);
         #else
@@ -83,17 +84,20 @@ public:
     }
 
     void set_samp_rate(double rate){
-        _dev->set_tx_rate(rate);
+        BOOST_FOREACH(const size_t chan, _stream_args.channels)
+        {
+            _dev->set_tx_rate(rate, chan);
+        }
         _sample_rate = this->get_samp_rate();
     }
 
     double get_samp_rate(void){
-        return _dev->get_tx_rate();
+        return _dev->get_tx_rate(_stream_args.channels[0]);
     }
 
     uhd::meta_range_t get_samp_rates(void){
         #ifdef UHD_USRP_MULTI_USRP_GET_RATES_API
-        return _dev->get_tx_rates();
+        return _dev->get_tx_rates(_stream_args.channels[0]);
         #else
         throw std::runtime_error("not implemented in this version");
         #endif
@@ -102,66 +106,82 @@ public:
     uhd::tune_result_t set_center_freq(
         const uhd::tune_request_t tune_request, size_t chan
     ){
+        chan = _stream_args.channels[chan];
         return _dev->set_tx_freq(tune_request, chan);
     }
 
     double get_center_freq(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_freq(chan);
     }
 
     uhd::freq_range_t get_freq_range(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_freq_range(chan);
     }
 
     void set_gain(double gain, size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->set_tx_gain(gain, chan);
     }
 
     void set_gain(double gain, const std::string &name, size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->set_tx_gain(gain, name, chan);
     }
 
     double get_gain(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_gain(chan);
     }
 
     double get_gain(const std::string &name, size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_gain(name, chan);
     }
 
     std::vector<std::string> get_gain_names(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_gain_names(chan);
     }
 
     uhd::gain_range_t get_gain_range(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_gain_range(chan);
     }
 
     uhd::gain_range_t get_gain_range(const std::string &name, size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_gain_range(name, chan);
     }
 
     void set_antenna(const std::string &ant, size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->set_tx_antenna(ant, chan);
     }
 
     std::string get_antenna(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_antenna(chan);
     }
 
     std::vector<std::string> get_antennas(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_antennas(chan);
     }
 
     void set_bandwidth(double bandwidth, size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->set_tx_bandwidth(bandwidth, chan);
     }
 
     double get_bandwidth(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_bandwidth(chan);
     }
 
     uhd::freq_range_t get_bandwidth_range(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_bandwidth_range(chan);
     }
 
@@ -174,6 +194,7 @@ public:
     }
 
     void set_iq_balance(const std::complex<double> &correction, size_t chan){
+        chan = _stream_args.channels[chan];
         #ifdef UHD_USRP_MULTI_USRP_FRONTEND_CAL_API
         return _dev->set_tx_iq_balance(correction, chan);
         #else
@@ -182,10 +203,12 @@ public:
     }
 
     uhd::sensor_value_t get_sensor(const std::string &name, size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_sensor(name, chan);
     }
 
     std::vector<std::string> get_sensor_names(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_sensor_names(chan);
     }
 
@@ -294,6 +317,7 @@ public:
     }
 
     uhd::usrp::dboard_iface::sptr get_dboard_iface(size_t chan){
+        chan = _stream_args.channels[chan];
         return _dev->get_tx_dboard_iface(chan);
     }
 
