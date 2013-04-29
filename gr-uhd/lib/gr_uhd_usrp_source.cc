@@ -114,9 +114,10 @@ public:
     uhd::tune_result_t set_center_freq(
         const uhd::tune_request_t tune_request, size_t chan
     ){
+        const size_t user_chan = chan;
         chan = _stream_args.channels[chan];
         const uhd::tune_result_t res = _dev->set_rx_freq(tune_request, chan);
-        _center_freq = this->get_center_freq(chan);
+        _center_freq = this->get_center_freq(user_chan);
         _tag_now = true;
         return res;
     }
