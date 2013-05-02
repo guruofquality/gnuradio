@@ -45,7 +45,7 @@
 
 // Directors are only supported in Python, Java and C#
 #ifdef SWIGPYTHON
-%include "pmt_swig.i"
+%import "pmt_swig.i"
 using namespace pmt;
 
 // Enable SWIG directors for these classes
