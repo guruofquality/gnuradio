@@ -33,9 +33,21 @@ from tag_utils import tag_to_python, tag_to_pmt
 
 import gras
 
+RT_OK = 1
+
+def enable_realtime_scheduling():
+    #will have this in a theron update
+    return 0
+
 class top_block(gras.TopBlock):
     def __init__(self, name="Top"):
         gras.TopBlock.__init__(self, name)
+
+    def lock(self):
+        pass
+
+    def unlock(self):
+        self.commit()
 
 class hier_block2(gras.HierBlock):
     def __init__(self, name="Hier", in_sig=None, out_sig=None):
@@ -47,6 +59,12 @@ class hier_block2(gras.HierBlock):
         #backwards compatible silliness
         import weakref
         self._hb = weakref.proxy(self)
+
+    def lock(self):
+        pass
+
+    def unlock(self):
+        self.commit()
 
     def input_signature(self): return self.__in_sig
     def output_signature(self): return self.__out_sig
