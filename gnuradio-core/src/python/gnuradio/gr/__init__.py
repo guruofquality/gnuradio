@@ -45,14 +45,19 @@ def enable_realtime_scheduling():
     See gras/thread_pool.hpp for greater options.
     """
 
-    #create a new thread pool with thread priority set > 0
     #any prio greater than 0 means realtime scheduling
+    prio_value = 0.5
+
+    #test that prio
+    if not gras.ThreadPool.test_thread_priority(prio_value):
+        return RT_NO_PRIVS
+
+    #create a new thread pool with thread priority set
     config = gras.ThreadPoolConfig()
-    config.thread_priority = 0.5
+    config.thread_priority = prio_value
     tp = gras.ThreadPool(config)
     tp.set_active()
 
-    #TODO we need a real check for OK
     return RT_OK
 
 class top_block(gras.TopBlock):
