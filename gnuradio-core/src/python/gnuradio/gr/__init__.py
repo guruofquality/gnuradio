@@ -33,11 +33,27 @@ from tag_utils import tag_to_python, tag_to_pmt
 
 import gras
 
-RT_OK = 1
+RT_OK = 0
+RT_NOT_IMPLEMENTED = 1
+RT_NO_PRIVS = 2
+RT_OTHER_ERROR = 3
+
 
 def enable_realtime_scheduling():
-    #will have this in a theron update
-    return 0
+    """
+    This call is for backward compat purposes.
+    See gras/thread_pool.hpp for greater options.
+    """
+
+    #create a new thread pool with thread priority set > 0
+    #any prio greater than 0 means realtime scheduling
+    config = gras.ThreadPoolConfig()
+    config.thread_priority = 0.5
+    tp = gras.ThreadPool(config)
+    tp.set_active()
+
+    #TODO we need a real check for OK
+    return RT_OK
 
 class top_block(gras.TopBlock):
     def __init__(self, name="Top"):
