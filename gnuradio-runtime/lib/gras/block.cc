@@ -35,7 +35,7 @@
 struct gras_block_wrapper : gras::Block
 {
     gras_block_wrapper(const std::string &name, gr::block *block_ptr):
-        gras::Block(name), d_block_ptr(block_ptr)
+        gras::Block(name), d_block_ptr(block_ptr), d_history(0)
     {
         //NOP
     }
@@ -59,6 +59,9 @@ struct gras_block_wrapper : gras::Block
 
     void notify_topology(const size_t num_inputs, const size_t num_outputs)
     {
+        //this is where history is loaded into the preload
+        d_history = d_block_ptr->d_history - 1;
+        this->input_config(0).preload_items = d_history;
         d_num_outputs = num_outputs;
         d_fcast_ninput_items.resize(num_inputs);
         d_work_ninput_items.resize(num_inputs);
@@ -72,6 +75,7 @@ struct gras_block_wrapper : gras::Block
     gr_vector_int d_work_ninput_items;
     gr_vector_int d_fcast_ninput_items;
     size_t d_num_outputs;
+    size_t d_history;
 };
 
 void gras_block_wrapper::work(
@@ -88,12 +92,12 @@ void gras_block_wrapper::work(
     //-- initialize input buffers before work
     //------------------------------------------------------------------
     size_t num_input_items = input_items.min();
-    if (d_block_ptr->d_fixed_rate) num_input_items -= (d_block_ptr->d_history - 1);
+    if (d_block_ptr->d_fixed_rate) num_input_items -= d_history;
     for (size_t i = 0; i < num_inputs; i++)
     {
         d_work_ninput_items[i] = input_items[i].size();
         work_io_ptr_mask |= ptrdiff_t(input_items.vec()[i]);
-        if GRAS_UNLIKELY(d_block_ptr->d_fixed_rate and input_items[i].size() <= (d_block_ptr->d_history - 1))
+        if GRAS_UNLIKELY(d_block_ptr->d_fixed_rate and input_items[i].size() <= d_history)
         {
             return this->mark_input_fail(i);
         }
@@ -210,7 +214,7 @@ void gras_block_wrapper::propagate_tags(
 
 gras::BufferQueueSptr gras_block_wrapper::input_buffer_allocator(const size_t, const gras::SBufferConfig &config)
 {
-    if ((d_block_ptr->d_history - 1) != 0)
+    if (d_history != 0)
     {
         return gras::BufferQueue::make_circ(config, 32/*many*/);
     }
@@ -251,7 +255,7 @@ gr::block::block(
 
 gr::block::~block(void)
 {
-    //NOP
+    GRASP.block.reset();
 }
 
 bool gr::block::start(void)
@@ -455,16 +459,6 @@ void gr::block::set_output_multiple(int multiple)
     d_output_multiple_set = true;
     d_output_multiple = multiple;
     GRASP.block->output_config(0).reserve_items = multiple;
-}
-
-void gr::block::set_history(unsigned history)
-{
-    d_history = history;
-
-    //implement off-by-one history compat for preload
-    if (history == 0) history++;
-    GRASP.block->input_config(0).preload_items = history;
-    GRASP.block->commit_config();
 }
 
 void gr::block::set_processor_affinity(const std::vector<int> &mask)

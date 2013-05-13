@@ -22,6 +22,7 @@
 #include "gras/basic_block_pimpl.h"
 
 #include <gnuradio/top_block.h>
+#include <iostream>
 
 gr::top_block_sptr gr::make_top_block(const std::string &name)
 {
@@ -38,7 +39,7 @@ gr::top_block::top_block(
 
 gr::top_block::~top_block(void)
 {
-    //NOP
+    GRASP.top_block.reset();
 }
 
 void gr::top_block::lock(void)

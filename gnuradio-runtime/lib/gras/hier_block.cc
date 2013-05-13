@@ -44,7 +44,7 @@ gr::hier_block2::hier_block2(
 
 gr::hier_block2::~hier_block2(void)
 {
-    //NOP
+    GRASP.hier_block.reset();
 }
 
 void gr::hier_block2::lock(void)
