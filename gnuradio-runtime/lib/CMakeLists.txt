@@ -128,6 +128,7 @@ if(GRAS_FOUND)
         block.cc
         hier_block2.cc
         top_block.cc
+        sptr_magic.cc
     )
 
     #add in gras wrapper sources
@@ -135,6 +136,7 @@ if(GRAS_FOUND)
         gras/block.cc
         gras/hier_block.cc
         gras/top_block.cc
+        gras/sptr_magic.cc
     )
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
