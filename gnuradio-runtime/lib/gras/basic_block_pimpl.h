@@ -31,6 +31,12 @@ struct gras_basic_block_pimpl
     boost::shared_ptr<gras::Block> block;
     boost::shared_ptr<gras::HierBlock> hier_block;
     boost::shared_ptr<gras::TopBlock> top_block;
+    gras::HierBlock &conn_block(void)
+    {
+        if (hier_block) return *hier_block;
+        if (top_block) return *top_block;
+        throw std::runtime_error("no conn_block");
+    }
 };
 
 #define GRASP_INIT() this->pimpl.reset(new gras_basic_block_pimpl())

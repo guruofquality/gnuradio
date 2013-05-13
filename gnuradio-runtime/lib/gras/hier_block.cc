@@ -44,7 +44,7 @@ gr::hier_block2::hier_block2(
 
 gr::hier_block2::~hier_block2(void)
 {
-    GRASP.hier_block.reset();
+    pimpl.reset();
 }
 
 void gr::hier_block2::lock(void)
@@ -55,7 +55,7 @@ void gr::hier_block2::lock(void)
 void gr::hier_block2::unlock(void)
 {
     //thread safe commit topology changes
-    GRASP.hier_block->commit();
+    GRASP.conn_block().commit();
 }
 
 gr::flat_flowgraph_sptr gr::hier_block2::flatten() const
@@ -87,7 +87,7 @@ static gras::Element get_elem_sptr(gr::basic_block_sptr block, boost::shared_ptr
 
 void gr::hier_block2::connect(gr::basic_block_sptr block)
 {
-    GRASP.hier_block->connect(get_elem_sptr(block, GRASP.hier_block));
+    GRASP.conn_block().connect(get_elem_sptr(block, GRASP.hier_block));
 }
 
 void gr::hier_block2::connect(
@@ -95,7 +95,7 @@ void gr::hier_block2::connect(
     gr::basic_block_sptr dst, int dst_port
 )
 {
-    GRASP.hier_block->connect(
+    GRASP.conn_block().connect(
         get_elem_sptr(src, GRASP.hier_block), src_port,
         get_elem_sptr(dst, GRASP.hier_block), dst_port
     );
@@ -103,7 +103,7 @@ void gr::hier_block2::connect(
 
 void gr::hier_block2::disconnect(gr::basic_block_sptr block)
 {
-    GRASP.hier_block->disconnect(get_elem_sptr(block, GRASP.hier_block));
+    GRASP.conn_block().disconnect(get_elem_sptr(block, GRASP.hier_block));
 }
 
 void gr::hier_block2::disconnect(
@@ -111,7 +111,7 @@ void gr::hier_block2::disconnect(
     gr::basic_block_sptr dst, int dst_port
 )
 {
-    GRASP.hier_block->disconnect(
+    GRASP.conn_block().disconnect(
         get_elem_sptr(src, GRASP.hier_block), src_port,
         get_elem_sptr(dst, GRASP.hier_block), dst_port
     );
@@ -119,7 +119,7 @@ void gr::hier_block2::disconnect(
 
 void gr::hier_block2::disconnect_all()
 {
-    GRASP.hier_block->disconnect_all();
+    GRASP.conn_block().disconnect_all();
 }
 
 //TODO -- use GRAS's builtin message passing capability

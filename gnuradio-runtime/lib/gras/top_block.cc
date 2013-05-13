@@ -39,7 +39,7 @@ gr::top_block::top_block(
 
 gr::top_block::~top_block(void)
 {
-    GRASP.top_block.reset();
+    pimpl.reset();
 }
 
 void gr::top_block::lock(void)

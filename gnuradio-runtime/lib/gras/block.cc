@@ -49,16 +49,18 @@ struct gras_block_wrapper : gras::Block
 
     void notify_active(void)
     {
-        d_block_ptr->start();
+        if (d_block_ptr) d_block_ptr->start();
     }
 
     void notify_inactive(void)
     {
-        d_block_ptr->stop();
+        if (d_block_ptr) d_block_ptr->stop();
     }
 
     void notify_topology(const size_t num_inputs, const size_t num_outputs)
     {
+        if (not d_block_ptr) return;
+
         //this is where history is loaded into the preload
         d_history = d_block_ptr->d_history - 1;
         this->input_config(0).preload_items = d_history;
@@ -255,7 +257,8 @@ gr::block::block(
 
 gr::block::~block(void)
 {
-    GRASP.block.reset();
+    boost::static_pointer_cast<gras_block_wrapper>(GRASP.block)->d_block_ptr = NULL;
+    pimpl.reset();
 }
 
 bool gr::block::start(void)
