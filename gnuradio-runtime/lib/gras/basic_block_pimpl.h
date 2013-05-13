@@ -40,6 +40,6 @@ struct gras_basic_block_pimpl
 };
 
 #define GRASP_INIT() this->pimpl.reset(new gras_basic_block_pimpl())
-#define GRASP (*reinterpret_cast<gras_basic_block_pimpl *>(this->pimpl.get()))
+#define GRASP (*reinterpret_cast<gras_basic_block_pimpl *>(pimpl.get()))
 
 #endif /* INCLUDED_LIB_GR_RUNTIME_GRAS_BASIC_BLOCK_PIMPL_H */

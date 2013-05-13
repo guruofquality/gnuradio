@@ -28,6 +28,7 @@
 #undef private
 
 #include <boost/foreach.hpp>
+#include <iostream>
 
 /***********************************************************************
  * The block wrapper inherits a gras block and calls into a gr block
@@ -214,13 +215,13 @@ void gras_block_wrapper::propagate_tags(
     };
 }
 
-gras::BufferQueueSptr gras_block_wrapper::input_buffer_allocator(const size_t, const gras::SBufferConfig &config)
+gras::BufferQueueSptr gras_block_wrapper::input_buffer_allocator(const size_t which, const gras::SBufferConfig &config)
 {
     if (d_history != 0)
     {
         return gras::BufferQueue::make_circ(config, 32/*many*/);
     }
-    return gras::BufferQueueSptr();
+    return gras::Block::input_buffer_allocator(which, config);
 }
 
 gras::BufferQueueSptr gras_block_wrapper::output_buffer_allocator(const size_t which, const gras::SBufferConfig &config)
@@ -235,7 +236,7 @@ gr::block::block(
     const std::string &name,
     gr::io_signature::sptr input_signature,
     gr::io_signature::sptr output_signature
-):
+): basic_block(name, input_signature, output_signature),
       d_output_multiple (1),
       d_output_multiple_set(false),
       d_unaligned(0),
@@ -253,6 +254,15 @@ gr::block::block(
 {
     GRASP_INIT();
     GRASP.block.reset(new gras_block_wrapper(name, this));
+
+    for (size_t i = 0; i < input_signature->sizeof_stream_items().size(); i++)
+    {
+        GRASP.block->input_config(i).item_size = input_signature->sizeof_stream_items().at(i);
+    }
+    for (size_t i = 0; i < output_signature->sizeof_stream_items().size(); i++)
+    {
+        GRASP.block->output_config(i).item_size = output_signature->sizeof_stream_items().at(i);
+    }
 }
 
 gr::block::~block(void)

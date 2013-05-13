@@ -60,7 +60,8 @@ namespace gr {
   basic_block::~basic_block()
   {
     s_ncurrently_allocated--;
-    global_block_registry.block_unregister(this);
+    //TODO this seems to lock up -- revisit later
+    //global_block_registry.block_unregister(this);
   }
 
   basic_block_sptr
