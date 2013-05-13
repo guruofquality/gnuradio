@@ -229,18 +229,24 @@ gr::block::block(
     const std::string &name,
     gr::io_signature::sptr input_signature,
     gr::io_signature::sptr output_signature
-)
+):
+      d_output_multiple (1),
+      d_output_multiple_set(false),
+      d_unaligned(0),
+      d_is_unaligned(false),
+      d_relative_rate (1.0),
+      d_history(1),
+      d_fixed_rate(false),
+      d_max_noutput_items_set(false),
+      d_max_noutput_items(0),
+      d_min_noutput_items(0),
+      d_tag_propagation_policy(TPP_ALL_TO_ALL),
+      d_pc_rpc_set(false),
+      d_max_output_buffer(std::max(output_signature->max_streams(),1), -1),
+      d_min_output_buffer(std::max(output_signature->max_streams(),1), -1)
 {
     GRASP_INIT();
     GRASP.block.reset(new gras_block_wrapper(name, this));
-
-    //this initializes private vars, order matters
-    this->set_fixed_rate(false);
-    this->set_output_multiple(1);
-    this->set_history(1);
-    this->set_relative_rate(1.0);
-    this->set_input_signature(input_signature);
-    this->set_output_signature(output_signature);
 }
 
 gr::block::~block(void)
@@ -273,6 +279,24 @@ int gr::block::general_work(int noutput_items,
     return 0;
 }
 
+void gr::block::forecast(int noutput_items, std::vector<int> &ninputs_req)
+{
+    for (size_t i = 0; i < ninputs_req.size(); i++)
+    {
+        ninputs_req[i] = fixed_rate_noutput_to_ninput(noutput_items);
+    }
+}
+
+int gr::block::fixed_rate_ninput_to_noutput(int ninput)
+{
+    throw std::runtime_error("Unimplemented");
+}
+
+int gr::block::fixed_rate_noutput_to_ninput(int noutput)
+{
+    throw std::runtime_error("Unimplemented");
+}
+
 void gr::block::consume_each(const int how_many_items)
 {
     if GRAS_UNLIKELY(how_many_items < 0) return;
@@ -300,9 +324,6 @@ uint64_t gr::block::nitems_written(unsigned int which_output)
 {
     return GRASP.block->get_produced(which_output);
 }
-
-//I guess this is deprecated
-void gr::block::set_unaligned(int){}
 
 static gr::tag_t Tag2gr_tag(const gras::Tag &tag)
 {
@@ -365,4 +386,56 @@ void gr::block::remove_item_tag(unsigned int which_input, const tag_t &tag)
 {
     //TODO is this a thing now?
     //Either add it to GRAS or filter this tag when doing propagate
+}
+
+gr::block::tag_propagation_policy_t gr::block::tag_propagation_policy()
+{
+    return d_tag_propagation_policy;
+}
+
+void gr::block::set_tag_propagation_policy(tag_propagation_policy_t p)
+{
+    d_tag_propagation_policy = p;
+}
+
+bool gr::block::is_set_max_noutput_items()
+{
+    return d_max_noutput_items_set;
+}
+
+int gr::block::max_noutput_items()
+{
+    return d_max_noutput_items;
+}
+
+void gr::block::set_unaligned(int na)
+{
+    // unaligned value must be less than 0 and it doesn't make sense
+    // that it's larger than the alignment value.
+    if((na < 0) || (na > d_output_multiple))
+      throw std::invalid_argument("block::set_unaligned");
+
+    d_unaligned = na;
+}
+
+void gr::block::set_is_unaligned(bool u)
+{
+    d_is_unaligned = u;
+}
+
+void gr::block::set_relative_rate(double relative_rate)
+{
+    if(relative_rate < 0.0)
+      throw std::invalid_argument("block::set_relative_rate");
+
+    d_relative_rate = relative_rate;
+}
+
+void gr::block::set_output_multiple(int multiple)
+{
+    if(multiple < 1)
+      throw std::invalid_argument("block::set_output_multiple");
+
+    d_output_multiple_set = true;
+    d_output_multiple = multiple;
 }
