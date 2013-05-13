@@ -131,6 +131,9 @@ namespace gr {
   }
 
   void
+  block::set_history(unsigned history) { d_history = history; }
+
+  void
   block::set_output_multiple(int multiple)
   {
     if(multiple < 1)

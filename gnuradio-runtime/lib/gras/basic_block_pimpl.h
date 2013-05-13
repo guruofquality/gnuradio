@@ -23,10 +23,14 @@
 #define INCLUDED_LIB_GR_RUNTIME_GRAS_BASIC_BLOCK_PIMPL_H
 
 #include <gras/block.hpp>
+#include <gras/hier_block.hpp>
+#include <gras/top_block.hpp>
 
 struct gras_basic_block_pimpl
 {
     boost::shared_ptr<gras::Block> block;
+    boost::shared_ptr<gras::HierBlock> hier_block;
+    boost::shared_ptr<gras::TopBlock> top_block;
 };
 
 #define GRASP_INIT() this->pimpl.reset(new gras_basic_block_pimpl())

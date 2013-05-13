@@ -88,7 +88,6 @@ namespace gr {
     std::string       d_symbol_alias;
     vcolor            d_color;
     bool              d_rpc_set;
-    boost::shared_ptr<void> pimpl;
 
     msg_queue_map_t msg_queue;
     std::vector<boost::any> d_rpc_vars; // container for all RPC variables
@@ -332,6 +331,8 @@ namespace gr {
       }
       d_msg_handlers[which_port] = msg_handler_t(msg_handler);
     }
+
+    boost::shared_ptr<void> pimpl;
   };
 
   inline bool operator<(basic_block_sptr lhs, basic_block_sptr rhs)

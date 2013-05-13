@@ -408,6 +408,12 @@ int gr::block::max_noutput_items()
     return d_max_noutput_items;
 }
 
+void gr::block::set_max_noutput_items(int max_items)
+{
+    d_max_noutput_items = max_items;
+    GRASP.block->output_config(0).maximum_items = max_items;
+}
+
 void gr::block::set_unaligned(int na)
 {
     // unaligned value must be less than 0 and it doesn't make sense
@@ -421,6 +427,11 @@ void gr::block::set_unaligned(int na)
 void gr::block::set_is_unaligned(bool u)
 {
     d_is_unaligned = u;
+}
+
+void gr::block::set_alignment(int multiple)
+{
+    //NOP
 }
 
 void gr::block::set_relative_rate(double relative_rate)
@@ -438,4 +449,29 @@ void gr::block::set_output_multiple(int multiple)
 
     d_output_multiple_set = true;
     d_output_multiple = multiple;
+    GRASP.block->output_config(0).reserve_items = multiple;
+}
+
+void gr::block::set_history(unsigned history)
+{
+    d_history = history;
+
+    //implement off-by-one history compat for preload
+    if (history == 0) history++;
+    GRASP.block->input_config(0).preload_items = history;
+    GRASP.block->commit_config();
+}
+
+void gr::block::set_processor_affinity(const std::vector<int> &mask)
+{
+    //TODO theron does not dynamically change affinities
+    //this is done at thread pool setup time see gras/thread_pool.h
+    d_affinity = mask;
+}
+
+void gr::block::unset_processor_affinity()
+{
+    //TODO theron does not dynamically change affinities
+    //this is done at thread pool setup time see gras/thread_pool.h
+    d_affinity.clear();
 }

@@ -83,7 +83,7 @@ namespace gr {
      * filter. History should be equal to the number of filter taps.
      */
     unsigned history() const { return d_history; }
-    void  set_history(unsigned history) { d_history = history; }
+    void  set_history(unsigned history);
 
     /*!
      * \brief Return true if this block has a fixed input to output rate.
