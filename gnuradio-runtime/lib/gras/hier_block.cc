@@ -116,3 +116,36 @@ void gr::hier_block2::disconnect(
         get_elem_sptr(dst, GRASP.hier_block), dst_port
     );
 }
+
+void gr::hier_block2::disconnect_all()
+{
+    GRASP.hier_block->disconnect_all();
+}
+
+//TODO -- use GRAS's builtin message passing capability
+
+void gr::hier_block2::msg_connect(basic_block_sptr src, pmt::pmt_t srcport,
+                 basic_block_sptr dst, pmt::pmt_t dstport)
+{
+    throw std::runtime_error("msg no");
+}
+void gr::hier_block2::msg_connect(basic_block_sptr src, std::string srcport,
+                 basic_block_sptr dst, std::string dstport)
+{
+    throw std::runtime_error("msg no");
+}
+void gr::hier_block2::msg_disconnect(basic_block_sptr src, pmt::pmt_t srcport,
+                 basic_block_sptr dst, pmt::pmt_t dstport)
+{
+    throw std::runtime_error("msg no");
+}
+void gr::hier_block2::msg_disconnect(basic_block_sptr src, std::string srcport,
+                 basic_block_sptr dst, std::string dstport)
+{
+    throw std::runtime_error("msg no");
+}
+
+gr::hier_block2_sptr gr::hier_block2::to_hier_block2()
+{
+    return boost::static_pointer_cast<gr::hier_block2>(shared_from_this());
+}

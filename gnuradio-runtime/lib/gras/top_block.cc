@@ -88,3 +88,18 @@ void gr::top_block::wait(void)
 {
     GRASP.top_block->wait();
 }
+
+std::string gr::top_block::edge_list()
+{
+    return "edge list";
+}
+
+void gr::top_block::dump()
+{
+    //NOP
+}
+
+gr::top_block_sptr gr::top_block::to_top_block()
+{
+    return boost::static_pointer_cast<gr::top_block>(shared_from_this());
+}

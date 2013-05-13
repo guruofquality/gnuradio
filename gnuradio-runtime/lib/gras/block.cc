@@ -408,6 +408,11 @@ int gr::block::max_noutput_items()
     return d_max_noutput_items;
 }
 
+void gr::block::unset_max_noutput_items()
+{
+    d_max_noutput_items_set = false;
+}
+
 void gr::block::set_max_noutput_items(int max_items)
 {
     d_max_noutput_items = max_items;
@@ -475,3 +480,29 @@ void gr::block::unset_processor_affinity()
     //this is done at thread pool setup time see gras/thread_pool.h
     d_affinity.clear();
 }
+
+//holy shit, howabout a struct and a single function call
+
+float gr::block::pc_noutput_items(){throw std::runtime_error("pc no");}
+float gr::block::pc_noutput_items_avg(){throw std::runtime_error("pc no");}
+float gr::block::pc_noutput_items_var(){throw std::runtime_error("pc no");}
+float gr::block::pc_nproduced(){throw std::runtime_error("pc no");}
+float gr::block::pc_nproduced_avg(){throw std::runtime_error("pc no");}
+float gr::block::pc_nproduced_var(){throw std::runtime_error("pc no");}
+float gr::block::pc_input_buffers_full(int which){throw std::runtime_error("pc no");}
+float gr::block::pc_input_buffers_full_avg(int which){throw std::runtime_error("pc no");}
+float gr::block::pc_input_buffers_full_var(int which){throw std::runtime_error("pc no");}
+std::vector<float> gr::block::pc_input_buffers_full(){throw std::runtime_error("pc no");}
+std::vector<float> gr::block::pc_input_buffers_full_avg(){throw std::runtime_error("pc no");}
+std::vector<float> gr::block::pc_input_buffers_full_var(){throw std::runtime_error("pc no");}
+float gr::block::pc_output_buffers_full(int which){throw std::runtime_error("pc no");}
+float gr::block::pc_output_buffers_full_avg(int which){throw std::runtime_error("pc no");}
+float gr::block::pc_output_buffers_full_var(int which){throw std::runtime_error("pc no");}
+std::vector<float> gr::block::pc_output_buffers_full(){throw std::runtime_error("pc no");}
+std::vector<float> gr::block::pc_output_buffers_full_avg(){throw std::runtime_error("pc no");}
+std::vector<float> gr::block::pc_output_buffers_full_var(){throw std::runtime_error("pc no");}
+float gr::block::pc_work_time(){throw std::runtime_error("pc no");}
+float gr::block::pc_work_time_avg(){throw std::runtime_error("pc no");}
+float gr::block::pc_work_time_var(){throw std::runtime_error("pc no");}
+void gr::block::reset_perf_counters(){throw std::runtime_error("pc no");}
+void gr::block::setup_pc_rpc(){throw std::runtime_error("pc no");}
