@@ -68,8 +68,8 @@ if(GRAS_FOUND AND PMC_FOUND)
     OPTION(ENABLE_BAD_BOOST "Enable known bad versions of Boost" ON)
 
     #append to GRAS vars so we only deal with one set
-    list(APPEND GRAS_INCLUDE_DIRS PMC_INCLUDE_DIRS)
-    list(APPEND GRAS_LIBRARIES PMC_LIBRARIES)
+    list(APPEND GRAS_INCLUDE_DIRS ${PMC_INCLUDE_DIRS})
+    list(APPEND GRAS_LIBRARIES ${PMC_LIBRARIES})
 
 else()
     #unset both in case one was found and not the other

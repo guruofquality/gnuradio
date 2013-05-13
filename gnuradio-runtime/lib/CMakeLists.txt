@@ -118,6 +118,31 @@ list(APPEND gnuradio_runtime_sources
   vmcircbuf_sysv_shm.cc
 )
 
+########################################################################
+# gras sources when detected
+########################################################################
+if(GRAS_FOUND)
+
+    #remove conflicting sources from list
+    list(REMOVE_ITEM gnuradio_runtime_sources
+        block.cc
+        hier_block2.cc
+        top_block.cc
+    )
+
+    #add in gras wrapper sources
+    list(APPEND gnuradio_runtime_sources
+        gras/block.cc
+        gras/hier_block.cc
+        gras/top_block.cc
+    )
+
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    include_directories(${GRAS_INCLUDE_DIRS})
+    list(APPEND gnuradio_runtime_libs ${GRAS_LIBRARIES})
+
+endif(GRAS_FOUND)
+
 # PowerPC workaround for posix_memalign
 # Might not be needed, but we'll keep it for now.
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
