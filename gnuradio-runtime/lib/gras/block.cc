@@ -20,11 +20,14 @@
  */
 
 #include "gras/basic_block_pimpl.h"
+#include "gras/pmx_helper.h"
 
 //FIXME - this is temp until private vars make it into the private implementation
 #define private public
 #include <gnuradio/block.h>
 #undef private
+
+#include <boost/foreach.hpp>
 
 /***********************************************************************
  * The block wrapper inherits a gras block and calls into a gr block
@@ -34,7 +37,7 @@ struct gras_block_wrapper : gras::Block
     gras_block_wrapper(const std::string &name, gr::block *block_ptr):
         gras::Block(name), d_block_ptr(block_ptr)
     {
-        //TODO init stuff?
+        //NOP
     }
 
     void work(
@@ -62,6 +65,9 @@ struct gras_block_wrapper : gras::Block
         d_block_ptr->check_topology(num_inputs, num_outputs);
     }
 
+    gras::BufferQueueSptr input_buffer_allocator(const size_t, const gras::SBufferConfig &config);
+    gras::BufferQueueSptr output_buffer_allocator(const size_t, const gras::SBufferConfig &config);
+
     gr::block *d_block_ptr;
     gr_vector_int d_work_ninput_items;
     gr_vector_int d_fcast_ninput_items;
@@ -82,12 +88,12 @@ void gras_block_wrapper::work(
     //-- initialize input buffers before work
     //------------------------------------------------------------------
     size_t num_input_items = input_items.min();
-    if (d_block_ptr->d_fixed_rate) num_input_items -= d_block_ptr->d_history;
+    if (d_block_ptr->d_fixed_rate) num_input_items -= (d_block_ptr->d_history - 1);
     for (size_t i = 0; i < num_inputs; i++)
     {
         d_work_ninput_items[i] = input_items[i].size();
         work_io_ptr_mask |= ptrdiff_t(input_items.vec()[i]);
-        if GRAS_UNLIKELY(d_block_ptr->d_fixed_rate and input_items[i].size() <= d_block_ptr->d_history)
+        if GRAS_UNLIKELY(d_block_ptr->d_fixed_rate and input_items[i].size() <= (d_block_ptr->d_history - 1))
         {
             return this->mark_input_fail(i);
         }
@@ -147,6 +153,7 @@ void gras_block_wrapper::work(
         }
     }
 
+    //I guess this is deprecated -- so dont do this
     //TODO update d_unaligned and d_is_unaligned based off of work_io_ptr_mask
     //d_block_ptr->d_unaligned?
 
@@ -199,6 +206,20 @@ void gras_block_wrapper::propagate_tags(
         }
         break;
     };
+}
+
+gras::BufferQueueSptr gras_block_wrapper::input_buffer_allocator(const size_t, const gras::SBufferConfig &config)
+{
+    if ((d_block_ptr->d_history - 1) != 0)
+    {
+        return gras::BufferQueue::make_circ(config, 32/*many*/);
+    }
+    return gras::BufferQueueSptr();
+}
+
+gras::BufferQueueSptr gras_block_wrapper::output_buffer_allocator(const size_t which, const gras::SBufferConfig &config)
+{
+    return gras::Block::output_buffer_allocator(which, config);
 }
 
 /***********************************************************************
@@ -278,4 +299,70 @@ uint64_t gr::block::nitems_read(unsigned int which_input)
 uint64_t gr::block::nitems_written(unsigned int which_output)
 {
     return GRASP.block->get_produced(which_output);
+}
+
+//I guess this is deprecated
+void gr::block::set_unaligned(int){}
+
+static gr::tag_t Tag2gr_tag(const gras::Tag &tag)
+{
+    gr::tag_t t;
+    t.offset = tag.offset;
+    const gras::StreamTag &st = tag.object.as<gras::StreamTag>();
+    t.key = pmt::pmc_to_pmt(st.key);
+    t.value = pmt::pmc_to_pmt(st.val);
+    t.srcid = pmt::pmc_to_pmt(st.src);
+    return t;
+}
+
+static gras::Tag gr_tag2Tag(const gr::tag_t &tag)
+{
+    return gras::Tag
+    (
+        tag.offset,
+        PMC_M(gras::StreamTag(
+            pmt::pmt_to_pmc(tag.key),
+            pmt::pmt_to_pmc(tag.value),
+            pmt::pmt_to_pmc(tag.srcid)
+        ))
+    );
+}
+
+void gr::block::add_item_tag(
+    unsigned int which_output, const gr::tag_t &tag
+){
+    GRASP.block->post_output_tag(which_output, gr_tag2Tag(tag));
+}
+
+void gr::block::get_tags_in_range(
+    std::vector<gr::tag_t> &tags,
+    unsigned int which_input,
+    uint64_t abs_start,
+    uint64_t abs_end,
+    const pmt::pmt_t &key
+){
+    tags.clear();
+    BOOST_FOREACH(const gras::Tag &tag, GRASP.block->get_input_tags(which_input))
+    {
+        if (tag.offset >= abs_start and tag.offset <= abs_end)
+        {
+            gr::tag_t t = Tag2gr_tag(tag);
+            if (not key or pmt::equal(t.key, key)) tags.push_back(t);
+        }
+    }
+}
+
+void gr::block::get_tags_in_range(
+    std::vector<gr::tag_t> &tags,
+    unsigned int which_input,
+    uint64_t abs_start,
+    uint64_t abs_end
+){
+    return this->get_tags_in_range(tags, which_input, abs_start, abs_end, pmt::PMT_NIL);
+}
+
+void gr::block::remove_item_tag(unsigned int which_input, const tag_t &tag)
+{
+    //TODO is this a thing now?
+    //Either add it to GRAS or filter this tag when doing propagate
 }
