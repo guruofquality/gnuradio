@@ -332,7 +332,8 @@ namespace gr {
       d_msg_handlers[which_port] = msg_handler_t(msg_handler);
     }
 
-    boost::shared_ptr<void> pimpl;
+    boost::shared_ptr<void> block_pimpl;
+    boost::shared_ptr<void> ports_pimpl;
   };
 
   inline bool operator<(basic_block_sptr lhs, basic_block_sptr rhs)

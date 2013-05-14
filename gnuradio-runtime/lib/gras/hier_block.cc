@@ -19,8 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#define GRASP_HIER_BLOCK (boost::static_pointer_cast<gras::HierBlock>(this->pimpl))
+#define GRASP_HIER_BLOCK (boost::static_pointer_cast<gras::HierBlock>(this->block_pimpl))
 
+#include "gras/gras_pimpl.h"
 #include <gnuradio/hier_block2.h>
 #include <gras/hier_block.hpp>
 
@@ -39,12 +40,13 @@ gr::hier_block2::hier_block2(
     gr::io_signature::sptr output_signature
 )
 {
-    pimpl.reset(new gras::HierBlock(name));
+    GRAS_PORTS_PIMPL_INIT();
+    block_pimpl.reset(new gras::HierBlock(name));
 }
 
 gr::hier_block2::~hier_block2(void)
 {
-    pimpl.reset();
+    block_pimpl.reset();
 }
 
 void gr::hier_block2::lock(void)
@@ -67,32 +69,33 @@ gr::hier_block2::opaque_self gr::hier_block2::self()
 {
     //hide hier self in this opaque_self
     //dont need sptr magic hack, just connect w/ *this
-    return boost::static_pointer_cast<opaque_self::element_type>(pimpl);
+    return boost::static_pointer_cast<opaque_self::element_type>(block_pimpl);
 }
 
-static gras::Element &get_elem_sptr(gr::basic_block_sptr block, boost::shared_ptr<void> self)
+static gr::basic_block *resolve_basic_block(gr::basic_block_sptr block, gr::basic_block *self)
 {
-    boost::shared_ptr<gras::Element> element;
-
     //check if hier is hidden in an opaque_self
-    if (size_t(block.get()) == size_t(self.get()))
-    {
-        element = boost::static_pointer_cast<gras::Element>(self);
-    }
+    if (size_t(block.get()) == size_t(self->block_pimpl.get())) return self;
 
     //otherwise pick out the initialized element
-    else
-    {
-        element = boost::static_pointer_cast<gras::Element>(block->pimpl);
-        element->set_container(new gras::WeakContainerSharedPtr(block));
-    }
+    else return block.get();
+}
+
+static gras::Element &get_elem_sptr(gr::basic_block_sptr block, gr::basic_block *self)
+{
+    boost::shared_ptr<gras::Element> element;
+    gr::basic_block *bb_ptr = resolve_basic_block(block, self);
+
+    //store container for safety
+    element = boost::static_pointer_cast<gras::Element>(bb_ptr->block_pimpl);
+    element->set_container(new gras::WeakContainerSharedPtr(block));
 
     return *element;
 }
 
 void gr::hier_block2::connect(gr::basic_block_sptr block)
 {
-    GRASP_HIER_BLOCK->connect(get_elem_sptr(block, pimpl));
+    GRASP_HIER_BLOCK->connect(get_elem_sptr(block, this));
 }
 
 void gr::hier_block2::connect(
@@ -100,15 +103,18 @@ void gr::hier_block2::connect(
     gr::basic_block_sptr dst, int dst_port
 )
 {
+    GRAS_PORTS_PIMPL(resolve_basic_block(src, this))->output.update(src_port);
+    GRAS_PORTS_PIMPL(resolve_basic_block(dst, this))->input.update(dst_port);
+
     GRASP_HIER_BLOCK->connect(
-        get_elem_sptr(src, pimpl), src_port,
-        get_elem_sptr(dst, pimpl), dst_port
+        get_elem_sptr(src, this), src_port,
+        get_elem_sptr(dst, this), dst_port
     );
 }
 
 void gr::hier_block2::disconnect(gr::basic_block_sptr block)
 {
-    GRASP_HIER_BLOCK->disconnect(get_elem_sptr(block, pimpl));
+    GRASP_HIER_BLOCK->disconnect(get_elem_sptr(block, this));
 }
 
 void gr::hier_block2::disconnect(
@@ -117,8 +123,8 @@ void gr::hier_block2::disconnect(
 )
 {
     GRASP_HIER_BLOCK->disconnect(
-        get_elem_sptr(src, pimpl), src_port,
-        get_elem_sptr(dst, pimpl), dst_port
+        get_elem_sptr(src, this), src_port,
+        get_elem_sptr(dst, this), dst_port
     );
 }
 
@@ -127,27 +133,35 @@ void gr::hier_block2::disconnect_all()
     GRASP_HIER_BLOCK->disconnect_all();
 }
 
-//TODO -- use GRAS's builtin message passing capability
-
 void gr::hier_block2::msg_connect(basic_block_sptr src, pmt::pmt_t srcport,
                  basic_block_sptr dst, pmt::pmt_t dstport)
 {
-    throw std::runtime_error("msg no");
+    return this->msg_connect(src, pmt::symbol_to_string(srcport), dst, pmt::symbol_to_string(dstport));
 }
 void gr::hier_block2::msg_connect(basic_block_sptr src, std::string srcport,
                  basic_block_sptr dst, std::string dstport)
 {
-    throw std::runtime_error("msg no");
+    const size_t src_port = GRAS_PORTS_PIMPL(resolve_basic_block(src, this))->output.get_index(srcport);
+    const size_t dst_port = GRAS_PORTS_PIMPL(resolve_basic_block(dst, this))->input.get_index(dstport);
+    GRASP_HIER_BLOCK->connect(
+        get_elem_sptr(src, this), src_port,
+        get_elem_sptr(dst, this), dst_port
+    );
 }
 void gr::hier_block2::msg_disconnect(basic_block_sptr src, pmt::pmt_t srcport,
                  basic_block_sptr dst, pmt::pmt_t dstport)
 {
-    throw std::runtime_error("msg no");
+    return this->msg_disconnect(src, pmt::symbol_to_string(srcport), dst, pmt::symbol_to_string(dstport));
 }
 void gr::hier_block2::msg_disconnect(basic_block_sptr src, std::string srcport,
                  basic_block_sptr dst, std::string dstport)
 {
-    throw std::runtime_error("msg no");
+    const size_t src_port = GRAS_PORTS_PIMPL(resolve_basic_block(src, this))->output.get_index(srcport);
+    const size_t dst_port = GRAS_PORTS_PIMPL(resolve_basic_block(dst, this))->input.get_index(dstport);
+    GRASP_HIER_BLOCK->disconnect(
+        get_elem_sptr(src, this), src_port,
+        get_elem_sptr(dst, this), dst_port
+    );
 }
 
 gr::hier_block2_sptr gr::hier_block2::to_hier_block2()

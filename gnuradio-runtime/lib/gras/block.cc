@@ -19,8 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#define GRASP_BLOCK (boost::static_pointer_cast<gras_block_wrapper>(this->pimpl))
+#define GRASP_BLOCK (boost::static_pointer_cast<gras_block_wrapper>(this->block_pimpl))
 
+#include "gras/gras_pimpl.h"
 #include "gras/pmx_helper.h"
 //FIXME - this is temp until private vars make it into the private implementation
 #define private public
@@ -58,9 +59,11 @@ struct gras_block_wrapper : gras::Block
         if (d_block_ptr) d_block_ptr->stop();
     }
 
-    void notify_topology(const size_t num_inputs, const size_t num_outputs)
+    void notify_topology(const size_t /*num_inputs*/, const size_t /*num_outputs*/)
     {
         if (not d_block_ptr) return;
+        const size_t num_inputs = GRAS_PORTS_PIMPL(d_block_ptr)->input.num_real_ports;
+        const size_t num_outputs = GRAS_PORTS_PIMPL(d_block_ptr)->output.num_real_ports;
 
         //avoid calling check_topology until fully connected
         if (size_t(d_block_ptr->input_signature()->min_streams()) > num_inputs) return;
@@ -72,6 +75,8 @@ struct gras_block_wrapper : gras::Block
         d_num_outputs = num_outputs;
         d_fcast_ninput_items.resize(num_inputs);
         d_work_ninput_items.resize(num_inputs);
+        d_input_items.resize(num_inputs);
+        d_output_items.resize(num_outputs);
         d_block_ptr->check_topology(num_inputs, num_outputs);
         d_tag_blacklist.resize(num_inputs);
     }
@@ -82,6 +87,8 @@ struct gras_block_wrapper : gras::Block
     gr::block *d_block_ptr;
     gr_vector_int d_work_ninput_items;
     gr_vector_int d_fcast_ninput_items;
+    gr_vector_const_void_star d_input_items;
+    gr_vector_void_star d_output_items;
     size_t d_num_outputs;
     size_t d_history;
     std::vector<std::vector<gras::Tag> > d_tag_blacklist;
@@ -106,10 +113,17 @@ void gras_block_wrapper::work(
     const OutputItems &output_items
 )
 {
+    //look for input messages on upper message ports
+    bool handled_msgs = false;
+    {
+        //TODO
+    }
+    if (handled_msgs) return;
+
     ptrdiff_t work_io_ptr_mask = 0;
     #define REALLY_BIG size_t(1 << 30)
-    const size_t num_inputs = input_items.size();
-    const size_t num_outputs = output_items.size();
+    const size_t num_inputs = d_input_items.size();
+    const size_t num_outputs = d_output_items.size();
 
     //------------------------------------------------------------------
     //-- initialize input buffers before work
@@ -118,6 +132,7 @@ void gras_block_wrapper::work(
     if (d_block_ptr->d_fixed_rate) num_input_items -= d_history;
     for (size_t i = 0; i < num_inputs; i++)
     {
+        d_input_items[i] = input_items[i].cast<const void *>();
         d_work_ninput_items[i] = input_items[i].size();
         work_io_ptr_mask |= ptrdiff_t(input_items.vec()[i]);
         if GRAS_UNLIKELY(d_block_ptr->d_fixed_rate and input_items[i].size() <= d_history)
@@ -134,6 +149,7 @@ void gras_block_wrapper::work(
     num_output_items *= d_block_ptr->d_output_multiple;
     for (size_t i = 0; i < num_outputs; i++)
     {
+        d_output_items[i] = output_items[i].cast<void *>();
         work_io_ptr_mask |= ptrdiff_t(output_items.vec()[i]);
     }
 
@@ -187,8 +203,8 @@ void gras_block_wrapper::work(
     const int work_ret = d_block_ptr->general_work(
         work_noutput_items,
         d_work_ninput_items,
-        const_cast<InputItems &>(input_items).vec(),
-        const_cast<OutputItems &>(output_items).vec()
+        d_input_items,
+        d_output_items
     );
 
     if GRAS_LIKELY(work_ret > 0) for (size_t i = 0; i < num_outputs; i++)
@@ -274,7 +290,8 @@ gr::block::block(
       d_max_output_buffer(std::max(output_signature->max_streams(),1), -1),
       d_min_output_buffer(std::max(output_signature->max_streams(),1), -1)
 {
-    pimpl.reset(new gras_block_wrapper(name, this));
+    GRAS_PORTS_PIMPL_INIT();
+    block_pimpl.reset(new gras_block_wrapper(name, this));
 
     for (size_t i = 0; i < input_signature->sizeof_stream_items().size(); i++)
     {
@@ -289,7 +306,7 @@ gr::block::block(
 gr::block::~block(void)
 {
     GRASP_BLOCK->d_block_ptr = NULL;
-    pimpl.reset();
+    block_pimpl.reset();
 }
 
 bool gr::block::start(void)
@@ -405,6 +422,7 @@ void gr::block::get_tags_in_range(
         if (tag.offset >= abs_start and tag.offset <= abs_end)
         {
             if (GRASP_BLOCK->is_tag_blacklisted(tag, which_input)) continue;
+            if (not tag.object.is<gras::StreamTag>()) continue; //gr wrapper only supports stream tag
             gr::tag_t t = Tag2gr_tag(tag);
             if (not key or pmt::equal(t.key, key)) tags.push_back(t);
         }
