@@ -19,9 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "gras/basic_block_pimpl.h"
+#define GRASP_TOP_BLOCK (boost::static_pointer_cast<gras::TopBlock>(this->pimpl))
 
 #include <gnuradio/top_block.h>
+#include <gras/top_block.hpp>
 #include <iostream>
 
 gr::top_block_sptr gr::make_top_block(const std::string &name)
@@ -33,8 +34,7 @@ gr::top_block::top_block(
     const std::string &name
 )
 {
-    GRASP_INIT();
-    GRASP.top_block.reset(new gras::TopBlock(name));
+    pimpl.reset(new gras::TopBlock(name));
 }
 
 gr::top_block::~top_block(void)
@@ -50,7 +50,7 @@ void gr::top_block::lock(void)
 void gr::top_block::unlock(void)
 {
     //thread safe commit topology changes
-    GRASP.top_block->commit();
+    GRASP_TOP_BLOCK->commit();
 }
 
 void gr::top_block::setup_rpc()
@@ -61,33 +61,33 @@ void gr::top_block::setup_rpc()
 void gr::top_block::start(int max_items)
 {
     this->set_max_noutput_items(max_items);
-    GRASP.top_block->start();
+    GRASP_TOP_BLOCK->start();
 }
 
 void gr::top_block::run(int max_items)
 {
     this->set_max_noutput_items(max_items);
-    GRASP.top_block->run();
+    GRASP_TOP_BLOCK->run();
 }
 
 int gr::top_block::max_noutput_items(void)
 {
-    return GRASP.top_block->global_config().maximum_output_items;
+    return GRASP_TOP_BLOCK->global_config().maximum_output_items;
 }
 
 void gr::top_block::set_max_noutput_items(int max_items)
 {
-    GRASP.top_block->global_config().maximum_output_items = max_items;
+    GRASP_TOP_BLOCK->global_config().maximum_output_items = max_items;
 }
 
 void gr::top_block::stop(void)
 {
-    GRASP.top_block->stop();
+    GRASP_TOP_BLOCK->stop();
 }
 
 void gr::top_block::wait(void)
 {
-    GRASP.top_block->wait();
+    GRASP_TOP_BLOCK->wait();
 }
 
 std::string gr::top_block::edge_list()

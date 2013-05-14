@@ -19,9 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "gras/basic_block_pimpl.h"
+#define GRASP_HIER_BLOCK (boost::static_pointer_cast<gras::HierBlock>(this->pimpl))
 
 #include <gnuradio/hier_block2.h>
+#include <gras/hier_block.hpp>
 
 gr::hier_block2_sptr gr::make_hier_block2(
     const std::string &name,
@@ -38,8 +39,7 @@ gr::hier_block2::hier_block2(
     gr::io_signature::sptr output_signature
 )
 {
-    GRASP_INIT();
-    GRASP.hier_block.reset(new gras::HierBlock(name));
+    pimpl.reset(new gras::HierBlock(name));
 }
 
 gr::hier_block2::~hier_block2(void)
@@ -55,7 +55,7 @@ void gr::hier_block2::lock(void)
 void gr::hier_block2::unlock(void)
 {
     //thread safe commit topology changes
-    GRASP.conn_block().commit();
+    GRASP_HIER_BLOCK->commit();
 }
 
 gr::flat_flowgraph_sptr gr::hier_block2::flatten() const
@@ -67,33 +67,32 @@ gr::hier_block2::opaque_self gr::hier_block2::self()
 {
     //hide hier self in this opaque_self
     //dont need sptr magic hack, just connect w/ *this
-    return boost::static_pointer_cast<gr::basic_block>(pimpl);
+    return boost::static_pointer_cast<opaque_self::element_type>(pimpl);
 }
 
-static gras::Element &get_elem_sptr(gr::basic_block_sptr block, boost::shared_ptr<void> pimpl)
+static gras::Element &get_elem_sptr(gr::basic_block_sptr block, boost::shared_ptr<void> self)
 {
-    //check if hier is hidden in an opaque_self
-    if (size_t(block.get()) == size_t(pimpl.get())) return GRASP.conn_block();
-
-    //otherwise pick out the initialized element
-    gras_basic_block_pimpl &p = (*reinterpret_cast<gras_basic_block_pimpl *>(block->pimpl.get()));
     boost::shared_ptr<gras::Element> element;
-    if (p.block) element = p.block;
-    if (p.hier_block) element = p.hier_block;
 
-    //properly parent the block sptr into the element
-    if (element)
+    //check if hier is hidden in an opaque_self
+    if (size_t(block.get()) == size_t(self.get()))
     {
-        element->set_container(new gras::WeakContainerSharedPtr(block));
-        return *element;
+        element = boost::static_pointer_cast<gras::Element>(self);
     }
 
-    throw std::runtime_error("get_elem_sptr::cannot coerce block");
+    //otherwise pick out the initialized element
+    else
+    {
+        element = boost::static_pointer_cast<gras::Element>(block->pimpl);
+        element->set_container(new gras::WeakContainerSharedPtr(block));
+    }
+
+    return *element;
 }
 
 void gr::hier_block2::connect(gr::basic_block_sptr block)
 {
-    GRASP.conn_block().connect(get_elem_sptr(block, pimpl));
+    GRASP_HIER_BLOCK->connect(get_elem_sptr(block, pimpl));
 }
 
 void gr::hier_block2::connect(
@@ -101,7 +100,7 @@ void gr::hier_block2::connect(
     gr::basic_block_sptr dst, int dst_port
 )
 {
-    GRASP.conn_block().connect(
+    GRASP_HIER_BLOCK->connect(
         get_elem_sptr(src, pimpl), src_port,
         get_elem_sptr(dst, pimpl), dst_port
     );
@@ -109,7 +108,7 @@ void gr::hier_block2::connect(
 
 void gr::hier_block2::disconnect(gr::basic_block_sptr block)
 {
-    GRASP.conn_block().disconnect(get_elem_sptr(block, pimpl));
+    GRASP_HIER_BLOCK->disconnect(get_elem_sptr(block, pimpl));
 }
 
 void gr::hier_block2::disconnect(
@@ -117,7 +116,7 @@ void gr::hier_block2::disconnect(
     gr::basic_block_sptr dst, int dst_port
 )
 {
-    GRASP.conn_block().disconnect(
+    GRASP_HIER_BLOCK->disconnect(
         get_elem_sptr(src, pimpl), src_port,
         get_elem_sptr(dst, pimpl), dst_port
     );
@@ -125,7 +124,7 @@ void gr::hier_block2::disconnect(
 
 void gr::hier_block2::disconnect_all()
 {
-    GRASP.conn_block().disconnect_all();
+    GRASP_HIER_BLOCK->disconnect_all();
 }
 
 //TODO -- use GRAS's builtin message passing capability

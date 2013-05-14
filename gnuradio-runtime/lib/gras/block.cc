@@ -19,14 +19,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "gras/basic_block_pimpl.h"
-#include "gras/pmx_helper.h"
+#define GRASP_BLOCK (boost::static_pointer_cast<gras::Block>(this->pimpl))
 
+#include "gras/pmx_helper.h"
 //FIXME - this is temp until private vars make it into the private implementation
 #define private public
 #include <gnuradio/block.h>
 #undef private
-
+#include <gras/block.hpp>
 #include <boost/foreach.hpp>
 #include <iostream>
 
@@ -61,6 +61,10 @@ struct gras_block_wrapper : gras::Block
     void notify_topology(const size_t num_inputs, const size_t num_outputs)
     {
         if (not d_block_ptr) return;
+
+        //avoid calling check_topology until fully connected
+        if (d_block_ptr->input_signature()->min_streams() > num_inputs) return;
+        if (d_block_ptr->output_signature()->min_streams() > num_outputs) return;
 
         //this is where history is loaded into the preload
         d_history = d_block_ptr->d_history - 1;
@@ -126,7 +130,7 @@ void gras_block_wrapper::work(
     size_t work_noutput_items = num_output_items;
     if (num_inputs and (d_block_ptr->d_fixed_rate or not num_outputs))
     {
-        size_t calc_output_items = size_t(num_input_items*d_block_ptr->d_relative_rate);
+        size_t calc_output_items = d_block_ptr->fixed_rate_ninput_to_noutput(num_input_items);
         calc_output_items += d_block_ptr->d_output_multiple-1;
         calc_output_items /= d_block_ptr->d_output_multiple;
         calc_output_items *= d_block_ptr->d_output_multiple;
@@ -252,22 +256,21 @@ gr::block::block(
       d_max_output_buffer(std::max(output_signature->max_streams(),1), -1),
       d_min_output_buffer(std::max(output_signature->max_streams(),1), -1)
 {
-    GRASP_INIT();
-    GRASP.block.reset(new gras_block_wrapper(name, this));
+    pimpl.reset(new gras_block_wrapper(name, this));
 
     for (size_t i = 0; i < input_signature->sizeof_stream_items().size(); i++)
     {
-        GRASP.block->input_config(i).item_size = input_signature->sizeof_stream_items().at(i);
+        GRASP_BLOCK->input_config(i).item_size = input_signature->sizeof_stream_items().at(i);
     }
     for (size_t i = 0; i < output_signature->sizeof_stream_items().size(); i++)
     {
-        GRASP.block->output_config(i).item_size = output_signature->sizeof_stream_items().at(i);
+        GRASP_BLOCK->output_config(i).item_size = output_signature->sizeof_stream_items().at(i);
     }
 }
 
 gr::block::~block(void)
 {
-    boost::static_pointer_cast<gras_block_wrapper>(GRASP.block)->d_block_ptr = NULL;
+    boost::static_pointer_cast<gras_block_wrapper>(pimpl)->d_block_ptr = NULL;
     pimpl.reset();
 }
 
@@ -317,29 +320,29 @@ int gr::block::fixed_rate_noutput_to_ninput(int noutput)
 void gr::block::consume_each(const int how_many_items)
 {
     if GRAS_UNLIKELY(how_many_items < 0) return;
-    GRASP.block->consume(size_t(how_many_items));
+    GRASP_BLOCK->consume(size_t(how_many_items));
 }
 
 void gr::block::consume(const int i, const int how_many_items)
 {
     if GRAS_UNLIKELY(how_many_items < 0) return;
-    GRASP.block->consume(i, size_t(how_many_items));
+    GRASP_BLOCK->consume(i, size_t(how_many_items));
 }
 
 void gr::block::produce(const int o, const int how_many_items)
 {
     if GRAS_UNLIKELY(how_many_items < 0) return;
-    GRASP.block->produce(o, size_t(how_many_items));
+    GRASP_BLOCK->produce(o, size_t(how_many_items));
 }
 
 uint64_t gr::block::nitems_read(unsigned int which_input)
 {
-    return GRASP.block->get_consumed(which_input);
+    return GRASP_BLOCK->get_consumed(which_input);
 }
 
 uint64_t gr::block::nitems_written(unsigned int which_output)
 {
-    return GRASP.block->get_produced(which_output);
+    return GRASP_BLOCK->get_produced(which_output);
 }
 
 static gr::tag_t Tag2gr_tag(const gras::Tag &tag)
@@ -369,7 +372,7 @@ static gras::Tag gr_tag2Tag(const gr::tag_t &tag)
 void gr::block::add_item_tag(
     unsigned int which_output, const gr::tag_t &tag
 ){
-    GRASP.block->post_output_tag(which_output, gr_tag2Tag(tag));
+    GRASP_BLOCK->post_output_tag(which_output, gr_tag2Tag(tag));
 }
 
 void gr::block::get_tags_in_range(
@@ -380,7 +383,7 @@ void gr::block::get_tags_in_range(
     const pmt::pmt_t &key
 ){
     tags.clear();
-    BOOST_FOREACH(const gras::Tag &tag, GRASP.block->get_input_tags(which_input))
+    BOOST_FOREACH(const gras::Tag &tag, GRASP_BLOCK->get_input_tags(which_input))
     {
         if (tag.offset >= abs_start and tag.offset <= abs_end)
         {
@@ -433,7 +436,7 @@ void gr::block::unset_max_noutput_items()
 void gr::block::set_max_noutput_items(int max_items)
 {
     d_max_noutput_items = max_items;
-    GRASP.block->output_config(0).maximum_items = max_items;
+    GRASP_BLOCK->output_config(0).maximum_items = max_items;
 }
 
 void gr::block::set_unaligned(int na)
@@ -456,12 +459,29 @@ void gr::block::set_alignment(int multiple)
     //NOP
 }
 
+static void update_input_reserve(gr::block *p, boost::shared_ptr<gras::Block> block)
+{
+    /*!
+     * Set an input reserve for fixed rate blocks.
+     *
+     * FIXME: Also do this when output multiple is large,
+     * This makes gr-trellis pass under conditions where not fixed rate set,
+     * but the output multiple is so large that default input isnt sufficient.
+     */
+    if (p->d_fixed_rate or p->d_output_multiple > 1024)
+    {
+        const size_t reserve = size_t(0.5 + p->d_output_multiple/p->d_relative_rate);
+        if (reserve) block->input_config(0).reserve_items = reserve;
+    }
+}
+
 void gr::block::set_relative_rate(double relative_rate)
 {
     if(relative_rate < 0.0)
       throw std::invalid_argument("block::set_relative_rate");
 
     d_relative_rate = relative_rate;
+    update_input_reserve(this, GRASP_BLOCK);
 }
 
 void gr::block::set_output_multiple(int multiple)
@@ -471,7 +491,8 @@ void gr::block::set_output_multiple(int multiple)
 
     d_output_multiple_set = true;
     d_output_multiple = multiple;
-    GRASP.block->output_config(0).reserve_items = multiple;
+    GRASP_BLOCK->output_config(0).reserve_items = multiple;
+    update_input_reserve(this, GRASP_BLOCK);
 }
 
 void gr::block::set_processor_affinity(const std::vector<int> &mask)
