@@ -27,6 +27,14 @@
 #include <pmt/pmt.h>
 #include <boost/foreach.hpp>
 
+#if (ULONG_MAX == 0xffffffff) || defined(__APPLE__)
+    //this long is only serializable on 32 bit machines
+    #define PMX_HELPER_STDINT_NOLONG
+#else
+    //this long long is only serializable on 64 bit machines
+    #define PMX_HELPER_STDINT_NOLONGLONG
+#endif
+
 namespace pmt
 {
 
@@ -44,6 +52,14 @@ inline pmt_t pmc_to_pmt(const PMCC &p)
     decl_pmc_to_pmt(std::string, string_to_symbol);
 
     //numeric types
+    #ifdef PMX_HELPER_STDINT_NOLONG
+        decl_pmc_to_pmt(signed long, from_long);
+        decl_pmc_to_pmt(unsigned long, from_long);
+    #endif
+    #ifdef PMX_HELPER_STDINT_NOLONGLONG
+        decl_pmc_to_pmt(signed long long, from_uint64);
+        decl_pmc_to_pmt(unsigned long long, from_uint64);
+    #endif
     decl_pmc_to_pmt(int8_t, from_long);
     decl_pmc_to_pmt(int16_t, from_long);
     decl_pmc_to_pmt(int32_t, from_long);
@@ -171,7 +187,9 @@ inline PMCC pmt_to_pmc(const pmt_t &p)
     decl_pmt_to_pmc(is_symbol, symbol_to_string).intern();
 
     //numeric types
-    decl_pmt_to_pmc(is_integer, to_long);
+    //long can typedef to int64, force this to int32
+    if (is_integer(p)) return PMC_M(int32_t(to_long(p)));
+    //decl_pmt_to_pmc(is_integer, to_long);
     decl_pmt_to_pmc(is_uint64, to_uint64);
     decl_pmt_to_pmc(is_real, to_double);
     decl_pmt_to_pmc(is_complex, to_complex);

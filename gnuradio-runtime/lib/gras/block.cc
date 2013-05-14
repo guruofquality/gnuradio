@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#define GRASP_BLOCK (boost::static_pointer_cast<gras::Block>(this->pimpl))
+#define GRASP_BLOCK (boost::static_pointer_cast<gras_block_wrapper>(this->pimpl))
 
 #include "gras/pmx_helper.h"
 //FIXME - this is temp until private vars make it into the private implementation
@@ -63,8 +63,8 @@ struct gras_block_wrapper : gras::Block
         if (not d_block_ptr) return;
 
         //avoid calling check_topology until fully connected
-        if (d_block_ptr->input_signature()->min_streams() > num_inputs) return;
-        if (d_block_ptr->output_signature()->min_streams() > num_outputs) return;
+        if (size_t(d_block_ptr->input_signature()->min_streams()) > num_inputs) return;
+        if (size_t(d_block_ptr->output_signature()->min_streams()) > num_outputs) return;
 
         //this is where history is loaded into the preload
         d_history = d_block_ptr->d_history - 1;
@@ -73,6 +73,7 @@ struct gras_block_wrapper : gras::Block
         d_fcast_ninput_items.resize(num_inputs);
         d_work_ninput_items.resize(num_inputs);
         d_block_ptr->check_topology(num_inputs, num_outputs);
+        d_tag_blacklist.resize(num_inputs);
     }
 
     gras::BufferQueueSptr input_buffer_allocator(const size_t, const gras::SBufferConfig &config);
@@ -83,6 +84,21 @@ struct gras_block_wrapper : gras::Block
     gr_vector_int d_fcast_ninput_items;
     size_t d_num_outputs;
     size_t d_history;
+    std::vector<std::vector<gras::Tag> > d_tag_blacklist;
+
+    bool is_tag_blacklisted(const gras::Tag &tag, const size_t i, const bool prune = false)
+    {
+        std::vector<gras::Tag> &blacklist = d_tag_blacklist[i];
+        for (size_t i = 0; i < blacklist.size(); i++)
+        {
+            if (tag.offset == blacklist[i].offset and tag.object == blacklist[i].object)
+            {
+                if (prune) blacklist.erase(blacklist.begin()+i);
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 void gras_block_wrapper::work(
@@ -201,6 +217,7 @@ void gras_block_wrapper::propagate_tags(
         {
             BOOST_FOREACH(gras::Tag t, iter)
             {
+                if (is_tag_blacklisted(t, which_input, true)) continue;
                 t.offset = myullround(t.offset * d_block_ptr->d_relative_rate);
                 this->post_output_tag(out_i, t);
             }
@@ -211,6 +228,7 @@ void gras_block_wrapper::propagate_tags(
         {
             BOOST_FOREACH(gras::Tag t, iter)
             {
+                if (is_tag_blacklisted(t, which_input, true)) continue;
                 t.offset = myullround(t.offset * d_block_ptr->d_relative_rate);
                 this->post_output_tag(which_input, t);
             }
@@ -270,7 +288,7 @@ gr::block::block(
 
 gr::block::~block(void)
 {
-    boost::static_pointer_cast<gras_block_wrapper>(pimpl)->d_block_ptr = NULL;
+    GRASP_BLOCK->d_block_ptr = NULL;
     pimpl.reset();
 }
 
@@ -299,12 +317,11 @@ int gr::block::general_work(int noutput_items,
     return 0;
 }
 
-void gr::block::forecast(int noutput_items, std::vector<int> &ninputs_req)
+void gr::block::forecast(int noutput_items, std::vector<int> &ninput_items_required)
 {
-    for (size_t i = 0; i < ninputs_req.size(); i++)
-    {
-        ninputs_req[i] = fixed_rate_noutput_to_ninput(noutput_items);
-    }
+    unsigned ninputs = ninput_items_required.size ();
+    for(unsigned i = 0; i < ninputs; i++)
+      ninput_items_required[i] = noutput_items + history() - 1;
 }
 
 int gr::block::fixed_rate_ninput_to_noutput(int ninput)
@@ -387,6 +404,7 @@ void gr::block::get_tags_in_range(
     {
         if (tag.offset >= abs_start and tag.offset <= abs_end)
         {
+            if (GRASP_BLOCK->is_tag_blacklisted(tag, which_input)) continue;
             gr::tag_t t = Tag2gr_tag(tag);
             if (not key or pmt::equal(t.key, key)) tags.push_back(t);
         }
@@ -399,13 +417,24 @@ void gr::block::get_tags_in_range(
     uint64_t abs_start,
     uint64_t abs_end
 ){
-    return this->get_tags_in_range(tags, which_input, abs_start, abs_end, pmt::PMT_NIL);
+    return this->get_tags_in_range(tags, which_input, abs_start, abs_end, pmt::pmt_t());
 }
 
-void gr::block::remove_item_tag(unsigned int which_input, const tag_t &tag)
+void gr::block::remove_item_tag(unsigned int which_input, const gr::tag_t &tag)
 {
-    //TODO is this a thing now?
-    //Either add it to GRAS or filter this tag when doing propagate
+    BOOST_FOREACH(const gras::Tag &tag_i, GRASP_BLOCK->get_input_tags(which_input))
+    {
+        if (GRASP_BLOCK->is_tag_blacklisted(tag_i, which_input)) continue;
+        const gras::Tag my_t = gr_tag2Tag(tag);
+        if (
+            tag_i.offset == my_t.offset and
+            tag_i.object.as<gras::StreamTag>() == my_t.object.as<gras::StreamTag>()
+        )
+        {
+            GRASP_BLOCK->d_tag_blacklist[which_input].push_back(tag_i);
+            return;
+        }
+    }
 }
 
 gr::block::tag_propagation_policy_t gr::block::tag_propagation_policy()
@@ -470,7 +499,17 @@ static void update_input_reserve(gr::block *p, boost::shared_ptr<gras::Block> bl
      */
     if (p->d_fixed_rate or p->d_output_multiple > 1024)
     {
-        const size_t reserve = size_t(0.5 + p->d_output_multiple/p->d_relative_rate);
+        size_t reserve = 0;
+        //use the fixed_rate_noutput_to_ninput if overloaded
+        try
+        {
+            reserve = p->fixed_rate_noutput_to_ninput(p->d_output_multiple);
+        }
+        //otherwise just use relative rate for this calculation
+        catch(...)
+        {
+            reserve = size_t(0.5 + p->d_output_multiple/p->d_relative_rate);
+        }
         if (reserve) block->input_config(0).reserve_items = reserve;
     }
 }
