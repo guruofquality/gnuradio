@@ -126,28 +126,6 @@ namespace gr {
     return port_names;
   }
 
-  //  - publish a message on a message port
-  void basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
-  {
-    if(!pmt::dict_has_key(message_subscribers, port_id)) {
-      throw std::runtime_error("port does not exist");
-    }
-  
-    pmt::pmt_t currlist = pmt::dict_ref(message_subscribers, port_id, pmt::PMT_NIL);
-    // iterate through subscribers on port
-    while(pmt::is_pair(currlist)) {
-      pmt::pmt_t target = pmt::car(currlist);
-
-      pmt::pmt_t block = pmt::car(target);
-      pmt::pmt_t port = pmt::cdr(target);
-    
-      currlist = pmt::cdr(currlist);
-      basic_block_sptr blk = global_block_registry.block_lookup(block);
-      //blk->post(msg);
-      blk->post(port, msg);
-    }
-  }
-
   //  - subscribe to a message port
   void
   basic_block::message_port_sub(pmt::pmt_t port_id, pmt::pmt_t target){

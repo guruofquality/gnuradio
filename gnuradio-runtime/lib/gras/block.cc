@@ -25,8 +25,11 @@
 #include "gras/pmx_helper.h"
 //FIXME - this is temp until private vars make it into the private implementation
 #define private public
+#define protected public
 #include <gnuradio/block.h>
 #undef private
+#undef protected
+#include <gnuradio/prefs.h>
 #include <gras/block.hpp>
 #include <boost/foreach.hpp>
 #include <iostream>
@@ -59,8 +62,10 @@ struct gras_block_wrapper : gras::Block
         if (d_block_ptr) d_block_ptr->stop();
     }
 
-    void notify_topology(const size_t /*num_inputs*/, const size_t /*num_outputs*/)
+    void notify_topology(const size_t actual_num_inputs, const size_t /*num_outputs*/)
     {
+        d_actual_num_inputs = actual_num_inputs;
+
         if (not d_block_ptr) return;
         const size_t num_inputs = GRAS_PORTS_PIMPL(d_block_ptr)->input.num_real_ports;
         const size_t num_outputs = GRAS_PORTS_PIMPL(d_block_ptr)->output.num_real_ports;
@@ -90,6 +95,7 @@ struct gras_block_wrapper : gras::Block
     gr_vector_const_void_star d_input_items;
     gr_vector_void_star d_output_items;
     size_t d_num_outputs;
+    size_t d_actual_num_inputs;
     size_t d_history;
     std::vector<std::vector<gras::Tag> > d_tag_blacklist;
 
@@ -106,19 +112,64 @@ struct gras_block_wrapper : gras::Block
         }
         return false;
     }
+
+    bool handle_msgs(void);
 };
+
+bool gras_block_wrapper::handle_msgs(void)
+{
+    const size_t num_inputs = d_input_items.size();
+    //const size_t num_outputs = d_output_items.size();
+    gr::block *block = d_block_ptr;
+
+    //look for input messages on upper message ports
+    bool handled_msgs = false;
+    for (size_t i = num_inputs; i < d_actual_num_inputs; i++)
+    {
+        PMCC msg = this->pop_input_msg(i);
+        if (not msg) continue;
+        handled_msgs = true;
+        const std::string &port_name = GRAS_PORTS_PIMPL(block)->input.virtual_port_names[d_actual_num_inputs-i];
+        block->insert_tail(pmt::string_to_symbol(port_name), pmt::pmc_to_pmt(msg));
+    }
+    if (not handled_msgs) return false;
+    pmt::pmt_t msg;
+    gr::prefs *p = gr::prefs::singleton();
+    size_t max_nmsgs = static_cast<size_t>(p->get_long("DEFAULT", "max_messages", 100));
+    BOOST_FOREACH(gr::basic_block::msg_queue_map_t::value_type &i, block->msg_queue) {
+        // Check if we have a message handler attached before getting
+        // any messages. This is mostly a protection for the unknown
+        // startup sequence of the threads.
+        if(block->has_msg_handler(i.first)) {
+          while((msg = block->delete_head_nowait(i.first))) {
+            block->dispatch_msg(i.first,msg);
+          }
+        }
+        else {
+          // If we don't have a handler but are building up messages,
+          // prune the queue from the front to keep memory in check.
+          if(block->nmsgs(i.first) > max_nmsgs)
+            msg = block->delete_head_nowait(i.first);
+        }
+      }
+    //we did messages, not regular work, so leave, get called again
+    return true;
+}
+
+void gr::basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
+{
+    gr::block *block = dynamic_cast<gr::block *>(this);
+    if (block == NULL) throw std::runtime_error("message_port_pub cast says no block");
+    const size_t index = GRAS_PORTS_PIMPL(block)->output.get_index(pmt::symbol_to_string(port_id));
+    GRASP_BLOCK->post_output_msg(index, pmt::pmt_to_pmc(msg));
+}
 
 void gras_block_wrapper::work(
     const InputItems &input_items,
     const OutputItems &output_items
 )
 {
-    //look for input messages on upper message ports
-    bool handled_msgs = false;
-    {
-        //TODO
-    }
-    if (handled_msgs) return;
+    if (this->handle_msgs()) return;
 
     ptrdiff_t work_io_ptr_mask = 0;
     #define REALLY_BIG size_t(1 << 30)

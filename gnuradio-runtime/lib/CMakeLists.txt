@@ -70,6 +70,7 @@ GR_INCLUDE_SUBDIRECTORY(math)
 ########################################################################
 list(APPEND gnuradio_runtime_sources
   basic_block.cc
+  basic_block_std.cc
   block.cc
   block_detail.cc
   block_executor.cc
@@ -129,6 +130,7 @@ if(GRAS_FOUND)
         hier_block2.cc
         top_block.cc
         sptr_magic.cc
+        basic_block_std.cc
     )
 
     #add in gras wrapper sources
