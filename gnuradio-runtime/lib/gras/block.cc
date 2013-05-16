@@ -70,6 +70,12 @@ struct gras_block_wrapper : gras::Block
         const size_t num_inputs = GRAS_PORTS_PIMPL(d_block_ptr)->input.num_real_ports;
         const size_t num_outputs = GRAS_PORTS_PIMPL(d_block_ptr)->output.num_real_ports;
 
+        //disable reserve on message only ports
+        for (size_t i = num_inputs; i < d_actual_num_inputs; i++)
+        {
+            this->input_config(i).reserve_items = 0;
+        }
+
         //avoid calling check_topology until fully connected
         if (size_t(d_block_ptr->input_signature()->min_streams()) > num_inputs) return;
         if (size_t(d_block_ptr->output_signature()->min_streams()) > num_outputs) return;
@@ -172,7 +178,6 @@ void gras_block_wrapper::work(
     if (this->handle_msgs()) return;
 
     ptrdiff_t work_io_ptr_mask = 0;
-    #define REALLY_BIG size_t(1 << 30)
     const size_t num_inputs = d_input_items.size();
     const size_t num_outputs = d_output_items.size();
 
