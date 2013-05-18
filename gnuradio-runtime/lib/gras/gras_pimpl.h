@@ -28,6 +28,10 @@
 #include <cstddef>
 #include <vector>
 #include <string>
+#include <iostream>
+
+#define HERE() std::cerr << __FILE__ << ":" << __LINE__ << std::endl << std::flush;
+#define VAR(x) std::cerr << #x << " = " << (x) << std::endl << std::flush;
 
 struct gras_ports_pimpl_monitor
 {

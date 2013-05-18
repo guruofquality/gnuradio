@@ -84,8 +84,8 @@ struct gras_block_wrapper : gras::Block
         d_history = d_block_ptr->d_history - 1;
         this->input_config(0).preload_items = d_history;
         d_num_outputs = num_outputs;
-        d_fcast_ninput_items.resize(num_inputs);
-        d_work_ninput_items.resize(num_inputs);
+        d_ninput_items_required.resize(num_inputs);
+        d_ninput_items.resize(num_inputs);
         d_input_items.resize(num_inputs);
         d_output_items.resize(num_outputs);
         d_block_ptr->check_topology(num_inputs, num_outputs);
@@ -96,8 +96,8 @@ struct gras_block_wrapper : gras::Block
     gras::BufferQueueSptr output_buffer_allocator(const size_t, const gras::SBufferConfig &config);
 
     gr::block *d_block_ptr;
-    gr_vector_int d_work_ninput_items;
-    gr_vector_int d_fcast_ninput_items;
+    gr_vector_int d_ninput_items;
+    gr_vector_int d_ninput_items_required;
     gr_vector_const_void_star d_input_items;
     gr_vector_void_star d_output_items;
     size_t d_num_outputs;
@@ -170,6 +170,19 @@ void gr::basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
     GRASP_BLOCK->post_output_msg(index, pmt::pmt_to_pmc(msg));
 }
 
+  inline static unsigned int
+  round_up(unsigned int n, unsigned int multiple)
+  {
+    return ((n + multiple - 1) / multiple) * multiple;
+  }
+
+  inline static unsigned int
+  round_down(unsigned int n, unsigned int multiple)
+  {
+    return (n / multiple) * multiple;
+  }
+
+
 void gras_block_wrapper::work(
     const InputItems &input_items,
     const OutputItems &output_items
@@ -177,10 +190,210 @@ void gras_block_wrapper::work(
 {
     if (this->handle_msgs()) return;
 
-    ptrdiff_t work_io_ptr_mask = 0;
+    //ptrdiff_t work_io_ptr_mask = 0;
     const size_t num_inputs = d_input_items.size();
     const size_t num_outputs = d_output_items.size();
 
+
+    gr::block        *m = d_block_ptr;
+    int noutput_items;
+    int max_items_avail;
+    int max_noutput_items = round_up(m->is_set_max_noutput_items()? m->d_max_noutput_items : 100000000, m->output_multiple());
+    int new_alignment = 0;
+    int alignment_state = -1;
+
+    if(num_inputs == 0) {
+
+      // determine the minimum available output space
+      noutput_items = round_down(output_items.min(), m->output_multiple());
+      noutput_items = std::min(noutput_items, max_noutput_items);
+
+      if(noutput_items == 0){		// we're output blocked
+        throw std::runtime_error("exec0: noutput_items == 0");
+        return;
+      }
+
+      goto setup_call_to_work;		// jump to common code
+    }
+
+    else if(num_outputs == 0) {
+      
+      max_items_avail = 0;
+      for(size_t i = 0; i < num_inputs; i++) {
+        {
+          d_ninput_items[i] = input_items[i].size();
+        }
+
+        max_items_avail = std::max (max_items_avail, d_ninput_items[i]);
+      }
+
+      // take a swag at how much output we can sink
+      noutput_items = (int)(max_items_avail * m->relative_rate ());
+      noutput_items = round_down(noutput_items, m->output_multiple ());
+      noutput_items = std::min(noutput_items, max_noutput_items);
+
+      if(noutput_items == 0) {    // we're blocked on input
+        throw std::runtime_error("exec1: noutput_items == 0");
+        return;
+      }
+
+      goto try_again;     // Jump to code shared with regular case.
+    }
+
+    else {
+      // do the regular thing
+
+      max_items_avail = 0;
+      for(size_t i = 0; i < num_inputs; i++) {
+        {
+          d_ninput_items[i] = input_items[i].size();
+        }
+        max_items_avail = std::max(max_items_avail, d_ninput_items[i]);
+      }
+
+      // determine the minimum available output space
+      noutput_items = round_down(output_items.min(), m->output_multiple());
+
+      if(noutput_items == 0) {		// we're output blocked
+        throw std::runtime_error("exec2: noutput_items == 0");
+        return;
+      }
+
+    try_again:
+      if(m->fixed_rate()) {
+        // try to work it forward starting with max_items_avail.
+        // We want to try to consume all the input we've got.
+        int reqd_noutput_items = m->fixed_rate_ninput_to_noutput(max_items_avail);
+
+        // only test this if we specifically set the output_multiple
+        if(m->output_multiple_set())
+          reqd_noutput_items = round_down(reqd_noutput_items, m->output_multiple());
+
+        if(reqd_noutput_items > 0 && reqd_noutput_items <= noutput_items)
+          noutput_items = reqd_noutput_items;
+
+        // if we need this many outputs, overrule the max_noutput_items setting
+        max_noutput_items = std::max(m->output_multiple(), max_noutput_items);
+      }
+      noutput_items = std::min(noutput_items, max_noutput_items);
+
+      // Check if we're still unaligned; use up items until we're
+      // aligned again. Otherwise, make sure we set the alignment
+      // requirement.
+      if(!m->output_multiple_set()) {
+        if(m->is_unaligned()) {
+          // When unaligned, don't just set noutput_items to the remaining
+          // samples to meet alignment; this causes too much overhead in
+          // requiring a premature call back here. Set the maximum amount
+          // of samples to handle unalignment and get us back aligned.
+          if(noutput_items >= m->unaligned()) {
+            noutput_items = round_up(noutput_items, m->alignment())	\
+              - (m->alignment() - m->unaligned());
+            new_alignment = 0;
+          }
+          else {
+            new_alignment = m->unaligned() - noutput_items;
+          }
+          alignment_state = 0;
+        }
+        else if(noutput_items < m->alignment()) {
+          // if we don't have enough for an aligned call, keep track of
+          // misalignment, set unaligned flag, and proceed.
+          new_alignment = m->alignment() - noutput_items;
+          m->set_unaligned(new_alignment);
+          m->set_is_unaligned(true);
+          alignment_state = 1;
+        }
+        else {
+          // enough to round down to the nearest alignment and process.
+          noutput_items = round_down(noutput_items, m->alignment());
+          m->set_is_unaligned(false);
+          alignment_state = 2;
+        }
+      }
+
+      // ask the block how much input they need to produce noutput_items
+      m->forecast (noutput_items, d_ninput_items_required);
+
+      // See if we've got sufficient input available
+      size_t i;
+      for(i = 0; i < num_inputs; i++)
+        if(d_ninput_items_required[i] > d_ninput_items[i])	// not enough
+          break;
+
+      if(i < num_inputs) {			// not enough input on input[i]
+        // if we can, try reducing the size of our output request
+        if(noutput_items > m->output_multiple()) {
+          noutput_items /= 2;
+          noutput_items = round_up(noutput_items, m->output_multiple());
+          goto try_again;
+        }
+
+        // If we were made unaligned in this round but return here without
+        // processing; reset the unalignment claim before next entry.
+        if(alignment_state == 1) {
+          m->set_unaligned(0);
+          m->set_is_unaligned(false);
+        }
+
+        this->mark_input_fail(i);
+        return;
+      }
+
+      // We've got enough data on each input to produce noutput_items.
+      // Finish setting up the call to work.
+      for(size_t i = 0; i < num_inputs; i++)
+        d_input_items[i] = input_items[i].cast<const void *>();
+
+    setup_call_to_work:
+
+      for(size_t i = 0; i < num_outputs; i++)
+        d_output_items[i] = output_items[i].cast<void *>();
+    
+      // Do the actual work of the block
+      int n = m->general_work(noutput_items, d_ninput_items,
+                              d_input_items, d_output_items);
+
+      // Adjust number of unaligned items left to process
+      if(m->is_unaligned()) {
+        m->set_unaligned(new_alignment);
+        m->set_is_unaligned(m->unaligned() != 0);
+      }
+
+      if(n == gr::block::WORK_DONE)
+        goto were_done;
+
+      if(n != gr::block::WORK_CALLED_PRODUCE)
+        this->produce(n);	// advance write pointers
+
+        return;
+
+      // We didn't produce any output even though we called general_work.
+      // We have (most likely) consumed some input.
+
+      /*
+      // If this is a source, it's broken.
+      if(d->source_p()) {
+        std::cerr << "block_executor: source " << m
+                  << " produced no output.  We're marking it DONE.\n";
+        // FIXME maybe we ought to raise an exception...
+        goto were_done;
+      }
+      */
+
+      // Have the caller try again...
+      return;
+    }
+    assert(0);
+
+  were_done:
+    this->mark_done();
+
+
+
+
+
+/*
     //------------------------------------------------------------------
     //-- initialize input buffers before work
     //------------------------------------------------------------------
@@ -189,7 +402,7 @@ void gras_block_wrapper::work(
     for (size_t i = 0; i < num_inputs; i++)
     {
         d_input_items[i] = input_items[i].cast<const void *>();
-        d_work_ninput_items[i] = input_items[i].size();
+        d_ninput_items[i] = input_items[i].size();
         work_io_ptr_mask |= ptrdiff_t(input_items.vec()[i]);
         if GRAS_UNLIKELY(d_block_ptr->d_fixed_rate and input_items[i].size() <= d_history)
         {
@@ -232,11 +445,11 @@ void gras_block_wrapper::work(
     if (num_inputs or num_outputs)
     {
         forecast_again_you_jerk:
-        d_fcast_ninput_items = d_work_ninput_items; //init for NOP case
-        d_block_ptr->forecast(work_noutput_items, d_fcast_ninput_items);
+        d_ninput_items_required = d_ninput_items; //init for NOP case
+        d_block_ptr->forecast(work_noutput_items, d_ninput_items_required);
         for (size_t i = 0; i < input_items.size(); i++)
         {
-            if GRAS_LIKELY(d_fcast_ninput_items[i] <= d_work_ninput_items[i]) continue;
+            if GRAS_LIKELY(d_ninput_items_required[i] <= d_ninput_items[i]) continue;
 
             //handle the case of forecast failing
             if GRAS_UNLIKELY(work_noutput_items <= size_t(d_block_ptr->d_output_multiple))
@@ -258,7 +471,7 @@ void gras_block_wrapper::work(
 
     const int work_ret = d_block_ptr->general_work(
         work_noutput_items,
-        d_work_ninput_items,
+        d_ninput_items,
         d_input_items,
         d_output_items
     );
@@ -269,6 +482,7 @@ void gras_block_wrapper::work(
     }
 
     if GRAS_UNLIKELY(work_ret == -1) this->mark_done();
+    */
 }
 
 static inline unsigned long long myullround(const double x)
