@@ -195,18 +195,4 @@ namespace gr {
     return m;
   }
 
-  pmt::pmt_t
-  basic_block::delete_head_blocking(pmt::pmt_t which_port)
-  {
-    gr::thread::scoped_lock guard(mutex);
-
-    while(empty_p(which_port)) {
-      msg_queue_ready[which_port]->wait(guard);
-    }
-
-    pmt::pmt_t m(msg_queue[which_port].front());
-    msg_queue[which_port].pop_front();
-    return m;
-  }
-
 } /* namespace gr */

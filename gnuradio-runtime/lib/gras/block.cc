@@ -62,7 +62,7 @@ struct gras_block_wrapper : gras::Block
         if (d_block_ptr) d_block_ptr->stop();
     }
 
-    void notify_topology(const size_t actual_num_inputs, const size_t /*num_outputs*/)
+    void notify_topology(const size_t actual_num_inputs, const size_t actual_num_outputs)
     {
         d_actual_num_inputs = actual_num_inputs;
 
@@ -70,10 +70,15 @@ struct gras_block_wrapper : gras::Block
         const size_t num_inputs = GRAS_PORTS_PIMPL(d_block_ptr)->input.num_real_ports;
         const size_t num_outputs = GRAS_PORTS_PIMPL(d_block_ptr)->output.num_real_ports;
 
-        //disable reserve on message only ports
+        //setup configuration on message only ports
         for (size_t i = num_inputs; i < d_actual_num_inputs; i++)
         {
             this->input_config(i).reserve_items = 0;
+            this->input_config(i).item_size = 1;
+        }
+        for (size_t i = num_outputs; i < actual_num_outputs; i++)
+        {
+            this->output_config(i).item_size = 1;
         }
 
         //avoid calling check_topology until fully connected
@@ -135,7 +140,7 @@ bool gras_block_wrapper::handle_msgs(void)
         PMCC msg = this->pop_input_msg(i);
         if (not msg) continue;
         handled_msgs = true;
-        const std::string &port_name = GRAS_PORTS_PIMPL(block)->input.virtual_port_names[d_actual_num_inputs-i];
+        const std::string &port_name = GRAS_PORTS_PIMPL(block)->input.virtual_port_names[d_actual_num_inputs-i-1];
         block->insert_tail(pmt::string_to_symbol(port_name), pmt::pmc_to_pmt(msg));
     }
     if (not handled_msgs) return false;
@@ -170,6 +175,27 @@ void gr::basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
     GRASP_BLOCK->post_output_msg(index, pmt::pmt_to_pmc(msg));
 }
 
+/*!
+ * This call seems to be used to get messages from the work executor
+ * but is also abused to block in the work function so outside
+ * entities can post messages into the scheduler.
+ * To satisfy both needs without actually blocking work,
+ * we just use a non blocking pop with a small timeout.
+ */
+pmt::pmt_t gr::basic_block::delete_head_blocking(pmt::pmt_t which_port)
+{
+    gr::thread::scoped_lock guard(mutex);
+
+    if(empty_p(which_port)) {
+      msg_queue_ready[which_port]->timed_wait(guard, boost::posix_time::microseconds(10));
+    }
+    if (empty_p(which_port)) return pmt::pmt_t();
+
+    pmt::pmt_t m(msg_queue[which_port].front());
+    msg_queue[which_port].pop_front();
+    return m;
+}
+
   inline static unsigned int
   round_up(unsigned int n, unsigned int multiple)
   {
@@ -188,12 +214,15 @@ void gras_block_wrapper::work(
     const OutputItems &output_items
 )
 {
+    //handle message only ports
     if (this->handle_msgs()) return;
 
     //ptrdiff_t work_io_ptr_mask = 0;
     const size_t num_inputs = d_input_items.size();
     const size_t num_outputs = d_output_items.size();
 
+    //its just a message only blocks
+    if (num_inputs == 0 and num_outputs == 0) return;
 
     gr::block        *m = d_block_ptr;
     int noutput_items;

@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <stdexcept>
 
 #define HERE() std::cerr << __FILE__ << ":" << __LINE__ << std::endl << std::flush;
 #define VAR(x) std::cerr << #x << " = " << (x) << std::endl << std::flush;
@@ -55,6 +56,10 @@ struct gras_ports_pimpl_monitor
 
     void update(const size_t new_port_index)
     {
+        if (virtual_port_names.size() != 0)
+        {
+            throw std::runtime_error("error: called update on normal connection after making virtual message ports");
+        }
         num_real_ports = std::max(num_real_ports, new_port_index+1);
     }
 };
