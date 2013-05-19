@@ -516,7 +516,7 @@ void gras_block_wrapper::work(
 
 static inline unsigned long long myullround(const double x)
 {
-    return (unsigned long long)(x + 0.5);
+    return (unsigned long long)(x);
 }
 
 void gras_block_wrapper::propagate_tags(
@@ -718,10 +718,10 @@ void gr::block::get_tags_in_range(
     tags.clear();
     BOOST_FOREACH(const gras::Tag &tag, GRASP_BLOCK->get_input_tags(which_input))
     {
-        if (tag.offset >= abs_start and tag.offset <= abs_end)
+        if (tag.offset >= abs_start and tag.offset < abs_end)
         {
-            if (GRASP_BLOCK->is_tag_blacklisted(tag, which_input)) continue;
             if (not tag.object.is<gras::StreamTag>()) continue; //gr wrapper only supports stream tag
+            if (GRASP_BLOCK->is_tag_blacklisted(tag, which_input)) continue;
             gr::tag_t t = Tag2gr_tag(tag);
             if (not key or pmt::equal(t.key, key)) tags.push_back(t);
         }
