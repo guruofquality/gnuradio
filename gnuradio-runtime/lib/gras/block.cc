@@ -163,6 +163,14 @@ bool gras_block_wrapper::handle_msgs(void)
             msg = block->delete_head_nowait(i.first);
         }
       }
+
+//I guess this called dispatch but without the has handler filtering - makes python blocks work
+     BOOST_FOREACH(gr::basic_block::msg_queue_map_t::value_type &i, block->msg_queue) {
+            while((msg = block->delete_head_nowait(i.first))) {
+              block->dispatch_msg(i.first, msg);
+            }
+          }
+
     //we did messages, not regular work, so leave, get called again
     return true;
 }
@@ -802,7 +810,10 @@ void gr::block::set_is_unaligned(bool u)
 
 void gr::block::set_alignment(int multiple)
 {
-    //NOP
+    if(multiple < 1)
+      throw std::invalid_argument("block::set_alignment_multiple");
+
+    d_output_multiple = multiple;
 }
 
 static void update_input_reserve(gr::block *p, boost::shared_ptr<gras::Block> block)
