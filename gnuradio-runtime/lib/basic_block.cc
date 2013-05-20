@@ -60,8 +60,7 @@ namespace gr {
   basic_block::~basic_block()
   {
     s_ncurrently_allocated--;
-    //TODO this seems to lock up -- revisit later
-    //global_block_registry.block_unregister(this);
+    global_block_registry.block_unregister(this);
   }
 
   basic_block_sptr
@@ -125,6 +124,32 @@ namespace gr {
     }
     return port_names;
   }
+
+#ifndef GR_BASIC_BLOCK_CUSTOM
+
+  //  - publish a message on a message port
+  void basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
+  {
+    if(!pmt::dict_has_key(message_subscribers, port_id)) {
+      throw std::runtime_error("port does not exist");
+    }
+  
+    pmt::pmt_t currlist = pmt::dict_ref(message_subscribers, port_id, pmt::PMT_NIL);
+    // iterate through subscribers on port
+    while(pmt::is_pair(currlist)) {
+      pmt::pmt_t target = pmt::car(currlist);
+
+      pmt::pmt_t block = pmt::car(target);
+      pmt::pmt_t port = pmt::cdr(target);
+    
+      currlist = pmt::cdr(currlist);
+      basic_block_sptr blk = global_block_registry.block_lookup(block);
+      //blk->post(msg);
+      blk->post(port, msg);
+    }
+  }
+
+#endif //GR_BASIC_BLOCK_CUSTOM
 
   //  - subscribe to a message port
   void
@@ -192,6 +217,20 @@ namespace gr {
     pmt::pmt_t m(msg_queue[which_port].front());
     msg_queue[which_port].pop_front();
 
+    return m;
+  }
+
+  pmt::pmt_t
+  basic_block::delete_head_blocking(pmt::pmt_t which_port)
+  {
+    gr::thread::scoped_lock guard(mutex);
+
+    while(empty_p(which_port)) {
+      msg_queue_ready[which_port]->wait(guard);
+    }
+
+    pmt::pmt_t m(msg_queue[which_port].front());
+    msg_queue[which_port].pop_front();
     return m;
   }
 

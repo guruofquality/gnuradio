@@ -183,27 +183,6 @@ void gr::basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
     GRASP_BLOCK->post_output_msg(index, pmt::pmt_to_pmc(msg));
 }
 
-/*!
- * This call seems to be used to get messages from the work executor
- * but is also abused to block in the work function so outside
- * entities can post messages into the scheduler.
- * To satisfy both needs without actually blocking work,
- * we just use a non blocking pop with a small timeout.
- */
-pmt::pmt_t gr::basic_block::delete_head_blocking(pmt::pmt_t which_port)
-{
-    gr::thread::scoped_lock guard(mutex);
-
-    if(empty_p(which_port)) {
-      msg_queue_ready[which_port]->timed_wait(guard, boost::posix_time::microseconds(10));
-    }
-    if (empty_p(which_port)) return pmt::pmt_t();
-
-    pmt::pmt_t m(msg_queue[which_port].front());
-    msg_queue[which_port].pop_front();
-    return m;
-}
-
   inline static unsigned int
   round_up(unsigned int n, unsigned int multiple)
   {

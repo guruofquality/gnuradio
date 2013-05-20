@@ -70,7 +70,6 @@ GR_INCLUDE_SUBDIRECTORY(math)
 ########################################################################
 list(APPEND gnuradio_runtime_sources
   basic_block.cc
-  basic_block_std.cc
   block.cc
   block_detail.cc
   block_executor.cc
@@ -130,7 +129,6 @@ if(GRAS_FOUND)
         hier_block2.cc
         top_block.cc
         sptr_magic.cc
-        basic_block_std.cc
     )
 
     #add in gras wrapper sources
@@ -144,6 +142,7 @@ if(GRAS_FOUND)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     include_directories(${GRAS_INCLUDE_DIRS})
     list(APPEND gnuradio_runtime_libs ${GRAS_LIBRARIES})
+    add_definitions("-DGR_BASIC_BLOCK_CUSTOM=1")
 
 endif(GRAS_FOUND)
 
