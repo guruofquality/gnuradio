@@ -57,7 +57,7 @@ public:
             gr_make_io_signature(0, 0, 0)
         ),
         _stream_args(stream_args),
-        _nchan(std::max<size_t>(1, stream_args.channels.size())),
+        _nchan(stream_args.channels.size()),
         _stream_now(_nchan == 1),
         _start_time_set(false)
     {
@@ -530,6 +530,6 @@ boost::shared_ptr<uhd_usrp_sink> uhd_make_usrp_sink(
 ){
     gr_uhd_check_abi();
     return boost::shared_ptr<uhd_usrp_sink>(
-        new uhd_usrp_sink_impl(device_addr, stream_args)
+        new uhd_usrp_sink_impl(device_addr, stream_args_ensure(stream_args))
     );
 }
