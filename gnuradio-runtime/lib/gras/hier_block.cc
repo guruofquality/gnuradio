@@ -39,6 +39,7 @@ gr::hier_block2::hier_block2(
     gr::io_signature::sptr input_signature,
     gr::io_signature::sptr output_signature
 )
+    : basic_block(name, input_signature, output_signature)
 {
     GRAS_PORTS_PIMPL_INIT();
     block_pimpl.reset(new gras::HierBlock(name));

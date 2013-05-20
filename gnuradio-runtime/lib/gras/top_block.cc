@@ -34,6 +34,9 @@ gr::top_block_sptr gr::make_top_block(const std::string &name)
 gr::top_block::top_block(
     const std::string &name
 )
+    : hier_block2(name,
+        io_signature::make(0,0,0),
+        io_signature::make(0,0,0))
 {
     GRAS_PORTS_PIMPL_INIT();
     block_pimpl.reset(new gras::TopBlock(name));

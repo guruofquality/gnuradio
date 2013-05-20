@@ -29,6 +29,7 @@
 #include <gnuradio/block.h>
 #undef private
 #undef protected
+#include <gnuradio/block_registry.h>
 #include <gnuradio/prefs.h>
 #include <gras/block.hpp>
 #include <boost/foreach.hpp>
@@ -602,6 +603,7 @@ gr::block::block(
 
 gr::block::~block(void)
 {
+    //global_block_registry.unregister_primitive(alias());
     GRASP_BLOCK->d_block_ptr = NULL;
     block_pimpl.reset();
 }
