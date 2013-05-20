@@ -60,7 +60,7 @@ public:
             args_to_io_sig(stream_args)
         ),
         _stream_args(stream_args),
-        _nchan(std::max<size_t>(1, stream_args.channels.size())),
+        _nchan(stream_args.channels.size()),
         _stream_now(_nchan == 1),
         _tag_now(false),
         _start_time_set(false)
@@ -593,6 +593,6 @@ boost::shared_ptr<uhd_usrp_source> uhd_make_usrp_source(
 ){
     gr_uhd_check_abi();
     return boost::shared_ptr<uhd_usrp_source>(
-        new uhd_usrp_source_impl(device_addr, stream_args)
+        new uhd_usrp_source_impl(device_addr, stream_args_ensure(stream_args))
     );
 }
