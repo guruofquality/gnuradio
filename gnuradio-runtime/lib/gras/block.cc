@@ -231,6 +231,7 @@ void gras_block_wrapper::work(
 
     //its just a message only blocks
     if (num_inputs == 0 and num_outputs == 0) return;
+    ptrdiff_t work_io_ptr_mask = 0;
 
     gr::block        *m = d_block_ptr;
     int noutput_items;
@@ -380,13 +381,23 @@ void gras_block_wrapper::work(
       // We've got enough data on each input to produce noutput_items.
       // Finish setting up the call to work.
       for(size_t i = 0; i < num_inputs; i++)
+      {
         d_input_items[i] = input_items[i].cast<const void *>();
+        work_io_ptr_mask |= ptrdiff_t(d_input_items[i]);
+      }
 
     setup_call_to_work:
 
       for(size_t i = 0; i < num_outputs; i++)
+      {
         d_output_items[i] = output_items[i].cast<void *>();
-    
+        work_io_ptr_mask |= ptrdiff_t(d_output_items[i]);
+      }
+
+      //use ptr IO mask to determine alignment
+      //this call should be replaced by VOLK dispatchers
+      m->set_is_unaligned((work_io_ptr_mask & (~(GRAS_MAX_ALIGNMENT-1))) != 0);
+
       // Do the actual work of the block
       int n = m->general_work(noutput_items, d_ninput_items,
                               d_input_items, d_output_items);
