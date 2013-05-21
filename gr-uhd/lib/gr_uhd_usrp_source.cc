@@ -438,7 +438,10 @@ public:
 
     void issue_stream_cmd(const uhd::stream_cmd_t &cmd)
     {
-        _dev->issue_stream_cmd(cmd);
+        for (size_t i = 0; i < _stream_args.channels.size(); i++)
+        {
+            _dev->issue_stream_cmd(cmd, _stream_args.channels[i]);
+        }
     }
 
     bool start(void){
