@@ -32,7 +32,6 @@ namespace gr {
     {
     private:
       boost::shared_ptr<boost::thread> d_thread;
-      boost::mutex d_spawn_mutex;
       bool d_finished;
       float d_period_ms;
       pmt::pmt_t d_msg;
@@ -42,8 +41,6 @@ namespace gr {
     public:
       message_strobe_impl(pmt::pmt_t msg, float period_ms);
       ~message_strobe_impl();
-      bool start(void);
-      bool stop(void);
 
       void set_msg(pmt::pmt_t msg) { d_msg = msg; }
       pmt::pmt_t msg() const { return d_msg; }

@@ -54,6 +54,9 @@ namespace gr {
         d_msg(msg)
     {
       message_port_register_out(pmt::mp("strobe"));
+      d_thread = boost::shared_ptr<boost::thread>
+        (new boost::thread(boost::bind(&message_strobe_impl::run, this)));
+
       message_port_register_in(pmt::mp("set_msg"));
       set_msg_handler(pmt::mp("set_msg"),
                       boost::bind(&message_strobe_impl::set_msg, this, _1));
@@ -61,31 +64,13 @@ namespace gr {
 
     message_strobe_impl::~message_strobe_impl()
     {
-      //NOP
-    }
-
-    bool message_strobe_impl::start(void)
-    {
-      d_spawn_mutex.lock();
-      d_thread = boost::shared_ptr<boost::thread>
-        (new boost::thread(boost::bind(&message_strobe_impl::run, this)));
-      d_spawn_mutex.lock();
-      d_spawn_mutex.unlock();
-      return true;
-    }
-
-    bool message_strobe_impl::stop(void)
-    {
       d_finished = true;
       d_thread->interrupt();
       d_thread->join();
-      d_thread.reset();
-      return true;
     }
 
     void message_strobe_impl::run()
     {
-      d_spawn_mutex.unlock();
       while(!d_finished) {
         boost::this_thread::sleep(boost::posix_time::milliseconds(d_period_ms)); 
         if(d_finished) {
