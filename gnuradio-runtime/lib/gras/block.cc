@@ -407,7 +407,14 @@ void gras_block_wrapper::work(
         goto were_done;
 
       if(n != gr::block::WORK_CALLED_PRODUCE)
-        this->produce(n);	// advance write pointers
+      {
+        //manual for loop for produce, dont use convenience produce
+        //because it will cause a consume on the virtual msg ports
+        for (size_t i = 0; i < d_output_items.size(); i++)
+        {
+            this->produce(i, n);	// advance write pointers
+        }
+    }
 
         return;
 
@@ -668,7 +675,13 @@ int gr::block::fixed_rate_noutput_to_ninput(int noutput)
 void gr::block::consume_each(const int how_many_items)
 {
     if GRAS_UNLIKELY(how_many_items < 0) return;
-    GRASP_BLOCK->consume(size_t(how_many_items));
+
+    //manual for loop for consume, dont use convenience consume
+    //because it will cause a consume on the virtual msg ports
+    for (size_t i = 0; i < GRASP_BLOCK->d_input_items.size(); i++)
+    {
+        GRASP_BLOCK->consume(i, size_t(how_many_items));
+    }
 }
 
 void gr::block::consume(const int i, const int how_many_items)
