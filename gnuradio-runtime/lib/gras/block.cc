@@ -20,6 +20,7 @@
  */
 
 #define GRASP_BLOCK (boost::static_pointer_cast<gras_block_wrapper>(this->block_pimpl))
+#define GRASP_BLOCK_(p) (boost::static_pointer_cast<gras_block_wrapper>(p->block_pimpl))
 
 #include "gras/gras_pimpl.h"
 #include "gras/pmx_helper.h"
@@ -41,7 +42,10 @@
 struct gras_block_wrapper : gras::Block
 {
     gras_block_wrapper(const std::string &name, gr::block *block_ptr):
-        gras::Block(name), d_block_ptr(block_ptr), d_history(0)
+        gras::Block(name),
+        d_block_ptr(block_ptr),
+        d_history(0),
+        d_shared_msg_active(false)
     {
         //NOP
     }
@@ -55,11 +59,15 @@ struct gras_block_wrapper : gras::Block
 
     void notify_active(void)
     {
+        boost::mutex::scoped_lock lock(d_shared_msg_mutex);
+        d_shared_msg_active = true;
         if (d_block_ptr) d_block_ptr->start();
     }
 
     void notify_inactive(void)
     {
+        boost::mutex::scoped_lock lock(d_shared_msg_mutex);
+        d_shared_msg_active = false;
         if (d_block_ptr) d_block_ptr->stop();
     }
 
@@ -126,6 +134,9 @@ struct gras_block_wrapper : gras::Block
     }
 
     bool handle_msgs(void);
+
+    boost::mutex d_shared_msg_mutex;
+    bool d_shared_msg_active;
 };
 
 bool gras_block_wrapper::handle_msgs(void)
@@ -180,6 +191,10 @@ void gr::basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
 {
     gr::block *block = dynamic_cast<gr::block *>(this);
     if (block == NULL) throw std::runtime_error("message_port_pub cast says no block");
+
+    boost::mutex::scoped_lock lock(GRASP_BLOCK_(block)->d_shared_msg_mutex);
+    if (not GRASP_BLOCK_(block)->d_shared_msg_active) return;
+
     const size_t index = GRAS_PORTS_PIMPL(block)->output.get_index(pmt::symbol_to_string(port_id));
     GRASP_BLOCK->post_output_msg(index, pmt::pmt_to_pmc(msg));
 }
