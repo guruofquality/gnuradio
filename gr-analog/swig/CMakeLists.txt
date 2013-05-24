@@ -28,6 +28,7 @@ set(GR_SWIG_INCLUDE_DIRS
     ${GR_ANALOG_INCLUDE_DIRS}
     ${GR_FILTER_INCLUDE_DIRS}
     ${GNURADIO_RUNTIME_SWIG_INCLUDE_DIRS}
+    ${VOLK_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
 
@@ -37,7 +38,10 @@ if(ENABLE_GR_CTRLPORT)
 endif(ENABLE_GR_CTRLPORT)
 
 set(GR_SWIG_DOC_FILE ${CMAKE_CURRENT_BINARY_DIR}/analog_swig_doc.i)
-set(GR_SWIG_DOC_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../include/gnuradio/analog)
+set(GR_SWIG_DOC_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include/gnuradio/analog
+    ${CMAKE_CURRENT_BINARY_DIR}/../include/gnuradio/analog
+)
 set(GR_SWIG_DOCS_TARGET_DEPS runtime_swig_swig_doc)
 set(GR_SWIG_TARGET_DEPS analog_generated_includes)
 set(GR_SWIG_LIBRARIES gnuradio-analog gnuradio-filter)
