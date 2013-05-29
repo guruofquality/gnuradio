@@ -460,7 +460,7 @@ public:
         else{
             stream_cmd.time_spec = get_time_now() + uhd::time_spec_t(reasonable_delay);
         }
-        _dev->issue_stream_cmd(stream_cmd);
+        this->issue_stream_cmd(stream_cmd);
         _tag_now = true;
         return true;
     }
@@ -489,7 +489,7 @@ public:
     }
 
     bool stop(void){
-        _dev->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
+        this->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
 
         this->flush();
 
@@ -528,7 +528,7 @@ public:
         cmd.stream_now = _stream_now;
         static const double reasonable_delay = 0.1; //order of magnitude over RTT
         cmd.time_spec = get_time_now() + uhd::time_spec_t(reasonable_delay);
-        _dev->issue_stream_cmd(cmd);
+        this->issue_stream_cmd(cmd);
 
         //receive samples until timeout
         const size_t actual_num_samps = _rx_stream->recv(
