@@ -33,6 +33,11 @@ struct GR_CORE_API gr_top_block : gras::TopBlock
 
     gr_top_block(const std::string &name);
 
+    long unique_id(void) const{return _unique_id;}
+    std::string name(void) const{return _name;}
+    long _unique_id;
+    std::string _name;
+
     void start(const size_t max_items);
 
     void run(const size_t max_items);

@@ -37,6 +37,11 @@ struct GR_CORE_API gr_hier_block2 : gras::HierBlock
         gr_io_signature_sptr output_signature
     );
 
+    long unique_id(void) const{return _unique_id;}
+    std::string name(void) const{return _name;}
+    long _unique_id;
+    std::string _name;
+
     const gr_hier_block2 &self(void) const
     {
         return *this;

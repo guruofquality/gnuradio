@@ -23,6 +23,9 @@
 #include <gr_block.h>
 #include <boost/foreach.hpp>
 #include <iostream>
+#include <boost/detail/atomic_count.hpp>
+
+static boost::detail::atomic_count unique_id_pool(0);
 
 gr_block::gr_block(void)
 {
@@ -34,7 +37,9 @@ gr_block::gr_block(
     gr_io_signature_sptr input_signature,
     gr_io_signature_sptr output_signature
 ):
-    gras::Block(name)
+    gras::Block(name),
+    _unique_id(++unique_id_pool),
+    _name(name)
 {
     //this initializes private vars, order matters
     this->set_fixed_rate(false);

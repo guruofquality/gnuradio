@@ -26,16 +26,23 @@
 
 #include <unistd.h>
 #include <gr_top_block.h>
+#include <boost/detail/atomic_count.hpp>
+
+static boost::detail::atomic_count unique_id_pool(0);
 
 gr_top_block::gr_top_block(void):
     //cannot make a null top block, use name constructor
-    gras::TopBlock("top")
+    gras::TopBlock("top"),
+    _unique_id(++unique_id_pool),
+    _name("top")
 {
     //NOP
 }
 
 gr_top_block::gr_top_block(const std::string &name):
-    gras::TopBlock(name)
+    gras::TopBlock(name),
+    _unique_id(++unique_id_pool),
+    _name(name)
 {
     //NOP
 }

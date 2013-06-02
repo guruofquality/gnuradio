@@ -25,6 +25,9 @@
 #endif
 
 #include <gr_hier_block2.h>
+#include <boost/detail/atomic_count.hpp>
+
+static boost::detail::atomic_count unique_id_pool(0);
 
 
 gr_hier_block2::gr_hier_block2(void)
@@ -37,7 +40,9 @@ gr_hier_block2::gr_hier_block2(
     gr_io_signature_sptr input_signature,
     gr_io_signature_sptr output_signature
 ):
-    gras::HierBlock(name)
+    gras::HierBlock(name),
+    _unique_id(++unique_id_pool),
+    _name(name)
 {
     this->set_input_signature(input_signature);
     this->set_output_signature(output_signature);

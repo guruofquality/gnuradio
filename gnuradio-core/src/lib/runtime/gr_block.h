@@ -54,6 +54,11 @@ struct GR_CORE_API gr_block : gras::Block
         gr_io_signature_sptr output_signature
     );
 
+    long unique_id(void) const{return _unique_id;}
+    std::string name(void) const{return _name;}
+    long _unique_id;
+    std::string _name;
+
     virtual ~gr_block(void);
 
     gr_io_signature_sptr input_signature(void) const;
