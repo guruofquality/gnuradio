@@ -896,6 +896,27 @@ void gr::block::unset_processor_affinity()
     d_affinity.clear();
 }
 
+int 
+  gr::block::active_thread_priority()
+  {
+    return -1;
+  }
+
+  int 
+  gr::block::thread_priority()
+  {
+    return d_priority;
+  }
+
+  int 
+  gr::block::set_thread_priority(int priority)
+  {
+    //TODO theron does not dynamically change priority
+    //this is done at thread pool setup time see gras/thread_pool.h
+    d_priority = priority;
+    return d_priority;
+  }
+
 //holy shit, howabout a struct and a single function call
 
 float gr::block::pc_noutput_items(){throw std::runtime_error("pc no");}
