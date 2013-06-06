@@ -882,23 +882,42 @@ void gr::block::set_output_multiple(int multiple)
     update_input_reserve(this, GRASP_BLOCK);
 }
 
+static gras::ThreadPool make_new_tp(const std::vector<int> &mask, int prio)
+{
+    gras::ThreadPoolConfig config;
+    config.thread_count = 1;
+
+    //determine mask bits and set if non zero
+    long int_mask = 0;
+    for (size_t i = 0; i < mask.size(); i++)
+    {
+        int_mask |= (1 << mask[i]);
+    }
+    if (int_mask != 0) config.processor_mask = int_mask;
+
+    //determine 1.0 scale prio and set if non zero
+    float float_prio = (prio/100.0f);
+    if (float_prio != 0.0f) config.thread_priority = float_prio;
+
+    return gras::ThreadPool(config);
+}
+
 void gr::block::set_processor_affinity(const std::vector<int> &mask)
 {
-    //TODO theron does not dynamically change affinities
-    //this is done at thread pool setup time see gras/thread_pool.h
     d_affinity = mask;
+    GRASP_BLOCK->set_thread_pool(make_new_tp(d_affinity, d_priority));
 }
 
 void gr::block::unset_processor_affinity()
 {
-    //TODO theron does not dynamically change affinities
-    //this is done at thread pool setup time see gras/thread_pool.h
     d_affinity.clear();
+    GRASP_BLOCK->set_thread_pool(make_new_tp(d_affinity, d_priority));
 }
 
 int 
   gr::block::active_thread_priority()
   {
+    if (gras::ThreadPool::test_thread_priority(d_priority/100.0f)) return d_priority;
     return -1;
   }
 
@@ -911,9 +930,8 @@ int
   int 
   gr::block::set_thread_priority(int priority)
   {
-    //TODO theron does not dynamically change priority
-    //this is done at thread pool setup time see gras/thread_pool.h
     d_priority = priority;
+    GRASP_BLOCK->set_thread_pool(make_new_tp(d_affinity, d_priority));
     return d_priority;
   }
 
