@@ -118,7 +118,8 @@ namespace gr {
     ${blockname}::sptr
     ${blockname}::make(${strip_default_values($arglist)})
     {
-      return gnuradio::get_initial_sptr (new ${blockname}_impl(${strip_arg_types($arglist)}));
+      return gnuradio::get_initial_sptr
+        (new ${blockname}_impl(${strip_arg_types($arglist)}));
     }
 
 #if $blocktype == 'decimator'
@@ -131,12 +132,12 @@ namespace gr {
 #if $blocktype == 'source'
 #set $inputsig = '0, 0, 0'
 #else
-#set $inputsig = '<+MIN_IN+>, <+MAX_IN+>, sizeof (<+float+>)'
+#set $inputsig = '<+MIN_IN+>, <+MAX_IN+>, sizeof(<+ITYPE+>)'
 #end if
 #if $blocktype == 'sink'
 #set $outputsig = '0, 0, 0'
 #else
-#set $outputsig = '<+MIN_IN+>, <+MAX_IN+>, sizeof (<+float+>)'
+#set $outputsig = '<+MIN_OUT+>, <+MAX_OUT+>, sizeof(<+OTYPE+>)'
 #end if
     /*
      * The private constructor
@@ -175,8 +176,8 @@ namespace gr {
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
     {
-        const float *in = (const float *) input_items[0];
-        float *out = (float *) output_items[0];
+        const <+ITYPE*> *in = (const <+ITYPE*> *) input_items[0];
+        <+OTYPE*> *out = (<+OTYPE*> *) output_items[0];
 
         // Do <+signal processing+>
         // Tell runtime system how many input items we consumed on
@@ -194,8 +195,8 @@ namespace gr {
 			  gr_vector_const_void_star &input_items,
 			  gr_vector_void_star &output_items)
     {
-        const float *in = (const float *) input_items[0];
-        float *out = (float *) output_items[0];
+        const <+ITYPE+> *in = (const <+ITYPE+> *) input_items[0];
+        <+OTYPE+> *out = (<+OTYPE+> *) output_items[0];
 
         // Do <+signal processing+>
 
@@ -230,9 +231,10 @@ namespace gr {
      */
     class ${modname.upper()}_API $blockname
     {
+    public:
         ${blockname}(${arglist});
         ~${blockname}();
-        private:
+    private:
     };
 #else
     /*!
@@ -293,12 +295,12 @@ import numpy
 #if $blocktype == 'source'
 #set $inputsig = '0, 0, 0'
 #else
-#set $inputsig = '<+MIN_IN+>, <+MAX_IN+>, gr.sizeof_<+float+>'
+#set $inputsig = '<+MIN_IN+>, <+MAX_IN+>, gr.sizeof_<+ITYPE+>'
 #end if
 #if $blocktype == 'sink'
 #set $outputsig = '0, 0, 0'
 #else
-#set $outputsig = '<+MIN_OUT+>, <+MAX_OUT+>, gr.sizeof_<+float+>'
+#set $outputsig = '<+MIN_OUT+>, <+MAX_OUT+>, gr.sizeof_<+OTYPE+>'
 #end if
 #end if
 #if $blocktype == 'interpolator'
@@ -454,7 +456,7 @@ Templates['grc_xml'] = '''<?xml version="1.0"?>
   <key>${modname}_$blockname</key>
   <category>$modname</category>
   <import>import $modname</import>
-  <make>${modname}.${blockname}(${strip_arg_types($arglist)})</make>
+  <make>${modname}.${blockname}(${strip_arg_types_grc($arglist)})</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -496,11 +498,15 @@ gr_modtool help <command> -- Shows the help for a given command. '''
 
 # SWIG string
 Templates['swig_block_magic'] = """#if $version == '36'
+#if $blocktype != 'noblock'
 GR_SWIG_BLOCK_MAGIC($modname, $blockname);
+#end if
 %include "${modname}_${blockname}.h"
 #else
 %include "${modname}/${blockname}.h"
+#if $blocktype != 'noblock'
 GR_SWIG_BLOCK_MAGIC2($modname, $blockname);
+#end if
 #end if
 """
 
@@ -542,12 +548,12 @@ ${modname}_make_${blockname} (${strip_default_values($arglist)})
 #if $blocktype == 'sink'
 #set $inputsig = '0, 0, 0'
 #else
-#set $inputsig = '<+MIN_IN+>, <+MAX_IN+>, sizeof (<+float+>)'
+#set $inputsig = '<+MIN_IN+>, <+MAX_IN+>, sizeof(<+ITYPE+>)'
 #end if
 #if $blocktype == 'source'
 #set $outputsig = '0, 0, 0'
 #else
-#set $outputsig = '<+MIN_OUT+>, <+MAX_OUT+>, sizeof (<+float+>)'
+#set $outputsig = '<+MIN_OUT+>, <+MAX_OUT+>, sizeof(<+OTYPE+>)'
 #end if
 
 /*
@@ -591,8 +597,8 @@ ${modname}_${blockname}::general_work (int noutput_items,
 				   gr_vector_const_void_star &input_items,
 				   gr_vector_void_star &output_items)
 {
-	const float *in = (const float *) input_items[0];
-	float *out = (float *) output_items[0];
+	const <+ITYPE+> *in = (const <+ITYPE+> *) input_items[0];
+	<+OTYPE+> *out = (<+OTYPE+> *) output_items[0];
 
 	// Do <+signal processing+>
 	// Tell runtime system how many input items we consumed on
@@ -610,8 +616,8 @@ ${modname}_${blockname}::work(int noutput_items,
 		  gr_vector_const_void_star &input_items,
 		  gr_vector_void_star &output_items)
 {
-	const float *in = (const float *) input_items[0];
-	float *out = (float *) output_items[0];
+	const <+ITYPE+> *in = (const <+ITYPE+> *) input_items[0];
+	<+OTYPE+> *out = (<+OTYPE+> *) output_items[0];
 
 	// Do <+signal processing+>
 
