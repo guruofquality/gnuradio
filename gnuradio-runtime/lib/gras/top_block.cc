@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#define GRASP_TOP_BLOCK (boost::static_pointer_cast<gras::TopBlock>(this->block_pimpl))
+#define GRASP_TOP_BLOCK (dynamic_cast<gras::TopBlock *>(this->get()))
 
 #include "gras/gras_pimpl.h"
 #include <gnuradio/top_block.h>
@@ -39,12 +39,12 @@ gr::top_block::top_block(
         io_signature::make(0,0,0))
 {
     gras_ports_pimpl_alloc(this);
-    block_pimpl.reset(new gras::TopBlock(name));
+    this->reset(new gras::TopBlock(name));
 }
 
 gr::top_block::~top_block(void)
 {
-    block_pimpl.reset();
+    this->reset();
     gras_ports_pimpl_free(this);
 }
 

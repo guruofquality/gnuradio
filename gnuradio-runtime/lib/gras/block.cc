@@ -19,8 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#define GRASP_BLOCK (boost::static_pointer_cast<gras_block_wrapper>(this->block_pimpl))
-#define GRASP_BLOCK_(p) (boost::static_pointer_cast<gras_block_wrapper>(p->block_pimpl))
+#define GRASP_BLOCK_(p) (dynamic_cast<gras_block_wrapper *>(p->get()))
+#define GRASP_BLOCK GRASP_BLOCK_(this)
 
 #include "gras/gras_pimpl.h"
 #include "gras/pmx_helper.h"
@@ -611,7 +611,7 @@ gr::block::block(
       d_min_output_buffer(std::max(output_signature->max_streams(),1), -1)
 {
     gras_ports_pimpl_alloc(this);
-    block_pimpl.reset(new gras_block_wrapper(name, this));
+    this->reset(new gras_block_wrapper(name, this));
 
     for (size_t i = 0; i < input_signature->sizeof_stream_items().size(); i++)
     {
@@ -627,7 +627,7 @@ gr::block::~block(void)
 {
     //global_block_registry.unregister_primitive(alias());
     GRASP_BLOCK->d_block_ptr = NULL;
-    block_pimpl.reset();
+    this->reset();
     gras_ports_pimpl_free(this);
 }
 
@@ -837,7 +837,7 @@ void gr::block::set_alignment(int multiple)
     d_output_multiple = multiple;
 }
 
-static void update_input_reserve(gr::block *p, boost::shared_ptr<gras::Block> block)
+static void update_input_reserve(gr::block *p)
 {
     /*!
      * Set an input reserve for fixed rate blocks.
@@ -859,7 +859,7 @@ static void update_input_reserve(gr::block *p, boost::shared_ptr<gras::Block> bl
         {
             reserve = size_t(0.5 + p->d_output_multiple/p->d_relative_rate);
         }
-        if (reserve) block->input_config(0).reserve_items = reserve;
+        if (reserve) GRASP_BLOCK_(p)->input_config(0).reserve_items = reserve;
     }
 }
 
@@ -869,7 +869,7 @@ void gr::block::set_relative_rate(double relative_rate)
       throw std::invalid_argument("block::set_relative_rate");
 
     d_relative_rate = relative_rate;
-    update_input_reserve(this, GRASP_BLOCK);
+    update_input_reserve(this);
 }
 
 void gr::block::set_output_multiple(int multiple)
@@ -880,7 +880,7 @@ void gr::block::set_output_multiple(int multiple)
     d_output_multiple_set = true;
     d_output_multiple = multiple;
     GRASP_BLOCK->output_config(0).reserve_items = multiple;
-    update_input_reserve(this, GRASP_BLOCK);
+    update_input_reserve(this);
 }
 
 static gras::ThreadPool make_new_tp(const std::vector<int> &mask, int prio)

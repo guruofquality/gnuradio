@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#define GRASP_HIER_BLOCK (boost::static_pointer_cast<gras::HierBlock>(this->block_pimpl))
+#define GRASP_HIER_BLOCK (dynamic_cast<gras::HierBlock *>(this->get()))
 
 #include "gras/gras_pimpl.h"
 #include <gnuradio/hier_block2.h>
@@ -42,12 +42,12 @@ gr::hier_block2::hier_block2(
     : basic_block(name, input_signature, output_signature)
 {
     gras_ports_pimpl_alloc(this);
-    block_pimpl.reset(new gras::HierBlock(name));
+    this->reset(new gras::HierBlock(name));
 }
 
 gr::hier_block2::~hier_block2(void)
 {
-    block_pimpl.reset();
+    this->reset();
     gras_ports_pimpl_free(this);
 }
 
@@ -71,13 +71,14 @@ gr::hier_block2::opaque_self gr::hier_block2::self()
 {
     //hide hier self in this opaque_self
     //dont need sptr magic hack, just connect w/ *this
-    return boost::static_pointer_cast<opaque_self::element_type>(block_pimpl);
+    boost::shared_ptr<void> opaque = *this;
+    return boost::static_pointer_cast<opaque_self::element_type>(opaque);
 }
 
 static gr::basic_block *resolve_basic_block(gr::basic_block_sptr block, gr::basic_block *self)
 {
     //check if hier is hidden in an opaque_self
-    if (size_t(block.get()) == size_t(self->block_pimpl.get())) return self;
+    if (size_t(block.get()) == size_t(self->get())) return self;
 
     //otherwise pick out the initialized element
     else return block.get();
@@ -89,7 +90,7 @@ static gras::Element &get_elem_sptr(gr::basic_block_sptr block, gr::basic_block 
     gr::basic_block *bb_ptr = resolve_basic_block(block, self);
 
     //store container for safety
-    element = boost::static_pointer_cast<gras::Element>(bb_ptr->block_pimpl);
+    element = boost::static_pointer_cast<gras::Element>(*bb_ptr);
     element->set_container(new gras::WeakContainerSharedPtr(block));
 
     return *element;
