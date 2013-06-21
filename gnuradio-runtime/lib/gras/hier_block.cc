@@ -41,13 +41,14 @@ gr::hier_block2::hier_block2(
 )
     : basic_block(name, input_signature, output_signature)
 {
-    GRAS_PORTS_PIMPL_INIT();
+    gras_ports_pimpl_alloc(this);
     block_pimpl.reset(new gras::HierBlock(name));
 }
 
 gr::hier_block2::~hier_block2(void)
 {
     block_pimpl.reset();
+    gras_ports_pimpl_free(this);
 }
 
 void gr::hier_block2::lock(void)

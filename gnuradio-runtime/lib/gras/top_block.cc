@@ -38,13 +38,14 @@ gr::top_block::top_block(
         io_signature::make(0,0,0),
         io_signature::make(0,0,0))
 {
-    GRAS_PORTS_PIMPL_INIT();
+    gras_ports_pimpl_alloc(this);
     block_pimpl.reset(new gras::TopBlock(name));
 }
 
 gr::top_block::~top_block(void)
 {
     block_pimpl.reset();
+    gras_ports_pimpl_free(this);
 }
 
 void gr::top_block::lock(void)

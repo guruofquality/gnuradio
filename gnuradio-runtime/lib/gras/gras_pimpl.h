@@ -22,8 +22,7 @@
 #ifndef INCLUDED_LIB_GR_RUNTIME_GRAS_GRAS_PIMPL_H
 #define INCLUDED_LIB_GR_RUNTIME_GRAS_GRAS_PIMPL_H
 
-#define GRAS_PORTS_PIMPL_INIT() this->ports_pimpl.reset(new gras_ports_pimpl())
-#define GRAS_PORTS_PIMPL(b) (boost::static_pointer_cast<gras_ports_pimpl>(b->ports_pimpl))
+#define GRAS_PORTS_PIMPL(b) (gras_ports_pimpl_get(b))
 
 #include <cstddef>
 #include <vector>
@@ -69,5 +68,9 @@ struct gras_ports_pimpl
     gras_ports_pimpl_monitor input;
     gras_ports_pimpl_monitor output;
 };
+
+void gras_ports_pimpl_alloc(void *p);
+void gras_ports_pimpl_free(void *p);
+gras_ports_pimpl *gras_ports_pimpl_get(void *p);
 
 #endif /*INCLUDED_LIB_GR_RUNTIME_GRAS_GRAS_PIMPL_H*/

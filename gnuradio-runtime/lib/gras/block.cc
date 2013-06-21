@@ -610,7 +610,7 @@ gr::block::block(
       d_max_output_buffer(std::max(output_signature->max_streams(),1), -1),
       d_min_output_buffer(std::max(output_signature->max_streams(),1), -1)
 {
-    GRAS_PORTS_PIMPL_INIT();
+    gras_ports_pimpl_alloc(this);
     block_pimpl.reset(new gras_block_wrapper(name, this));
 
     for (size_t i = 0; i < input_signature->sizeof_stream_items().size(); i++)
@@ -628,6 +628,7 @@ gr::block::~block(void)
     //global_block_registry.unregister_primitive(alias());
     GRASP_BLOCK->d_block_ptr = NULL;
     block_pimpl.reset();
+    gras_ports_pimpl_free(this);
 }
 
 bool gr::block::start(void)
