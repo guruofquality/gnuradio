@@ -37,14 +37,17 @@ namespace gr {
     class BLOCKS_API pdu_to_tagged_stream : virtual public sync_block
     {
     public:
-      // gr::gnuradio/blocks::pdu_to_tagged_stream::sptr
+      // gr::blocks::pdu_to_tagged_stream::sptr
       typedef boost::shared_ptr<pdu_to_tagged_stream> sptr;
 
       /*!
        * \brief Construct a pdu_to_tagged_stream block
        * \param type PDU type of pdu::vector_type
+       * \param lengthtagname The name of the tag that specifies how long the packet is.
+       *                      Defaults to 'packet_len'.
        */
-      static sptr make(pdu::vector_type type, const std::string& lengthtagname="packet_len");
+      static sptr make(pdu::vector_type type,
+                       const std::string& lengthtagname="packet_len");
     };
 
   } /* namespace blocks */

@@ -40,6 +40,8 @@
 #include "vmcircbuf_mmap_shm_open.h"
 #include "vmcircbuf_mmap_tmpfile.h"
 
+gr::thread::mutex s_vm_mutex;
+
 namespace gr {
 
   static const char *FACTORY_PREF_KEY = "vmcircbuf_default_factory";
@@ -63,6 +65,8 @@ namespace gr {
       return s_default_factory;
 
     bool verbose = false;
+
+    gr::thread::scoped_lock guard(s_vm_mutex);    
 
     std::vector<gr::vmcircbuf_factory *> all = all_factories ();
 

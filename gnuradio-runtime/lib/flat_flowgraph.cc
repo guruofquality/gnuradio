@@ -161,7 +161,16 @@ namespace gr {
     }
 
     //  std::cout << "make_buffer(" << nitems << ", " << item_size << ", " << grblock << "\n";
-    return make_buffer(nitems, item_size, grblock);
+    // We're going to let this fail once and retry. If that fails,
+    // throw and exit.
+    buffer_sptr b;
+    try {
+      b = make_buffer(nitems, item_size, grblock);
+    }
+    catch(std::bad_alloc&) {
+      b = make_buffer(nitems, item_size, grblock);
+    }
+    return b;
   }
 
   void
@@ -331,6 +340,15 @@ namespace gr {
   {
     std::stringstream s;
     for(edge_viter_t e = d_edges.begin(); e != d_edges.end(); e++)
+      s << (*e) << std::endl;
+    return s.str();
+  }
+
+  std::string
+  flat_flowgraph::msg_edge_list()
+  {
+    std::stringstream s;
+    for(msg_edge_viter_t e = d_msg_edges.begin(); e != d_msg_edges.end(); e++)
       s << (*e) << std::endl;
     return s.str();
   }

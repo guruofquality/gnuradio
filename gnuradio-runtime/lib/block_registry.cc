@@ -39,6 +39,8 @@ namespace gr {
   long
   block_registry::block_register(basic_block* block)
   {
+    gr::thread::scoped_lock guard(d_mutex);
+
     if(d_map.find(block->name()) == d_map.end()) {
       d_map[block->name()] = blocksubmap_t();
       d_map[block->name()][0] = block;
@@ -58,6 +60,8 @@ namespace gr {
   void
   block_registry::block_unregister(basic_block* block)
   {
+    gr::thread::scoped_lock guard(d_mutex);
+
     d_map[block->name()].erase( d_map[block->name()].find(block->symbolic_id()));
     d_ref_map = pmt::dict_delete(d_ref_map, pmt::intern(block->symbol_name()));
     if(block->alias_set()) {
@@ -78,6 +82,8 @@ namespace gr {
   void
   block_registry::register_symbolic_name(basic_block* block, std::string name)
   {
+    gr::thread::scoped_lock guard(d_mutex);
+
     if(pmt::dict_has_key(d_ref_map, pmt::intern(name))) {
       throw std::runtime_error("symbol already exists, can not re-use!");
     }
@@ -87,6 +93,8 @@ namespace gr {
   basic_block_sptr
   block_registry::block_lookup(pmt::pmt_t symbol)
   {
+    gr::thread::scoped_lock guard(d_mutex);
+
     pmt::pmt_t ref = pmt::dict_ref(d_ref_map, symbol, pmt::PMT_NIL);
     if(pmt::eq(ref, pmt::PMT_NIL)) {
       throw std::runtime_error("block lookup failed! block not found!");
@@ -98,18 +106,24 @@ namespace gr {
   void
   block_registry::register_primitive(std::string blk, block* ref)
   {
+    gr::thread::scoped_lock guard(d_mutex);
+
     primitive_map[blk] = ref;
   }
 
   void
   block_registry::unregister_primitive(std::string blk)
   {
+    gr::thread::scoped_lock guard(d_mutex);
+
     primitive_map.erase(primitive_map.find(blk));
   }
 
   void
   block_registry::notify_blk(std::string blk)
   {
+    gr::thread::scoped_lock guard(d_mutex);
+
     if(primitive_map.find(blk) == primitive_map.end()) {
       return;
     }
