@@ -30,6 +30,7 @@ GR_PYTHON_INSTALL(FILES
     hier_block2.py
     top_block.py
     pubsub.py
+    gras_support.py
     DESTINATION ${GR_PYTHON_DIR}/gnuradio/gr
     COMPONENT "runtime_python"
 )
