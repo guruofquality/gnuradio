@@ -936,6 +936,67 @@ int
     return d_priority;
   }
 
+  void
+  gr::block::expand_minmax_buffer(int port)
+  {
+    if((size_t)port >= d_max_output_buffer.size())
+      set_max_output_buffer(port, -1);
+    if((size_t)port >= d_min_output_buffer.size())
+      set_min_output_buffer(port, -1);
+  }
+
+  long
+  gr::block::max_output_buffer(size_t i)
+  {
+    if(i >= d_max_output_buffer.size())
+      throw std::invalid_argument("basic_block::max_output_buffer: port out of range.");
+    return d_max_output_buffer[i];
+  }
+  
+  void
+  gr::block::set_max_output_buffer(long max_output_buffer)
+  { 
+    for(int i = 0; i < output_signature()->max_streams(); i++) {
+      set_max_output_buffer(i, max_output_buffer);
+    }
+  }
+
+  void
+  gr::block::set_max_output_buffer(int port, long max_output_buffer)
+  {
+    if((size_t)port >= d_max_output_buffer.size())
+      d_max_output_buffer.push_back(max_output_buffer);
+    else
+      d_max_output_buffer[port] = max_output_buffer; 
+    GRASP_BLOCK->output_config(port).maximum_items = max_output_buffer/GRASP_BLOCK->output_config(port).item_size;
+  }
+  
+  long
+  gr::block::min_output_buffer(size_t i)
+  {
+    if(i >= d_min_output_buffer.size())
+      throw std::invalid_argument("basic_block::min_output_buffer: port out of range.");
+    return d_min_output_buffer[i];
+  }
+  
+  void
+  gr::block::set_min_output_buffer(long min_output_buffer)
+  {
+    std::cout << "set_min_output_buffer on block " << unique_id() << " to " << min_output_buffer << std::endl;
+    for(int i=0; i<output_signature()->max_streams(); i++) {
+      set_min_output_buffer(i, min_output_buffer);
+    }
+  }
+  
+  void
+  gr::block::set_min_output_buffer(int port, long min_output_buffer)
+  {
+    if((size_t)port >= d_min_output_buffer.size())
+      d_min_output_buffer.push_back(min_output_buffer);
+    else
+      d_min_output_buffer[port] = min_output_buffer; 
+  }
+
 //holy shit, howabout a struct and a single function call
 
 float gr::block::pc_noutput_items(){throw std::runtime_error("pc no");}
