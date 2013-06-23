@@ -47,7 +47,7 @@ from tag_utils import *
 from gateway import basic_block, sync_block, decim_block, interp_block
 
 try:
-    from gras_support import *
+    from gras_swig_helper import *
 except ImportError as ex:
     pass #print ex
 
