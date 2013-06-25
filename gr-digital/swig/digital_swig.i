@@ -19,6 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+%module digital_swig
+
 %include "gnuradio.i"
 
 //load generated python docstrings
