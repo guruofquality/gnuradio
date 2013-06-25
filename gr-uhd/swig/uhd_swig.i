@@ -20,6 +20,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+%module uhd_swig
+
 // Defined during configure; avoids trying to locate
 // header files if UHD was not installed.
 #ifdef GR_HAVE_UHD

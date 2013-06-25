@@ -20,6 +20,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
+%pythoncode %{
+import gras
+import os
+import sys
+sys.path.append(os.path.dirname(gras.__file__))
+%}
+
 // Disable warning about base class types
 #pragma SWIG nowarn=401
 
