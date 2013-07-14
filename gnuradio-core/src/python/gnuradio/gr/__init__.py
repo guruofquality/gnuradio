@@ -70,6 +70,14 @@ class top_block(gras.TopBlock):
     def unlock(self):
         self.commit()
 
+    def start(self, *args):
+        if args: self.global_config().maximum_output_items = args[0]
+        gras.TopBlock.start(self)
+
+    def run(self, *args):
+        if args: self.global_config().maximum_output_items = args[0]
+        gras.TopBlock.run(self)
+
 class hier_block2(gras.HierBlock):
     def __init__(self, name="Hier", in_sig=None, out_sig=None):
         gras.HierBlock.__init__(self, name)
