@@ -45,7 +45,7 @@ namespace gnuradio {
   boost::shared_ptr<T>
   get_initial_sptr(T *p)
   {
-    return boost::dynamic_pointer_cast<T, gr_basic_block>(detail::sptr_magic::fetch_initial_sptr(p));
+    return boost::shared_ptr<T>(p);//return boost::dynamic_pointer_cast<T, gr_basic_block>(detail::sptr_magic::fetch_initial_sptr(p));
   }
 };
 

@@ -32,16 +32,7 @@
 #include <map>
 #include <boost/foreach.hpp>
 #include <gruel/thread.h>
-
-namespace gnuradio
-{
-//! dummy entry, just here for legacy purposes
-template <typename T>
-boost::shared_ptr<T> get_initial_sptr(T *p)
-{
-    return boost::shared_ptr<T>(p);
-}
-}
+#include <gr_sptr_magic.h>
 
 struct GR_CORE_API gr_block : gras::Block
 {
