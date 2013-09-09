@@ -19,6 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
+%{
+#include <gras/element.hpp>
+%}
+
 %include "gnuradio.i"				// the common stuff
 %include <basic_block.i>
 %import <gras/element.i>
