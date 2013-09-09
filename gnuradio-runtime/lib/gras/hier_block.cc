@@ -171,3 +171,18 @@ gr::hier_block2_sptr gr::hier_block2::to_hier_block2()
 {
     return boost::static_pointer_cast<gr::hier_block2>(shared_from_this());
 }
+
+void gr::hier_block2::set_processor_affinity(const std::vector<int> &)
+{
+    //NOP
+}
+
+void gr::hier_block2::unset_processor_affinity(void)
+{
+    //NOP
+}
+
+std::vector<int> gr::hier_block2::processor_affinity(void)
+{
+    return std::vector<int>();
+}
