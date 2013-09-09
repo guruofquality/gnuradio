@@ -151,6 +151,7 @@ namespace gr {
       }
   
       if(!d_msg) {
+	if (d_msgq->empty_p()) return 0;
 	d_msg = d_msgq->delete_head();	   // block, waiting for a message
 	d_msg_offset = 0;
 	d_bit_offset = 0;

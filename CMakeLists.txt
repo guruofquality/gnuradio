@@ -50,6 +50,36 @@ SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
 
 ########################################################################
+# Setup compile-time GRAS support
+########################################################################
+
+#search for gras and pmc libraries on the user's system
+#this check should be defined in the runtime dir,
+#however, this enables ENABLE_BAD_BOOST to be bypassed
+
+find_package(GRAS)
+find_package(PMC)
+
+if(GRAS_FOUND AND PMC_FOUND)
+    message(STATUS "Enabling support for Advanced Scheduler")
+    #Theron isnt affected by boost thread issues.
+    #So we allow the gr black listed versions.
+    message(STATUS "Forcing override of blacklisted boosts... OK")
+    OPTION(ENABLE_BAD_BOOST "Enable known bad versions of Boost" ON)
+
+    #append to GRAS vars so we only deal with one set
+    list(APPEND GRAS_INCLUDE_DIRS ${PMC_INCLUDE_DIRS})
+    list(APPEND GRAS_LIBRARIES ${PMC_LIBRARIES})
+
+else()
+    #unset both in case one was found and not the other
+    unset(GRAS_FOUND)
+    unset(PMC_FOUND)
+    message(STATUS "No support for Advanced Scheduler found")
+
+endif()
+
+########################################################################
 # Environment setup
 ########################################################################
 IF(NOT DEFINED BOOST_ROOT)

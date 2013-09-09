@@ -42,6 +42,12 @@
 #include <gnuradio/rpcregisterhelpers.h>
 #endif
 
+//forward declare Element
+namespace gras
+{
+    struct Element;
+}
+
 namespace gr {
 
   /*!
@@ -56,6 +62,7 @@ namespace gr {
    * processing functions.
    */
   class GR_RUNTIME_API basic_block : public msg_accepter,
+                                     public boost::shared_ptr<gras::Element>,
                                      public boost::enable_shared_from_this<basic_block>
   {
     typedef boost::function<void(pmt::pmt_t)> msg_handler_t;
@@ -351,6 +358,7 @@ namespace gr {
 
     virtual std::vector<int> processor_affinity()
     { throw std::runtime_error("processor_affinity not overloaded in child class."); }
+
   };
 
   inline bool operator<(basic_block_sptr lhs, basic_block_sptr rhs)

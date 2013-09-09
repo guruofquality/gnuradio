@@ -128,3 +128,20 @@ install(
     DESTINATION ${GR_INCLUDE_DIR}/gnuradio/swig
     COMPONENT "runtime_swig"
 )
+
+########################################################################
+# gras sources when detected
+########################################################################
+if(GRAS_FOUND)
+
+    unset(GR_SWIG_DOC_FILE)
+    list(APPEND GR_SWIG_INCLUDE_DIRS ${GRAS_INCLUDE_DIRS})
+    list(APPEND GR_SWIG_LIBRARIES ${GRAS_LIBRARIES})
+    GR_SWIG_MAKE(gras_swig_helper gras_swig_helper.i)
+    GR_SWIG_INSTALL(
+        TARGETS gras_swig_helper
+        DESTINATION ${GR_PYTHON_DIR}/gnuradio/gr
+        COMPONENT "runtime_python"
+    )
+
+endif(GRAS_FOUND)

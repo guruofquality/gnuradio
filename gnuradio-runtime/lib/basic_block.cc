@@ -125,6 +125,8 @@ namespace gr {
     return port_names;
   }
 
+#ifndef GR_BASIC_BLOCK_CUSTOM
+
   //  - publish a message on a message port
   void basic_block::message_port_pub(pmt::pmt_t port_id, pmt::pmt_t msg)
   {
@@ -146,6 +148,8 @@ namespace gr {
       blk->post(port, msg);
     }
   }
+
+#endif //GR_BASIC_BLOCK_CUSTOM
 
   //  - subscribe to a message port
   void

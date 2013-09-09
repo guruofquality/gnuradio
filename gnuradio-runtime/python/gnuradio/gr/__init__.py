@@ -46,5 +46,10 @@ from hier_block2 import *
 from tag_utils import *
 from gateway import basic_block, sync_block, decim_block, interp_block
 
+try:
+    from gras_swig_helper import *
+except ImportError as ex:
+    pass #print ex
+
 # Force the preference database to be initialized
 prefs = prefs.singleton
