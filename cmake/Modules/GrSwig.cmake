@@ -105,6 +105,8 @@ endfunction(GR_SWIG_MAKE_DOCS)
 macro(GR_SWIG_MAKE name)
     set(ifiles ${ARGN})
 
+    list(APPEND GR_SWIG_LIBRARIES ${GR_MOAR_LIBRARIES})
+
     # Shimming this in here to take care of a SWIG bug with handling
     # vector<size_t> and vector<unsigned int> (on 32-bit machines) and
     # vector<long unsigned int> (on 64-bit machines). Use this to test
