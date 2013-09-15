@@ -57,8 +57,12 @@ SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
 #this check should be defined in the runtime dir,
 #however, this enables ENABLE_BAD_BOOST to be bypassed
 
-find_package(GRAS)
-find_package(PMC)
+#submodule support: dont call find if already found
+if(GRAS_FOUND AND PMC_FOUND)
+else()
+    find_package(GRAS)
+    find_package(PMC)
+endif()
 
 if(GRAS_FOUND AND PMC_FOUND)
     message(STATUS "Enabling support for Advanced Scheduler")
