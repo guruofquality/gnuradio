@@ -906,13 +906,15 @@ static gras::ThreadPool make_new_tp(const std::vector<int> &mask, int prio)
 void gr::block::set_processor_affinity(const std::vector<int> &mask)
 {
     d_affinity = mask;
-    GRASP_BLOCK->set_thread_pool(make_new_tp(d_affinity, d_priority));
+    GRASP_BLOCK->global_config().thread_pool = make_new_tp(d_affinity, d_priority);
+    GRASP_BLOCK->commit_config();
 }
 
 void gr::block::unset_processor_affinity()
 {
     d_affinity.clear();
-    GRASP_BLOCK->set_thread_pool(make_new_tp(d_affinity, d_priority));
+    GRASP_BLOCK->global_config().thread_pool = make_new_tp(d_affinity, d_priority);
+    GRASP_BLOCK->commit_config();
 }
 
 int 
@@ -932,7 +934,8 @@ int
   gr::block::set_thread_priority(int priority)
   {
     d_priority = priority;
-    GRASP_BLOCK->set_thread_pool(make_new_tp(d_affinity, d_priority));
+    GRASP_BLOCK->global_config().thread_pool = make_new_tp(d_affinity, d_priority);
+    GRASP_BLOCK->commit_config();
     return d_priority;
   }
 
