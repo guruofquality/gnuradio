@@ -37,6 +37,10 @@ gras::Element &basic_block_to_element(gr::basic_block_sptr block)
 %}
 
 %pythoncode %{
+
+from runtime_swig import basic_block_sptr
+basic_block_sptr.to_element = lambda self: basic_block_to_element(self)
+
 import gras
 import weakref
 
@@ -62,8 +66,8 @@ class port_monitor(object):
         self._num_real_ports = max(self._num_real_ports, new_port_index+1)
 
 def get_xx_monitor(block, key):
-    try: setattr(block, 'to_element', lambda: basic_block_to_element(block.to_basic_block()))
-    except AttributeError: pass
+    if not hasattr(block, 'to_element') and hasattr(block, 'to_basic_block'):
+        setattr(block, 'to_element', lambda: basic_block_to_element(block.to_basic_block()))
     if not hasattr(block, key): setattr(block, key, port_monitor())
     return getattr(block, key)
 def get_src_monitor(block): return get_xx_monitor(block, '__src_port_monitor')
